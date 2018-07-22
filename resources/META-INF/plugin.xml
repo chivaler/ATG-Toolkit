@@ -1,0 +1,27 @@
+<idea-plugin url="https://github.com/chivaler/ATG-Toolkit">
+    <id>org.idea.plugin.atg</id>
+    <name>ATG Toolkit (alpha)</name>
+    <id>atg-toolkit</id>
+    <version>0.1</version>
+    <vendor email="chivaler@gmail.com" >Igor Pidgurskyi</vendor>
+
+    <description><![CDATA[
+      Plugin simplifies development of Oracle Commerce modules (former ATG)<br>
+    ]]></description>
+
+    <change-notes><![CDATA[
+      0.1 Created intention on a non-abstract java class "Create ATG component"
+    ]]>
+    </change-notes>
+
+    <idea-version since-build="145.0"/>
+    <resource-bundle>org.idea.plugin.atg.AtgModuleBundle</resource-bundle>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <intentionAction>
+            <className>org.idea.plugin.atg.CreateATGComponentIntentionAction</className>
+            <category>Java/Declaration</category>
+        </intentionAction>
+    </extensions>
+
+</idea-plugin>

@@ -1,0 +1,3 @@
+\$class=${CLASS_NAME}
+\$scope=global
+${SETTERS}

@@ -1,0 +1,18 @@
+package stuff.atg;
+
+public class Foo {
+  private OrderTools mOrderTools;
+  private String bar;
+  private String baz;
+
+  public void setOrderTools(OrderTools orderTools) {
+    this.mOrderTools = orderTools;
+  }
+
+  public void setBar(String bar) {
+   this.bar = bar;
+  }
+}
+
+
+

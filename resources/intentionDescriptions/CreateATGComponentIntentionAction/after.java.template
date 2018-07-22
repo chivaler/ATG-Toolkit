@@ -1,0 +1,4 @@
+$class=<spot>stuff.atg.Foo</spot>
+$scope=global
+<spot>orderTools=</spot>
+<spot>bar=</spot>
