@@ -2,15 +2,17 @@
     <id>org.idea.plugin.atg</id>
     <name>ATG Toolkit (alpha)</name>
     <id>atg-toolkit</id>
-    <version>0.1</version>
-    <vendor email="chivaler@gmail.com" >Igor Pidgurskyi</vendor>
+    <version>0.2</version>
+    <vendor email="chivaler@gmail.com">Igor Pidgurskyi</vendor>
 
     <description><![CDATA[
       Plugin simplifies development of Oracle Commerce modules (former ATG)<br>
     ]]></description>
 
     <change-notes><![CDATA[
-      0.1 Created intention on a non-abstract java class "Create ATG component"
+        0.1 Created intention on a non-abstract java class "Create ATG component"
+        0.2 Created plugin settings page.
+            Configurable excluded classes for collecting setters
     ]]>
     </change-notes>
 
@@ -22,6 +24,9 @@
             <className>org.idea.plugin.atg.CreateATGComponentIntentionAction</className>
             <category>Java/Declaration</category>
         </intentionAction>
+        <projectConfigurable parentId="language" instance="org.idea.plugin.atg.config.AtgToolkitConfigurable"
+                                 id="atg-toolkit" displayName="ATG Toolkit"/>
+        <projectService serviceImplementation="org.idea.plugin.atg.config.AtgToolkitConfig"/>
     </extensions>
 
 </idea-plugin>

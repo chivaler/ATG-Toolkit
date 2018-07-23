@@ -32,12 +32,22 @@ import com.intellij.psi.*;
 import com.intellij.psi.impl.source.PostprocessReformattingAspect;
 import com.intellij.util.IncorrectOperationException;
 import com.intellij.util.LineSeparator;
+import org.apache.commons.lang.StringUtils;
+import org.idea.plugin.atg.config.AtgToolkitConfig;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PropertiesGenerator {
+
+    private PropertiesGenerator() {
+    }
 
     @Nullable
     public static PsiElement generatePropertiesFile(final Project project,
@@ -85,8 +95,27 @@ public class PropertiesGenerator {
         Properties properties = new Properties(defaultProperties);
         properties.setProperty(FileTemplate.ATTRIBUTE_CLASS_NAME, srcClass.getQualifiedName());
 
+        AtgToolkitConfig atgToolkitConfig = AtgToolkitConfig.getInstance(project);
+        String ignoredClassesForSetters = atgToolkitConfig != null ? atgToolkitConfig.getIgnoredClassesForSetters() : "";
+        String[] ignoredClassesForSettersArray = ignoredClassesForSetters
+                .replace(".", "\\.")
+                .replace("?", ".?")
+                .replace("*", ".*?")
+                .split("[,;]");
+        List<Pattern> ignoredClassPatterns = Stream.of(ignoredClassesForSettersArray).map(Pattern::compile).collect(Collectors.toList());
+
+        Predicate<PsiMethod> isNotIgnoredMethod = psiMethod -> {
+            for (Pattern classNamePattern : ignoredClassPatterns) {
+                PsiClass containingClass = psiMethod.getContainingClass();
+                String className = containingClass != null ? containingClass.getQualifiedName() : "";
+                if (StringUtils.isNotBlank(className) && classNamePattern.matcher(className).matches()) return false;
+            }
+            return true;
+        };
+
         String setters = Arrays.stream(srcClass.getAllMethods())
                 .filter(m -> m.hasModifier(JvmModifier.PUBLIC))
+                .filter(isNotIgnoredMethod)
                 .map(PsiMethod::getName)
                 .filter(name -> name.startsWith("set"))
                 .map(name -> name.substring(3, 4).toLowerCase() + name.substring(4) + "=" + LineSeparator.getSystemLineSeparator().getSeparatorString())

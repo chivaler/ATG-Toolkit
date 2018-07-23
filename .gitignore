@@ -1,7 +1,5 @@
 /.idea
-*.iml
 /out
 .DS_Store
 *.class
 *.log
-
