@@ -1,5 +1,10 @@
 /.idea
+/build
 /out
+/gradle
+/.gradle
+gradlew
+gradlew.bat
 .DS_Store
 *.class
 *.log

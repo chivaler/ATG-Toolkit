@@ -1,0 +1,26 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+plugins {
+    id "org.jetbrains.intellij" version "0.3.4"
+}
+
+apply plugin: 'idea'
+apply plugin: 'org.jetbrains.intellij'
+apply plugin: 'java'
+
+intellij {
+    version 'IC-2018.1'
+    plugins 'properties'
+    pluginName 'atg-toolkit'
+}
+
+group 'org.idea.plugin.atg'
+version '0.2' // Plugin version
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.9'
+}
