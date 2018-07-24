@@ -16,6 +16,7 @@ public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
     private JLabel ignoredClassesLabel;
     private JTextField configRelativePathField;
     private JTextField ignoredClassesField;
+    private JCheckBox injectUnambiguousPropertiesCheckBox;
 
     public AtgToolkitSettingsUi(AtgToolkitConfig atgToolkitConfig) {
         rootPanel = new JPanel(new VerticalLayout(0));
@@ -25,34 +26,38 @@ public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
         ignoredClassesLabel = new JLabel(AtgModuleBundle.message("gui.config.config.ignoredClasses"));
         configRelativePathField = new JTextField();
         ignoredClassesField = new JTextField();
-
+        injectUnambiguousPropertiesCheckBox = new JCheckBox(AtgModuleBundle.message("gui.config.config.injectUnambiguousProperties"));
 
         GridBagConstraints constraints = new GridBagConstraints();
-        constraints.gridx = 0;
-        constraints.gridy = 0;
-        constraints.weightx = 0.0;
         constraints.insets.right = UIUtil.DEFAULT_HGAP;
         constraints.fill = GridBagConstraints.HORIZONTAL;
         constraints.anchor = GridBagConstraints.BASELINE_LEADING;
+
+        constraints.gridx = 0;
+        constraints.gridy = 0;
+        constraints.weightx = 0.0;
         controlsPanel.add(configRelativePathLabel, constraints);
 
         constraints.gridx = 1;
         constraints.gridy = 0;
         constraints.weightx = 1.0;
-        constraints.insets.right = 0;
         controlsPanel.add(configRelativePathField, constraints);
 
         constraints.gridx = 0;
         constraints.gridy = 1;
         constraints.weightx = 0.0;
-        constraints.insets.right = UIUtil.DEFAULT_HGAP;
         controlsPanel.add(ignoredClassesLabel, constraints);
 
         constraints.gridx = 1;
         constraints.gridy = 1;
         constraints.weightx = 1;
-        constraints.insets.right = 0;
         controlsPanel.add(ignoredClassesField, constraints);
+
+        constraints.gridx = 0;
+        constraints.gridy = 2;
+        constraints.weightx = 0.0;
+        controlsPanel.add(injectUnambiguousPropertiesCheckBox, constraints);
+
 
         rootPanel.add(controlsPanel, VerticalLayout.TOP);
     }
@@ -61,18 +66,21 @@ public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
     public void reset(@NotNull AtgToolkitConfig atgToolkitConfig) {
         configRelativePathField.setText(atgToolkitConfig.getRelativeConfigPath());
         ignoredClassesField.setText(atgToolkitConfig.getIgnoredClassesForSetters());
+        injectUnambiguousPropertiesCheckBox.setSelected(atgToolkitConfig.isInjectUnambiguousProperties());
     }
 
     @Override
     public boolean isModified(@NotNull AtgToolkitConfig atgToolkitConfig) {
         return !(configRelativePathField.getText().equals(atgToolkitConfig.getRelativeConfigPath()) &&
-                ignoredClassesField.getText().equals(atgToolkitConfig.getIgnoredClassesForSetters()));
+                ignoredClassesField.getText().equals(atgToolkitConfig.getIgnoredClassesForSetters()) &&
+                injectUnambiguousPropertiesCheckBox.isSelected() == atgToolkitConfig.isInjectUnambiguousProperties());
     }
 
     @Override
     public void apply(@NotNull AtgToolkitConfig atgToolkitConfig) {
         atgToolkitConfig.setRelativeConfigPath(configRelativePathField.getText());
         atgToolkitConfig.setIgnoredClassesForSetters(ignoredClassesField.getText());
+        atgToolkitConfig.setInjectUnambiguousProperties(injectUnambiguousPropertiesCheckBox.isSelected());
     }
 
     @NotNull

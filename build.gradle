@@ -19,7 +19,7 @@ intellij {
 }
 
 group 'org.idea.plugin.atg'
-version '0.2' // Plugin version
+version '0.3' // Plugin version
 
 task wrapper(type: Wrapper) {
     gradleVersion = '4.9'

@@ -2,7 +2,7 @@
     <id>org.idea.plugin.atg</id>
     <name>ATG Toolkit (alpha)</name>
     <id>atg-toolkit</id>
-    <version>0.2</version>
+    <version>0.3</version>
     <vendor email="chivaler@gmail.com">Igor Pidgurskyi</vendor>
 
     <description><![CDATA[
@@ -13,8 +13,11 @@
         0.1 Created intention on a non-abstract java class "Create ATG component"
         0.2 Created plugin settings page.
             Configurable excluded classes for collecting setters
+        0.3 During creating component values are guessed based on same properties in project
+            List of properties is sorted as "dependencies first"
     ]]>
     </change-notes>
+    <depends>com.intellij.properties</depends>
 
     <idea-version since-build="145.0"/>
     <resource-bundle>org.idea.plugin.atg.AtgModuleBundle</resource-bundle>
