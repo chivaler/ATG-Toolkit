@@ -1,4 +1,6 @@
 \$class=${CLASS_NAME}
 \$scope=global
 
-${SETTERS}
+${DEPENDENCIES}
+
+${VARS}

@@ -8,4 +8,7 @@ Interfaces and abstract classes ignore this intention.
 Component creates 
 
 # Develop
-Follow http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/using_dev_kit.html for set up environment and run/debug the plugin.
+Pull the repository contents
+Import project as gradle
+Reopen the project
+Use the task *runIde* to Run/Debug Idea with the plugin 

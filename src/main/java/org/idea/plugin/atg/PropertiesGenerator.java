@@ -20,6 +20,7 @@ import com.intellij.ide.fileTemplates.FileTemplateManager;
 import com.intellij.ide.fileTemplates.FileTemplateUtil;
 import com.intellij.ide.util.EditorHelper;
 import com.intellij.lang.jvm.JvmModifier;
+import com.intellij.lang.jvm.types.JvmType;
 import com.intellij.lang.properties.IProperty;
 import com.intellij.lang.properties.PropertiesImplUtil;
 import com.intellij.notification.Notification;
@@ -33,12 +34,14 @@ import com.intellij.openapi.util.Computable;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.source.PostprocessReformattingAspect;
 import com.intellij.util.IncorrectOperationException;
-import com.intellij.util.LineSeparator;
 import org.apache.commons.lang.StringUtils;
 import org.idea.plugin.atg.config.AtgToolkitConfig;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -112,44 +115,61 @@ public class PropertiesGenerator {
             return true;
         };
 
-        Comparator<PsiMethod> methodComparatorServicesFirst = (o1, o2) -> {
-            boolean isFirstSimple = o1.getParameters().length > 0
-                    && (o1.getParameters()[0].getType() instanceof PsiPrimitiveType
-                    || ((PsiClassType) o1.getParameters()[0].getType()).getCanonicalText().startsWith("java."));
-            boolean isSecondSimple = o2.getParameters().length > 0
-                    && (o2.getParameters()[0].getType() instanceof PsiPrimitiveType
-                    || ((PsiClassType) o2.getParameters()[0].getType()).getCanonicalText().startsWith("java."));
-
-            if (isFirstSimple && !isSecondSimple) return 1;
-            if (!isFirstSimple && isSecondSimple) return -1;
-
-            return o1.getName().compareTo(o2.getName());
+        Predicate<PsiMethod> treatAsDependencySetter = m -> {
+            JvmType parameterType = m.getParameters()[0].getType();
+            if (!(parameterType instanceof PsiClassType)) return false;
+            String parameterClassName = ((PsiClassType) parameterType).getCanonicalText();
+            if (parameterClassName.startsWith("java")) return false;
+            if (parameterClassName.equals("atg.xml.XMLFile")) return false;
+            if (parameterClassName.equals("atg.repository.rql.RqlStatement")) return false;
+            if (parameterClassName.equals("atg.nucleus.ResolvingMap")) return false;
+            return !parameterClassName.equals("atg.nucleus.ServiceMap");
         };
 
         Function<String, String> populateInjectionsWithUnambiguousValues = name -> {
             if (atgToolkitConfig != null && atgToolkitConfig.isInjectUnambiguousProperties()) {
-                Set<String> foundValues = PropertiesImplUtil.findPropertiesByKey(project, name).stream().map(IProperty::getValue).collect(Collectors.toSet());
-                if (foundValues.size() == 1)
-                    return name + "=" + foundValues.iterator().next() + LineSeparator.getSystemLineSeparator().getSeparatorString();
+                Set<String> foundValuesForKey = PropertiesImplUtil
+                        .findPropertiesByKey(project, name)
+                        .stream().map(IProperty::getValue)
+                        .collect(Collectors.toSet());
+                if (foundValuesForKey.size() == 1) {
+                    return name + "=" + foundValuesForKey.iterator().next();
+                }
             }
 
-            return name + "=" + LineSeparator.getSystemLineSeparator().getSeparatorString();
+            return name + "=";
         };
 
-        String injections = Arrays.stream(srcClass.getAllMethods())
+        Set<PsiMethod> allSetters = Arrays.stream(srcClass.getAllMethods())
                 .filter(m -> m.hasModifier(JvmModifier.PUBLIC))
                 .filter(method -> method.getName().startsWith("set"))
                 .filter(isNotIgnoredMethod)
-                .sorted(methodComparatorServicesFirst)
+                .filter(m -> m.getParameters().length == 1)
+                .collect(Collectors.toSet());
+
+        String dependencies = allSetters
+                .stream()
+                .filter(treatAsDependencySetter)
                 .map(PsiMethod::getName)
+                .sorted()
                 .map(name -> name.substring(3, 4).toLowerCase() + name.substring(4))
                 .map(populateInjectionsWithUnambiguousValues)
-                .reduce((a, b) -> a + b).orElse("");
+                .reduce((a, b) -> a + "\n" + b).orElse("");
+
+        String variables = allSetters
+                .stream()
+                .filter(treatAsDependencySetter.negate())
+                .map(PsiMethod::getName)
+                .sorted()
+                .map(name -> name.substring(3, 4).toLowerCase() + name.substring(4))
+                .map(populateInjectionsWithUnambiguousValues)
+                .reduce((a, b) -> a + "\n" + b).orElse("");
 
         Properties defaultProperties = FileTemplateManager.getInstance(project).getDefaultProperties();
         Properties properties = new Properties(defaultProperties);
         properties.setProperty(FileTemplate.ATTRIBUTE_CLASS_NAME, srcClass.getQualifiedName());
-        properties.setProperty("SETTERS", injections);
+        properties.setProperty("DEPENDENCIES", dependencies);
+        properties.setProperty("VARS", variables);
 
         PsiElement psiElement = FileTemplateUtil.createFromTemplate(fileTemplate, srcClass.getName(), properties, targetDirectory);
         if (psiElement instanceof PsiFile) {
