@@ -19,10 +19,7 @@ import com.intellij.ide.fileTemplates.FileTemplateDescriptor;
 import com.intellij.ide.fileTemplates.FileTemplateManager;
 import com.intellij.ide.fileTemplates.FileTemplateUtil;
 import com.intellij.ide.util.EditorHelper;
-import com.intellij.lang.jvm.JvmModifier;
 import com.intellij.lang.jvm.types.JvmType;
-import com.intellij.lang.properties.IProperty;
-import com.intellij.lang.properties.PropertiesImplUtil;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
@@ -36,12 +33,11 @@ import com.intellij.psi.impl.source.PostprocessReformattingAspect;
 import com.intellij.util.IncorrectOperationException;
 import org.apache.commons.lang.StringUtils;
 import org.idea.plugin.atg.config.AtgToolkitConfig;
+import org.idea.plugin.atg.util.AtgComponentUtil;
 
 import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -59,33 +55,31 @@ public class PropertiesGenerator {
                                                     final PsiClass srcClass,
                                                     final PsiPackage srcPackage) {
         return PostprocessReformattingAspect.getInstance(project).postponeFormattingInside(
-                () -> ApplicationManager.getApplication().runWriteAction(new Computable<PsiElement>() {
-                    public PsiElement compute() {
-                        PsiFile targetClass = null;
-                        try {
-                            PsiDirectory targetDirectory = AtgConfigHelper.getComponentConfigPsiDirectory(module, srcPackage);
+                () -> ApplicationManager.getApplication().runWriteAction((Computable<PsiElement>) () -> {
+                    PsiFile targetClass = null;
+                    try {
+                        PsiDirectory targetDirectory = AtgConfigHelper.getComponentConfigPsiDirectory(module, srcPackage);
 
-                            FileTemplateDescriptor fileTemplateDescriptor = new FileTemplateDescriptor("ATG Properties.properties");
-                            targetClass = createPropertyFileFromTemplate(fileTemplateDescriptor, targetDirectory, project, srcClass);
+                        FileTemplateDescriptor fileTemplateDescriptor = new FileTemplateDescriptor("ATG Properties.properties");
+                        targetClass = createPropertyFileFromTemplate(fileTemplateDescriptor, targetDirectory, project, srcClass);
 
-                            if (targetClass != null) {
-                                IdeDocumentHistory.getInstance(project).includeCurrentPlaceAsChangePlace();
-                                EditorHelper.openInEditor(targetClass, false);
-                            }
-
-                        } catch (IncorrectOperationException e) {
-                            Notification notification = new Notification(AtgModuleBundle.message("notifications.groupId"),
-                                    AtgModuleBundle.message("intentions.create.component.error"),
-                                    e.getMessage(), NotificationType.INFORMATION);
-                            Notifications.Bus.notify(notification, project);
-                        } catch (Exception e) {
-                            Notification notification = new Notification(AtgModuleBundle.message("notifications.groupId"),
-                                    AtgModuleBundle.message("intentions.create.component.error"),
-                                    e.getMessage(), NotificationType.ERROR);
-                            Notifications.Bus.notify(notification, project);
+                        if (targetClass != null) {
+                            IdeDocumentHistory.getInstance(project).includeCurrentPlaceAsChangePlace();
+                            EditorHelper.openInEditor(targetClass, false);
                         }
-                        return targetClass;
+
+                    } catch (IncorrectOperationException e) {
+                        Notification notification = new Notification(AtgModuleBundle.message("notifications.groupId"),
+                                AtgModuleBundle.message("intentions.create.component.error"),
+                                e.getMessage(), NotificationType.INFORMATION);
+                        Notifications.Bus.notify(notification, project);
+                    } catch (Exception e) {
+                        Notification notification = new Notification(AtgModuleBundle.message("notifications.groupId"),
+                                AtgModuleBundle.message("intentions.create.component.error"),
+                                e.getMessage(), NotificationType.ERROR);
+                        Notifications.Bus.notify(notification, project);
                     }
+                    return targetClass;
                 }));
     }
 
@@ -126,49 +120,36 @@ public class PropertiesGenerator {
             return !parameterClassName.equals("atg.nucleus.ServiceMap");
         };
 
-        Function<String, String> populateInjectionsWithUnambiguousValues = name -> {
-            if (atgToolkitConfig != null && atgToolkitConfig.isInjectUnambiguousProperties()) {
-                Set<String> foundValuesForKey = PropertiesImplUtil
-                        .findPropertiesByKey(project, name)
-                        .stream().map(IProperty::getValue)
-                        .collect(Collectors.toSet());
-                if (foundValuesForKey.size() == 1) {
-                    return name + "=" + foundValuesForKey.iterator().next();
-                }
+        Function<PsiMethod, String> populatePropertiesWithSuggestedComponents = psiMethod -> {
+            String variableName = AtgComponentUtil.convertSetterNameToVariableName(psiMethod);
+            String dependencyClassName = AtgComponentUtil.getClassNameForSetterMethod(psiMethod);
+            List<String> possibleComponents = AtgComponentUtil.suggestComponentsByClassName(dependencyClassName, psiMethod.getProject());
+            if (possibleComponents.size() == 1) {
+                return variableName + "=" + possibleComponents.get(0);
             }
-
-            return name + "=";
+            return variableName + "=";
         };
 
-        Set<PsiMethod> allSetters = Arrays.stream(srcClass.getAllMethods())
-                .filter(m -> m.hasModifier(JvmModifier.PUBLIC))
-                .filter(method -> method.getName().startsWith("set"))
-                .filter(isNotIgnoredMethod)
-                .filter(m -> m.getParameters().length == 1)
-                .collect(Collectors.toSet());
+        List<PsiMethod> allSetters = AtgComponentUtil.getSettersOfClass(srcClass);
 
-        String dependencies = allSetters
-                .stream()
+        String dependencies = allSetters.stream()
+                .filter(isNotIgnoredMethod)
                 .filter(treatAsDependencySetter)
-                .map(PsiMethod::getName)
+                .map(populatePropertiesWithSuggestedComponents)
                 .sorted()
-                .map(name -> name.substring(3, 4).toLowerCase() + name.substring(4))
-                .map(populateInjectionsWithUnambiguousValues)
                 .reduce((a, b) -> a + "\n" + b).orElse("");
 
-        String variables = allSetters
-                .stream()
+        String variables = allSetters.stream()
+                .filter(isNotIgnoredMethod)
                 .filter(treatAsDependencySetter.negate())
-                .map(PsiMethod::getName)
+                .map(populatePropertiesWithSuggestedComponents)
                 .sorted()
-                .map(name -> name.substring(3, 4).toLowerCase() + name.substring(4))
-                .map(populateInjectionsWithUnambiguousValues)
                 .reduce((a, b) -> a + "\n" + b).orElse("");
 
         Properties defaultProperties = FileTemplateManager.getInstance(project).getDefaultProperties();
         Properties properties = new Properties(defaultProperties);
         properties.setProperty(FileTemplate.ATTRIBUTE_CLASS_NAME, srcClass.getQualifiedName());
-        properties.setProperty("DEPENDENCIES", dependencies);
+        properties.setProperty("DEPENDENCIES", "".equals(dependencies) ? "" : dependencies + "\n\n");
         properties.setProperty("VARS", variables);
 
         PsiElement psiElement = FileTemplateUtil.createFromTemplate(fileTemplate, srcClass.getName(), properties, targetDirectory);

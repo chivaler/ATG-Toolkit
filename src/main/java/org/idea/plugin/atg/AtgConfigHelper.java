@@ -23,6 +23,7 @@ import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiPackage;
 import org.idea.plugin.atg.config.AtgToolkitConfig;
+import org.jetbrains.annotations.NotNull;
 
 public class AtgConfigHelper {
 
@@ -30,14 +31,19 @@ public class AtgConfigHelper {
     }
 
     public static String getComponentConfigDirectory(Module module, PsiPackage srcPackage) {
+        String configRoot = getConfigRoot(module);
+        String packageDir = srcPackage.getQualifiedName().replace('.', '/');
+        return configRoot + packageDir;
+    }
+
+    @NotNull
+    public static String getConfigRoot(Module module) {
         VirtualFile moduleDefaultRootFile = ModuleRootManager.getInstance(module).getContentEntries()[0].getFile();
         String moduleDefaultRoot = moduleDefaultRootFile != null ? moduleDefaultRootFile.getCanonicalPath() : "";
 
         AtgToolkitConfig atgToolkitConfig = AtgToolkitConfig.getInstance(module.getProject());
         String relativeConfigPath = atgToolkitConfig != null ? atgToolkitConfig.getRelativeConfigPath() : "";
-        String packageDir = srcPackage.getQualifiedName().replace('.', '/');
-        String targetDirStr = moduleDefaultRoot + relativeConfigPath + packageDir;
-        return targetDirStr;
+        return moduleDefaultRoot + relativeConfigPath;
     }
 
     public static PsiDirectory getComponentConfigPsiDirectory(Module module, PsiPackage srcPackage) {

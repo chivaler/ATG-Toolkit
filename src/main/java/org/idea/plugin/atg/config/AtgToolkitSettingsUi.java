@@ -10,13 +10,13 @@ import javax.swing.*;
 import java.awt.*;
 
 public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
-    private JPanel rootPanel;
-    private JPanel controlsPanel;
-    private JLabel configRelativePathLabel;
-    private JLabel ignoredClassesLabel;
-    private JTextField configRelativePathField;
-    private JTextField ignoredClassesField;
-    private JCheckBox injectUnambiguousPropertiesCheckBox;
+    private final JPanel rootPanel;
+    private final JPanel controlsPanel;
+    private final JLabel configRelativePathLabel;
+    private final JLabel ignoredClassesLabel;
+    private final JTextField configRelativePathField;
+    private final JTextField ignoredClassesField;
+    private final JCheckBox injectUnambiguousPropertiesCheckBox;
 
     public AtgToolkitSettingsUi() {
         rootPanel = new JPanel(new VerticalLayout(0));

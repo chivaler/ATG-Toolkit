@@ -1,6 +1,4 @@
 \$class=${CLASS_NAME}
 \$scope=global
 
-${DEPENDENCIES}
-
-${VARS}
+${DEPENDENCIES}${VARS}

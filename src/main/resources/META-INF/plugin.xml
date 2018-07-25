@@ -2,7 +2,7 @@
     <id>org.idea.plugin.atg</id>
     <name>ATG Toolkit (alpha)</name>
     <id>atg-toolkit</id>
-    <version>0.3</version>
+    <version>0.4</version>
     <vendor email="chivaler@gmail.com">Igor Pidgurskyi</vendor>
 
     <description><![CDATA[
@@ -30,6 +30,8 @@
         <projectConfigurable parentId="language" instance="org.idea.plugin.atg.config.AtgToolkitConfigurable"
                                  id="atg-toolkit" displayName="ATG Toolkit"/>
         <projectService serviceImplementation="org.idea.plugin.atg.config.AtgToolkitConfig"/>
+        <completion.contributor language="Properties" implementationClass="org.idea.plugin.atg.completion.ComponentPropertiesCompletionContributor"
+                                id="atgPropertiesCompletion" order="first"/>
     </extensions>
 
 </idea-plugin>
