@@ -18,7 +18,7 @@ public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
     private JTextField ignoredClassesField;
     private JCheckBox injectUnambiguousPropertiesCheckBox;
 
-    public AtgToolkitSettingsUi(AtgToolkitConfig atgToolkitConfig) {
+    public AtgToolkitSettingsUi() {
         rootPanel = new JPanel(new VerticalLayout(0));
         controlsPanel = new JPanel(new GridBagLayout());
 
@@ -78,7 +78,13 @@ public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
 
     @Override
     public void apply(@NotNull AtgToolkitConfig atgToolkitConfig) {
-        atgToolkitConfig.setRelativeConfigPath(configRelativePathField.getText());
+        String relativeConfigPath = configRelativePathField.getText().replaceAll("\\s", "");
+        if (!relativeConfigPath.startsWith("/")) relativeConfigPath = "/" + relativeConfigPath;
+        if (!relativeConfigPath.endsWith("/")) relativeConfigPath = relativeConfigPath + "/";
+
+        configRelativePathField.setText(relativeConfigPath);
+
+        atgToolkitConfig.setRelativeConfigPath(relativeConfigPath);
         atgToolkitConfig.setIgnoredClassesForSetters(ignoredClassesField.getText());
         atgToolkitConfig.setInjectUnambiguousProperties(injectUnambiguousPropertiesCheckBox.isSelected());
     }

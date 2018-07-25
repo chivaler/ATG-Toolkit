@@ -15,9 +15,10 @@ import java.util.Objects;
 public class AtgToolkitConfig implements PersistentStateComponent<AtgToolkitConfig> {
     public static final String ATG_TOOLKIT_ID = "atg-toolkit";
     private static final String DEFAULT_RELATIVE_CONFIG_PATH = "/src/main/config/";
+    private static final String DEFAULT_IGNORED_PARENTS = "atg.nucleus.*";
 
     @SuppressWarnings("WeakerAccess")
-    public String ignoredClassesForSetters = "";
+    public String ignoredClassesForSetters = DEFAULT_IGNORED_PARENTS;
     @SuppressWarnings("WeakerAccess")
     public String relativeConfigPath = DEFAULT_RELATIVE_CONFIG_PATH;
     @SuppressWarnings("WeakerAccess")

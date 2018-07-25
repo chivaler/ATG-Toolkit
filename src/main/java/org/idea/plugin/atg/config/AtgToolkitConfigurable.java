@@ -21,6 +21,6 @@ public class AtgToolkitConfigurable extends ConfigurableBase<AtgToolkitSettingsU
 
     @Override
     protected AtgToolkitSettingsUi createUi() {
-        return new AtgToolkitSettingsUi(this.atgToolkitConfig);
+        return new AtgToolkitSettingsUi();
     }
 }
