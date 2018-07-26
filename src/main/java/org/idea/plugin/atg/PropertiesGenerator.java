@@ -24,15 +24,16 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.fileEditor.ex.IdeDocumentHistory;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtilCore;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.source.PostprocessReformattingAspect;
 import com.intellij.util.IncorrectOperationException;
-import org.apache.commons.lang.StringUtils;
-import org.idea.plugin.atg.config.AtgToolkitConfig;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 
 import javax.annotation.Nullable;
@@ -40,13 +41,22 @@ import java.util.List;
 import java.util.Properties;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class PropertiesGenerator {
 
     private PropertiesGenerator() {
+    }
+
+    public static void generatePropertiesFile(final PsiClass srcClass) {
+        Project project = srcClass.getProject();
+        PsiDirectory srcDir = srcClass.getContainingFile().getContainingDirectory();
+        PsiPackage srcPackage = JavaDirectoryService.getInstance().getPackage(srcDir);
+        Module module = ModuleUtilCore.findModuleForFile(srcClass.getContainingFile());
+        if (module == null || srcPackage == null) return;
+
+        CommandProcessor.getInstance().executeCommand(project, () -> DumbService.getInstance(project).withAlternativeResolveEnabled(() ->
+                PropertiesGenerator.generatePropertiesFile(project, module, srcClass, srcPackage)), AtgToolkitBundle.message("intentions.create.component"), null);
+
     }
 
     @Nullable
@@ -69,13 +79,13 @@ public class PropertiesGenerator {
                         }
 
                     } catch (IncorrectOperationException e) {
-                        Notification notification = new Notification(AtgModuleBundle.message("notifications.groupId"),
-                                AtgModuleBundle.message("intentions.create.component.error"),
+                        Notification notification = new Notification(AtgToolkitBundle.message("notifications.groupId"),
+                                AtgToolkitBundle.message("intentions.create.component.error"),
                                 e.getMessage(), NotificationType.INFORMATION);
                         Notifications.Bus.notify(notification, project);
                     } catch (Exception e) {
-                        Notification notification = new Notification(AtgModuleBundle.message("notifications.groupId"),
-                                AtgModuleBundle.message("intentions.create.component.error"),
+                        Notification notification = new Notification(AtgToolkitBundle.message("notifications.groupId"),
+                                AtgToolkitBundle.message("intentions.create.component.error"),
                                 e.getMessage(), NotificationType.ERROR);
                         Notifications.Bus.notify(notification, project);
                     }
@@ -91,24 +101,6 @@ public class PropertiesGenerator {
         FileTemplate fileTemplate = FileTemplateManager.getInstance(project).getCodeTemplate(templateName);
         fileTemplate.setReformatCode(false);
 
-        AtgToolkitConfig atgToolkitConfig = AtgToolkitConfig.getInstance(project);
-        String ignoredClassesForSetters = atgToolkitConfig != null ? atgToolkitConfig.getIgnoredClassesForSetters() : "";
-        String[] ignoredClassesForSettersArray = ignoredClassesForSetters
-                .replace(".", "\\.")
-                .replace("?", ".?")
-                .replace("*", ".*?")
-                .split("[,;]");
-        List<Pattern> ignoredClassPatterns = Stream.of(ignoredClassesForSettersArray).map(Pattern::compile).collect(Collectors.toList());
-
-        Predicate<PsiMethod> isNotIgnoredMethod = psiMethod -> {
-            for (Pattern classNamePattern : ignoredClassPatterns) {
-                PsiClass containingClass = psiMethod.getContainingClass();
-                String className = containingClass != null ? containingClass.getQualifiedName() : "";
-                if (StringUtils.isNotBlank(className) && classNamePattern.matcher(className).matches()) return false;
-            }
-            return true;
-        };
-
         Predicate<PsiMethod> treatAsDependencySetter = m -> {
             JvmType parameterType = m.getParameters()[0].getType();
             if (!(parameterType instanceof PsiClassType)) return false;
@@ -121,7 +113,7 @@ public class PropertiesGenerator {
         };
 
         Function<PsiMethod, String> populatePropertiesWithSuggestedComponents = psiMethod -> {
-            String variableName = AtgComponentUtil.convertSetterNameToVariableName(psiMethod);
+            String variableName = AtgComponentUtil.convertSetterToVariableName(psiMethod);
             String dependencyClassName = AtgComponentUtil.getClassNameForSetterMethod(psiMethod);
             List<String> possibleComponents = AtgComponentUtil.suggestComponentsByClassName(dependencyClassName, psiMethod.getProject());
             if (possibleComponents.size() == 1) {
@@ -133,14 +125,12 @@ public class PropertiesGenerator {
         List<PsiMethod> allSetters = AtgComponentUtil.getSettersOfClass(srcClass);
 
         String dependencies = allSetters.stream()
-                .filter(isNotIgnoredMethod)
                 .filter(treatAsDependencySetter)
                 .map(populatePropertiesWithSuggestedComponents)
                 .sorted()
                 .reduce((a, b) -> a + "\n" + b).orElse("");
 
         String variables = allSetters.stream()
-                .filter(isNotIgnoredMethod)
                 .filter(treatAsDependencySetter.negate())
                 .map(populatePropertiesWithSuggestedComponents)
                 .sorted()
@@ -149,7 +139,7 @@ public class PropertiesGenerator {
         Properties defaultProperties = FileTemplateManager.getInstance(project).getDefaultProperties();
         Properties properties = new Properties(defaultProperties);
         properties.setProperty(FileTemplate.ATTRIBUTE_CLASS_NAME, srcClass.getQualifiedName());
-        properties.setProperty("DEPENDENCIES", "".equals(dependencies) ? "" : dependencies + "\n\n");
+        properties.setProperty("DEPENDENCIES", "".equals(dependencies) ? "" : "\n" + dependencies + "\n");
         properties.setProperty("VARS", variables);
 
         PsiElement psiElement = FileTemplateUtil.createFromTemplate(fileTemplate, srcClass.getName(), properties, targetDirectory);

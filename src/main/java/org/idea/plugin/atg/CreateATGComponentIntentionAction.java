@@ -15,11 +15,9 @@
 package org.idea.plugin.atg;
 
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
-import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
-import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.JavaProjectRootsUtil;
 import com.intellij.psi.*;
@@ -32,7 +30,7 @@ public class CreateATGComponentIntentionAction extends PsiElementBaseIntentionAc
     @Override
     @NotNull
     public String getText() {
-        return AtgModuleBundle.message("intentions.create.component");
+        return AtgToolkitBundle.message("intentions.create.component");
     }
 
     @Override
@@ -69,14 +67,7 @@ public class CreateATGComponentIntentionAction extends PsiElementBaseIntentionAc
 
         if (srcClass == null) return;
 
-        PsiDirectory srcDir = element.getContainingFile().getContainingDirectory();
-        PsiPackage srcPackage = JavaDirectoryService.getInstance().getPackage(srcDir);
-
-        Module module = ModuleUtilCore.findModuleForFile(element.getContainingFile());
-        if (module == null || !project.equals(module.getProject())) return;
-
-        CommandProcessor.getInstance().executeCommand(project, () -> DumbService.getInstance(project).withAlternativeResolveEnabled(() ->
-                PropertiesGenerator.generatePropertiesFile(project, module, srcClass, srcPackage)), AtgModuleBundle.message("intentions.create.component"), null);
+        PropertiesGenerator.generatePropertiesFile(srcClass);
     }
 
     @Override

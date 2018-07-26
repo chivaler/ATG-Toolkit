@@ -9,8 +9,6 @@ import com.intellij.util.xmlb.XmlSerializerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
-
 @State(name = "AtgToolkitConfig", storages = {@Storage("atg-toolkit.xml")})
 public class AtgToolkitConfig implements PersistentStateComponent<AtgToolkitConfig> {
     public static final String ATG_TOOLKIT_ID = "atg-toolkit";
@@ -21,8 +19,6 @@ public class AtgToolkitConfig implements PersistentStateComponent<AtgToolkitConf
     public String ignoredClassesForSetters = DEFAULT_IGNORED_PARENTS;
     @SuppressWarnings("WeakerAccess")
     public String relativeConfigPath = DEFAULT_RELATIVE_CONFIG_PATH;
-    @SuppressWarnings("WeakerAccess")
-    public boolean injectUnambiguousProperties = true;
 
     @Nullable
     @Override
@@ -56,29 +52,5 @@ public class AtgToolkitConfig implements PersistentStateComponent<AtgToolkitConf
 
     public void setRelativeConfigPath(String relativeConfigPath) {
         this.relativeConfigPath = relativeConfigPath;
-    }
-
-    public boolean isInjectUnambiguousProperties() {
-        return injectUnambiguousProperties;
-    }
-
-    public void setInjectUnambiguousProperties(boolean injectUnambiguousProperties) {
-        this.injectUnambiguousProperties = injectUnambiguousProperties;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AtgToolkitConfig that = (AtgToolkitConfig) o;
-        return injectUnambiguousProperties == that.injectUnambiguousProperties &&
-                Objects.equals(ignoredClassesForSetters, that.ignoredClassesForSetters) &&
-                Objects.equals(relativeConfigPath, that.relativeConfigPath);
-    }
-
-    @Override
-    public int hashCode() {
-
-        return Objects.hash(ignoredClassesForSetters, relativeConfigPath, injectUnambiguousProperties);
     }
 }

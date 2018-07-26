@@ -51,9 +51,10 @@ public class AtgConfigHelper {
         String targetDirStr = getComponentConfigDirectory(module, srcPackage);
 
         return WriteCommandAction.writeCommandAction(module.getProject())
-                .withName(AtgModuleBundle.message("create.directory.command"))
+                .withName(AtgToolkitBundle.message("create.directory.command"))
                 .compute(() -> DirectoryUtil.mkdirs(psiManager, targetDirStr));
     }
+
 
 
 }

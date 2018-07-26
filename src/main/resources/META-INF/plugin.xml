@@ -1,6 +1,6 @@
 <idea-plugin url="https://github.com/chivaler/ATG-Toolkit">
     <id>org.idea.plugin.atg</id>
-    <name>ATG Toolkit (alpha)</name>
+    <name>ATG Toolkit (Beta)</name>
     <id>atg-toolkit</id>
     <version>0.4</version>
     <vendor email="chivaler@gmail.com">Igor Pidgurskyi</vendor>
@@ -13,14 +13,18 @@
         0.1 Created intention on a non-abstract java class "Create ATG component"
         0.2 Created plugin settings page.
             Configurable excluded classes for collecting setters
-        0.3 During creating component values are guessed based on same properties in project
-            List of properties is sorted as "dependencies first"
+        0.3 Rework of guessing components based on classes
+        0.4 Go to components action "Alt+P"
+            Guess of missing properties in files
+            Guess of dependencies values based on dependencies classes
+            Added references for components and properties
     ]]>
+
     </change-notes>
     <depends>com.intellij.properties</depends>
 
     <idea-version since-build="145.0"/>
-    <resource-bundle>org.idea.plugin.atg.AtgModuleBundle</resource-bundle>
+    <resource-bundle>org.idea.plugin.atg.AtgToolkitBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
         <intentionAction>
@@ -28,10 +32,25 @@
             <category>Java/Declaration</category>
         </intentionAction>
         <projectConfigurable parentId="language" instance="org.idea.plugin.atg.config.AtgToolkitConfigurable"
-                                 id="atg-toolkit" displayName="ATG Toolkit"/>
+                             id="atg-toolkit" displayName="ATG Toolkit"/>
         <projectService serviceImplementation="org.idea.plugin.atg.config.AtgToolkitConfig"/>
-        <completion.contributor language="Properties" implementationClass="org.idea.plugin.atg.completion.ComponentPropertiesCompletionContributor"
+        <completion.contributor language="Properties"
+                                implementationClass="org.idea.plugin.atg.completion.ComponentPropertiesCompletionContributor"
                                 id="atgPropertiesCompletion" order="first"/>
+        <psi.referenceContributor language="Properties"
+                                  implementation="org.idea.plugin.atg.psi.AtgReferenceContributor"/>
+        <gotoRelatedProvider implementation="org.idea.plugin.atg.navigation.GoToComponentRelatedProvider"/>
     </extensions>
+
+    <actions>
+        <action id="GoToComponents" class="org.idea.plugin.atg.navigation.GoToComponentCodeAction"
+                text="Go to Components..."
+                description="Go to all components based on the class">
+            <add-to-group group-id="GoToCodeGroup" anchor="after" relative-to-action="GotoTest"/>
+            <add-to-group group-id="EditorLangPopupMenu" anchor="after" relative-to-action="GotoTest"/>
+            <keyboard-shortcut first-keystroke="alt P" keymap="$default"/>
+        </action>
+    </actions>
+
 
 </idea-plugin>

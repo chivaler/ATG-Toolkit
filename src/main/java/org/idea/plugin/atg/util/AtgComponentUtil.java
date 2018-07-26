@@ -6,8 +6,10 @@ import com.intellij.lang.jvm.types.JvmType;
 import com.intellij.lang.properties.IProperty;
 import com.intellij.lang.properties.PropertiesImplUtil;
 import com.intellij.lang.properties.psi.PropertiesFile;
+import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.lang.properties.psi.impl.PropertyImpl;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -17,11 +19,15 @@ import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import org.apache.commons.lang.StringUtils;
 import org.idea.plugin.atg.AtgConfigHelper;
+import org.idea.plugin.atg.config.AtgToolkitConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class AtgComponentUtil {
 
@@ -39,6 +45,22 @@ public class AtgComponentUtil {
         GlobalSearchScope scope = GlobalSearchScope.allScope(project);
         if (module != null) scope = GlobalSearchScope.moduleWithDependenciesScope(module);
         return JavaPsiFacade.getInstance(project).findClass(className, scope);
+    }
+
+
+    @NotNull
+    public static Collection<PsiElement> getApplicableComponentsByName(@NotNull String componentName, @NotNull Project project) {
+        return Arrays.stream(ModuleManager.getInstance(project).getModules())
+                .map(AtgConfigHelper::getConfigRoot)
+                .map(path -> LocalFileSystem.getInstance().findFileByPath(path))
+                .filter(Objects::nonNull)
+                .filter(VirtualFile::isDirectory)
+                .map(root -> VfsUtilCore.findRelativeFile(componentName + ".properties", root))
+                .filter(Objects::nonNull)
+                .filter(VirtualFile::exists)
+                .map(virtualFile -> PsiManager.getInstance(project).findFile(virtualFile))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     @Nullable
@@ -98,11 +120,26 @@ public class AtgComponentUtil {
     }
 
     @NotNull
+    public static List<PsiFile> suggestComponentsByClass(@NotNull PsiClass srcClass) {
+        Project project = srcClass.getProject();
+        String className = srcClass.getQualifiedName();
+        return PropertiesImplUtil.findPropertiesByKey(project, "$class").stream()
+                .filter(Objects::nonNull)
+                .filter(p -> p.getValue() != null && p.getValue().equals(className))
+                .map(IProperty::getPropertiesFile)
+                .filter(PropertiesFileImpl.class::isInstance)
+                .map(p -> (PropertiesFileImpl) p)
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
+    @NotNull
     public static List<PsiMethod> getSettersOfClass(@NotNull PsiClass psiClass) {
         return Arrays.stream(psiClass.getAllMethods())
                 .filter(m -> m.hasModifier(JvmModifier.PUBLIC))
                 .filter(method -> method.getName().startsWith("set"))
                 .filter(m -> m.getParameters().length == 1)
+                .filter(new IsMethodIgnored(psiClass.getProject()))
                 .collect(Collectors.toList());
     }
 
@@ -112,13 +149,38 @@ public class AtgComponentUtil {
     }
 
     @NotNull
-    public static String convertSetterNameToVariableName(@NotNull PsiMethod setterMethod) {
+    public static String convertSetterToVariableName(@NotNull PsiMethod setterMethod) {
         return convertSetterNameToVariableName(setterMethod.getName());
     }
 
     @NotNull
     public static String convertSetterNameToVariableName(@NotNull String methodName) {
         return methodName.substring(3, 4).toLowerCase() + methodName.substring(4);
+    }
+
+    static class IsMethodIgnored implements Predicate<PsiMethod> {
+        private final List<Pattern> ignoredClassPatterns;
+
+        IsMethodIgnored(Project project) {
+            AtgToolkitConfig atgToolkitConfig = org.idea.plugin.atg.config.AtgToolkitConfig.getInstance(project);
+            String ignoredClassesForSetters = atgToolkitConfig != null ? atgToolkitConfig.getIgnoredClassesForSetters() : "";
+            String[] ignoredClassesForSettersArray = ignoredClassesForSetters
+                    .replace(".", "\\.")
+                    .replace("?", ".?")
+                    .replace("*", ".*?")
+                    .split("[,;]");
+            ignoredClassPatterns = Stream.of(ignoredClassesForSettersArray).map(Pattern::compile).collect(Collectors.toList());
+        }
+
+        @Override
+        public boolean test(PsiMethod psiMethod) {
+            for (Pattern classNamePattern : ignoredClassPatterns) {
+                PsiClass containingClass = psiMethod.getContainingClass();
+                String className = containingClass != null ? containingClass.getQualifiedName() : "";
+                if (StringUtils.isNotBlank(className) && classNamePattern.matcher(className).matches()) return false;
+            }
+            return true;
+        }
     }
 
 }
