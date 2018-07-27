@@ -16,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,7 +40,7 @@ public class AtgReferenceContributor extends PsiReferenceContributor {
                             while (matcher.find()) {
                                 int start = matcher.start(0);
                                 int length = matcher.group(0).length();
-                                results.add(new AtgComponentReference(element, new TextRange(start, start + length)));
+                                results.add(new AtgComponentReference(propertyValue, new TextRange(start, start + length)));
                             }
                             return results.toArray(new PsiReference[0]);
 
@@ -73,14 +74,14 @@ public class AtgReferenceContributor extends PsiReferenceContributor {
                     public PsiReference[] getReferencesByElement(@NotNull PsiElement element,
                                                                  @NotNull ProcessingContext
                                                                          context) {
-                        PropertyKeyImpl property = (PropertyKeyImpl) element;
-                        String key = property.getText();
+                        PropertyKeyImpl propertyKey = (PropertyKeyImpl) element;
+                        String key = propertyKey.getText();
                         if (!CompletionUtilCore.DUMMY_IDENTIFIER_TRIMMED.equals(key) && !key.startsWith("$")) {
                             PropertiesFileImpl properties = PsiTreeUtil.getTopmostParentOfType(element, PropertiesFileImpl.class);
-                            PsiClass componentClass = AtgComponentUtil.getComponentClass(properties);
-                            if (componentClass != null) {
+                            Optional<PsiClass> componentClass = AtgComponentUtil.getComponentClass(properties);
+                            if (componentClass.isPresent()) {
                                 return new PsiReference[]{
-                                        new JavaPropertyReference(element, componentClass, new TextRange(0, key.length()))
+                                        new JavaPropertyReference(propertyKey, componentClass.get(), new TextRange(0, key.length()))
                                 };
                             }
                         }

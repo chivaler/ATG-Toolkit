@@ -20,9 +20,12 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.JavaProjectRootsUtil;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.IncorrectOperationException;
+import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
 public class CreateATGComponentIntentionAction extends PsiElementBaseIntentionAction {
@@ -42,11 +45,7 @@ public class CreateATGComponentIntentionAction extends PsiElementBaseIntentionAc
     @Override
     public boolean isAvailable(@NotNull Project project, Editor editor, @NotNull PsiElement element) {
         PsiClass psiClass = PsiTreeUtil.getTopmostParentOfType(element, PsiClass.class);
-        if (psiClass == null) return false;
-        if (psiClass.isAnnotationType() || psiClass.isInterface() || psiClass instanceof PsiAnonymousClass)
-            return false;
-        PsiModifierList modifierList = psiClass.getModifierList();
-        if (modifierList != null && modifierList.hasModifierProperty(PsiModifier.ABSTRACT)) return false;
+        if (!AtgComponentUtil.isApplicableToHaveComponents(psiClass)) return false;
 
         PsiFile file = psiClass.getContainingFile();
         if (file.getContainingDirectory() == null || JavaProjectRootsUtil.isOutsideJavaSourceRoot(file)) return false;

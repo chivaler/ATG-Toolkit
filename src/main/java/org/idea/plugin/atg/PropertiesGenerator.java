@@ -114,8 +114,8 @@ public class PropertiesGenerator {
 
         Function<PsiMethod, String> populatePropertiesWithSuggestedComponents = psiMethod -> {
             String variableName = AtgComponentUtil.convertSetterToVariableName(psiMethod);
-            String dependencyClassName = AtgComponentUtil.getClassNameForSetterMethod(psiMethod);
-            List<String> possibleComponents = AtgComponentUtil.suggestComponentsByClassName(dependencyClassName, psiMethod.getProject());
+            PsiClass dependencyClass = AtgComponentUtil.getClassForSetterMethod(psiMethod);
+            List<String> possibleComponents = AtgComponentUtil.suggestComponentsNamesByClass(dependencyClass);
             if (possibleComponents.size() == 1) {
                 return variableName + "=" + possibleComponents.get(0);
             }

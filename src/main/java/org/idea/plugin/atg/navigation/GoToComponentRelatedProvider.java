@@ -20,7 +20,7 @@ public class GoToComponentRelatedProvider extends GotoRelatedProvider {
         PsiFile file = CommonDataKeys.PSI_FILE.getData(context);
         if (!(file instanceof PsiClass)) return Collections.emptyList();
 
-        return AtgComponentUtil.suggestComponentsByClass((PsiClass) file).stream()
+        return AtgComponentUtil.suggestComponentsByClassWithInheritors((PsiClass) file).stream()
                 .map(c -> new GotoRelatedItem(c, "Components"))
                 .collect(Collectors.toList());
     }

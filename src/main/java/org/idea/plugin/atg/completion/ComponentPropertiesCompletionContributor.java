@@ -30,8 +30,10 @@ import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 
@@ -53,8 +55,10 @@ public class ComponentPropertiesCompletionContributor extends CompletionContribu
             if (position instanceof PropertyImpl) {
                 String key = ((PropertyImpl) position).getKey();
                 if (StringUtils.isNotBlank(key) && !key.startsWith("$") && !CompletionUtilCore.DUMMY_IDENTIFIER_TRIMMED.equals(key)) {
-                    String dependencyClassName = AtgComponentUtil.getClassNameForComponentDependency((PropertyImpl) position);
-                    AtgComponentUtil.suggestComponentsByClassName(dependencyClassName, position.getProject()).stream()
+                    PsiClass dependencyClass = AtgComponentUtil.getClassForComponentDependency((PropertyImpl) position);
+                    AtgComponentUtil.suggestComponentsByClassWithInheritors(dependencyClass).stream()
+                            .map(AtgComponentUtil::getComponentCanonicalName)
+                            .flatMap(o -> o.map(Stream::of).orElseGet(Stream::empty))
                             .map(LookupElementBuilder::create)
                             .forEach(result::addElement);
                     result.stopHere();
@@ -74,15 +78,15 @@ public class ComponentPropertiesCompletionContributor extends CompletionContribu
                 String key = ((PropertyImpl) position).getKey();
                 if (CompletionUtilCore.DUMMY_IDENTIFIER_TRIMMED.equals(key)) {
                     PsiFile propertyFile = position.getContainingFile();
-                    PsiClass componentClass = AtgComponentUtil.getComponentClass(propertyFile);
-                    if (componentClass == null) return;
+                    Optional<PsiClass> componentClass = AtgComponentUtil.getComponentClass(propertyFile);
+                    if (!componentClass.isPresent()) return;
 
                     Set<String> existFields = ((PropertiesFile) propertyFile).getProperties().stream()
                             .map(IProperty::getKey)
                             .filter(Objects::nonNull)
                             .collect(Collectors.toSet());
 
-                    AtgComponentUtil.getSettersOfClass(componentClass).stream()
+                    AtgComponentUtil.getSettersOfClass(componentClass.get()).stream()
                             .map(PsiMethod::getName)
                             .sorted()
                             .map(AtgComponentUtil::convertSetterNameToVariableName)

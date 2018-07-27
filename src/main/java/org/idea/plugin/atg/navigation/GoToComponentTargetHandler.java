@@ -22,10 +22,11 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.pom.Navigatable;
-import com.intellij.psi.*;
-import com.intellij.psi.impl.source.PsiClassImpl;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.util.PsiUtilCore;
-import com.intellij.testIntegration.TestFinderHelper;
 import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.PropertiesGenerator;
 import org.idea.plugin.atg.util.AtgComponentUtil;
@@ -36,6 +37,11 @@ import javax.swing.*;
 import java.util.*;
 
 public class GoToComponentTargetHandler extends GotoTargetHandler {
+    @NotNull
+    public static PsiElement getSelectedElement(Editor editor, PsiFile file) {
+        return PsiUtilCore.getElementAtOffset(file, editor.getCaretModel().getOffset());
+    }
+
     @Override
     protected String getFeatureUsedKey() {
         return "navigation.goto.component";
@@ -44,20 +50,14 @@ public class GoToComponentTargetHandler extends GotoTargetHandler {
     @Override
     @Nullable
     protected GotoData getSourceAndTargetElements(final Editor editor, final PsiFile file) {
-        PsiElement selectedElement = getSelectedElement(editor, file);
-        PsiElement sourceElement = TestFinderHelper.findSourceElement(selectedElement);
-        if (sourceElement == null) return null;
         if (!(file instanceof PsiJavaFile)) return null;
 
         Optional<PsiClass> srcClass = Arrays.stream(((PsiJavaFile) file).getClasses())
-                .filter(PsiClassImpl.class::isInstance)
-                .filter(c -> c.hasModifierProperty(PsiModifier.PUBLIC))
+                .filter(AtgComponentUtil::isApplicableToHaveComponents)
                 .findFirst();
-        Collection<PsiFile> candidates = Collections.emptyList();
-        List<AdditionalAction> actions = Collections.emptyList();
         if (srcClass.isPresent()) {
-            candidates = AtgComponentUtil.suggestComponentsByClass(srcClass.get());
-            actions = Collections.singletonList(new AdditionalAction() {
+            Collection<PsiFile> candidates = new ArrayList<>(AtgComponentUtil.suggestComponentsByClass(srcClass.get()));
+            List<AdditionalAction> actions = Collections.singletonList(new AdditionalAction() {
                 @NotNull
                 @Override
                 public String getText() {
@@ -74,15 +74,11 @@ public class GoToComponentTargetHandler extends GotoTargetHandler {
                     PropertiesGenerator.generatePropertiesFile(srcClass.get());
                 }
             });
+            return new GotoData(srcClass.get(), PsiUtilCore.toPsiElementArray(candidates), actions);
         }
 
 
-        return new GotoData(sourceElement, PsiUtilCore.toPsiElementArray(candidates), actions);
-    }
-
-    @NotNull
-    public static PsiElement getSelectedElement(Editor editor, PsiFile file) {
-        return PsiUtilCore.getElementAtOffset(file, editor.getCaretModel().getOffset());
+        return null;
     }
 
     @Override

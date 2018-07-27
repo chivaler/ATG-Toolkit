@@ -9,8 +9,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaFile;
-import com.intellij.psi.PsiModifier;
-import com.intellij.psi.impl.source.PsiClassImpl;
 import com.intellij.psi.util.PsiUtilBase;
 import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.util.AtgComponentUtil;
@@ -39,11 +37,10 @@ public class GoToComponentCodeAction extends BaseCodeInsightAction {
         PsiFile psiFile = PsiUtilBase.getPsiFileInEditor(editor, project);
         if (!(psiFile instanceof PsiJavaFile)) return;
         Optional<PsiClass> srcClass = Arrays.stream(((PsiJavaFile) psiFile).getClasses())
-                .filter(PsiClassImpl.class::isInstance)
-                .filter(c -> c.hasModifierProperty(PsiModifier.PUBLIC))
-                .findFirst();
+                .filter(AtgComponentUtil::isApplicableToHaveComponents)
+                .findAny();
 
-        if (srcClass.isPresent() && !AtgComponentUtil.suggestComponentsByClass(srcClass.get()).isEmpty()) {
+        if (srcClass.isPresent()) {
             presentation.setText(AtgToolkitBundle.message("navigation.goto.component.text"));
             presentation.setDescription(AtgToolkitBundle.message("navigation.goto.component.description"));
             presentation.setEnabledAndVisible(true);
