@@ -21,4 +21,4 @@ intellij {
 }
 
 group 'org.idea.plugin.atg'
-version '0.4' // Plugin version
+version '0.5' // Plugin version

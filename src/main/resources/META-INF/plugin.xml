@@ -7,18 +7,20 @@
 
     <description><![CDATA[
       Plugin simplifies development of Oracle Commerce modules (former ATG)<br>
+      Available navigation and  suggestions for Nucleus IoC components
     ]]></description>
 
     <change-notes><![CDATA[
-        0.1 Created intention on a non-abstract java class "Create ATG component"
-        0.2 Created plugin settings page.
-            Configurable excluded classes for collecting setters
-        0.3 Rework of guessing components based on classes
-        0.4 Go to components action "Alt+P"
-            Guess of missing properties in files
-            Guess of dependencies values based on dependencies classes
-            Added references for components and properties
-        0.5 Renaming/moving of components affects all links to them
+        0.1 Created intention on a non-abstract java class "Create ATG component"<br>
+        0.2 Created plugin settings page.<br>
+            Configurable excluded classes for collecting setters<br>
+        0.3 Rework of guessing components based on classes<br>
+        0.4 Go to components action "Alt+P"<br>
+            Guess of missing properties in files<br>
+            Guess of dependencies values based on dependencies classes<br>
+            Added references for components and properties<br>
+        0.5 Renaming/moving of components affects all links to them<br>
+            Classes of components/properties are shown in suggestions lookup<br>
     ]]>
 
     </change-notes>

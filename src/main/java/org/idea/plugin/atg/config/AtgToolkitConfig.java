@@ -33,9 +33,10 @@ public class AtgToolkitConfig implements PersistentStateComponent<AtgToolkitConf
         XmlSerializerUtil.copyBean(state, this);
     }
 
-    @Nullable
+    @NotNull
     public static AtgToolkitConfig getInstance(Project project) {
-        return ServiceManager.getService(project, AtgToolkitConfig.class);
+        AtgToolkitConfig service = ServiceManager.getService(project, AtgToolkitConfig.class);
+        return service != null ? service : new AtgToolkitConfig();
     }
 
     public String getIgnoredClassesForSetters() {

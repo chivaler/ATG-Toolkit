@@ -14,8 +14,8 @@ import org.apache.commons.lang.StringUtils;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -33,15 +33,13 @@ public class AtgComponentReference extends PsiPolyVariantReferenceBase<PropertyV
         Project project = myElement.getProject();
         String componentName = key.contains(".") ? key.substring(0, key.lastIndexOf('.')) : key;
         String componentProperty = key.contains(".") ? key.substring(key.lastIndexOf('.') + 1) : "";
-        Collection<PsiElement> applicableComponents = AtgComponentUtil.getApplicableComponentsByName(componentName, project);
+        Collection<PropertiesFileImpl> applicableComponents = AtgComponentUtil.getApplicableComponentsByName(componentName, project);
         Collection<PsiElement> result;
         if (StringUtils.isBlank(componentProperty)) {
-            result = applicableComponents;
+            result = new ArrayList<>(applicableComponents);
         } else {
             result = applicableComponents.stream()
-                    .filter(PropertiesFileImpl.class::isInstance)
-                    .map(psiFile -> ((PropertiesFileImpl) psiFile).findPropertyByKey(componentProperty))
-                    .filter(Objects::nonNull)
+                    .map(psiFile -> psiFile.findPropertyByKey(componentProperty))
                     .filter(PropertyImpl.class::isInstance)
                     .map(p -> (PropertyImpl) p)
                     .collect(Collectors.toList());

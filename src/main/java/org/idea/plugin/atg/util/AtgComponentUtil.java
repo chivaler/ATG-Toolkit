@@ -52,8 +52,8 @@ public class AtgComponentUtil {
     }
 
     @NotNull
-    public static Collection<PsiElement> getApplicableComponentsByName(@NotNull String componentName,
-                                                                       @NotNull Project project) {
+    public static Collection<PropertiesFileImpl> getApplicableComponentsByName(@NotNull String componentName,
+                                                                               @NotNull Project project) {
         return Arrays.stream(ModuleManager.getInstance(project)
                 .getModules())
                 .map(AtgConfigHelper::getConfigRoot)
@@ -66,12 +66,13 @@ public class AtgComponentUtil {
                 .filter(VirtualFile::exists)
                 .map(virtualFile -> PsiManager.getInstance(project)
                         .findFile(virtualFile))
-                .filter(Objects::nonNull)
+                .filter(PropertiesFileImpl.class::isInstance)
+                .map(f -> (PropertiesFileImpl) f)
                 .collect(Collectors.toList());
     }
 
     @NotNull
-    public static Optional<String> getComponentCanonicalName(@NotNull PropertiesFileImpl file) {
+    public static Optional<String> getComponentCanonicalName(@NotNull PropertiesFile file) {
         return getComponentCanonicalName(file.getVirtualFile(), file.getProject());
     }
 
@@ -98,37 +99,53 @@ public class AtgComponentUtil {
     }
 
     @Nullable
-    @SuppressWarnings("OptionalIsPresent")
-    public static PsiClass getClassForComponentDependency(@NotNull PropertyImpl property) {
-        PsiFile propertyFile = property.getContainingFile();
-        String key = property.getKey();
-        if (StringUtils.isBlank(key) || key.startsWith("$")) {
-            return null;
-        }
-        Optional<PsiClass> srcClass = getComponentClass(propertyFile);
-        if (!srcClass.isPresent()) {
-            return null;
-        }
-        Optional<PsiMethod> setterForKey = Arrays.stream(srcClass.get().getAllMethods())
-                .filter(m -> m.getName()
-                        .equals(AtgComponentUtil.convertVariableToSetter(key)))
-                .findAny();
-        if (!setterForKey.isPresent()) {
-            return null;
-        }
-        return getClassForSetterMethod(setterForKey.get());
+        public static JvmType getJvmTypeForComponentDependency(@NotNull PropertyImpl property) {
+        Optional<PsiMethod> setterForKey = getSetterForProperty(property);
+        return setterForKey.map(AtgComponentUtil::getJvmTypeForSetterMethod).orElse(null);
     }
 
     @Nullable
-    public static PsiClass getClassForSetterMethod(@NotNull PsiMethod setter) {
-        JvmParameter[] parametersList = setter.getParameters();
-        JvmType keyType = parametersList.length > 0 ? parametersList[0].getType() : null;
+    public static PsiClass getClassForComponentDependency(@NotNull PropertyImpl property) {
+        Optional<PsiMethod> setterForKey = getSetterForProperty(property);
+        return setterForKey.map(AtgComponentUtil::getPsiClassForSetterMethod).orElse(null);
+    }
 
+    @NotNull
+    private static Optional<PsiMethod> getSetterForProperty(@NotNull PropertyImpl property) {
+        PsiFile propertyFile = property.getContainingFile();
+        String key = property.getKey();
+        if (StringUtils.isBlank(key) || key.startsWith("$")) {
+            return Optional.empty();
+        }
+        if (key.endsWith("^")) {
+            key = key.substring(0, key.length() - 1);
+        }
+        final String searchProperty = key;
+        Optional<PsiClass> srcClass = getComponentClass(propertyFile);
+        if (!srcClass.isPresent()) {
+            return Optional.empty();
+        }
+        return Arrays.stream(srcClass.get().getAllMethods())
+                .filter(m -> m.getName()
+                        .equals(AtgComponentUtil.convertVariableToSetter(searchProperty)))
+                .findAny();
+    }
+
+    @Nullable
+    public static PsiClass getPsiClassForSetterMethod(@NotNull PsiMethod setter) {
+        JvmType keyType = getJvmTypeForSetterMethod(setter);
         if (!(keyType instanceof PsiClassType)) {
             return null;
         }
         return ((PsiClassType) keyType).resolve();
     }
+
+    @Nullable
+    public static JvmType getJvmTypeForSetterMethod(@NotNull PsiMethod setter) {
+        JvmParameter[] parametersList = setter.getParameters();
+        return parametersList.length > 0 ? parametersList[0].getType() : null;
+    }
+
 
     @NotNull
     public static List<String> suggestComponentsNamesByClass(@Nullable PsiClass psiClass) {
@@ -179,11 +196,22 @@ public class AtgComponentUtil {
     }
 
     @NotNull
+    public static List<PropertiesFile> getAllComponents(@NotNull Project project) {
+        return PropertiesImplUtil.findPropertiesByKey(project, "$class")
+                .stream()
+                .filter(Objects::nonNull)
+                .map(IProperty::getPropertiesFile)
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
+    @NotNull
     public static List<PsiMethod> getSettersOfClass(@NotNull PsiClass psiClass) {
         return Arrays.stream(psiClass.getAllMethods())
-                .filter(m -> m.hasModifier(JvmModifier.PUBLIC))
                 .filter(method -> method.getName()
                         .startsWith("set"))
+                .filter(m -> m.hasModifier(JvmModifier.PUBLIC))
+                .filter(m -> !m.hasModifier(JvmModifier.ABSTRACT))
                 .filter(m -> m.getParameters().length == 1)
                 .filter(new IsMethodIgnored(psiClass.getProject()))
                 .collect(Collectors.toList());
@@ -234,7 +262,8 @@ public class AtgComponentUtil {
         public boolean test(PsiMethod psiMethod) {
             for (Pattern classNamePattern : ignoredClassPatterns) {
                 PsiClass containingClass = psiMethod.getContainingClass();
-                String className = containingClass != null ? containingClass.getQualifiedName() : "";
+                if (containingClass == null || containingClass.isInterface()) return false;
+                String className = containingClass.getQualifiedName();
                 if (StringUtils.isNotBlank(className) && classNamePattern.matcher(className)
                         .matches()) {
                     return false;
