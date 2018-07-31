@@ -6,6 +6,7 @@ buildscript {
 
 plugins {
     id "org.jetbrains.intellij" version "0.3.4"
+//    id("jps-compatible")
 }
 
 apply plugin: 'idea'
@@ -18,6 +19,10 @@ intellij {
     pluginName 'atg-toolkit'
     sandboxDirectory "${projectDir.path}/.idea/idea-sandbox"
     updateSinceUntilBuild false
+}
+
+dependencies {
+    compile project(':nucleus-jps-plugin')
 }
 
 group 'org.idea.plugin.atg'

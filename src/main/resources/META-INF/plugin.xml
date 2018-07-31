@@ -34,15 +34,28 @@
             <className>org.idea.plugin.atg.CreateATGComponentIntentionAction</className>
             <category>Java/Declaration</category>
         </intentionAction>
-        <projectConfigurable parentId="language" instance="org.idea.plugin.atg.config.AtgToolkitConfigurable"
-                             id="atg-toolkit" displayName="ATG Toolkit"/>
-        <projectService serviceImplementation="org.idea.plugin.atg.config.AtgToolkitConfig"/>
+        <applicationConfigurable parentId="language" instance="org.idea.plugin.atg.config.AtgToolkitConfigurable"
+                                 id="atg-toolkit" displayName="ATG Toolkit"/>
+        <applicationService serviceImplementation="org.idea.plugin.atg.config.AtgToolkitConfig"/>
         <completion.contributor language="Properties"
                                 implementationClass="org.idea.plugin.atg.completion.ComponentPropertiesCompletionContributor"
                                 id="atgPropertiesCompletion" order="first"/>
         <psi.referenceContributor language="Properties"
                                   implementation="org.idea.plugin.atg.psi.AtgReferenceContributor"/>
         <gotoRelatedProvider implementation="org.idea.plugin.atg.navigation.GoToComponentRelatedProvider"/>
+        <!--<projectStructure.sourceRootEditHandler-->
+                <!--implementation="org.idea.plugin.atg.roots.AtgConfigurationSourceRootHandler"/>-->
+
+        <!--<applicationService-->
+                <!--serviceInterface="com.intellij.openapi.roots.ui.configuration.DefaultModuleConfigurationEditorFactory"-->
+                <!--serviceImplementation="org.idea.plugin.atg.roots.AtgModuleConfigurationEditorFactoryImpl"-->
+                <!--overrides="true"/>-->
+        <!--<moduleConfigurationEditorProvider implementation="org.idea.plugin.atg.roots.AtgModuleEditorsProvider"-->
+                                           <!--order="first"/>-->
+        <!--<projectStructureDetector implementation="org.idea.plugin.atg.roots.AtgRootsStructureDetector"/>-->
+
+        <!--<compileServer.plugin classpath="nucleus-jps-plugin.jar"/>-->
+
     </extensions>
 
     <actions>
@@ -53,6 +66,11 @@
             <add-to-group group-id="EditorLangPopupMenu" anchor="after" relative-to-action="GotoTest"/>
             <keyboard-shortcut first-keystroke="alt P" keymap="$default"/>
         </action>
+        <group id="MarkAtgConfigRootGroup">
+            <action id="MarkAtgConfigRoot" class="org.idea.plugin.atg.roots.MarkAtgConfigRootAction"/>
+            <!--<action id="UnmarkMarkAtgConfigRoot" class="org.idea.plugin.atg.roots.MarkAtgConfigRootAction>-->
+            <add-to-group group-id="MarkRootGroup" anchor="after" relative-to-action="MarkSourceRootGroup"/>
+        </group>
     </actions>
 
 

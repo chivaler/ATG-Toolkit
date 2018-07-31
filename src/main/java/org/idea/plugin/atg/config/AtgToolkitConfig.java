@@ -4,7 +4,6 @@ import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
-import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -34,8 +33,8 @@ public class AtgToolkitConfig implements PersistentStateComponent<AtgToolkitConf
     }
 
     @NotNull
-    public static AtgToolkitConfig getInstance(Project project) {
-        AtgToolkitConfig service = ServiceManager.getService(project, AtgToolkitConfig.class);
+    public static AtgToolkitConfig getInstance() {
+        AtgToolkitConfig service = ServiceManager.getService(AtgToolkitConfig.class);
         return service != null ? service : new AtgToolkitConfig();
     }
 

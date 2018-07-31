@@ -1,0 +1,9 @@
+apply plugin: 'org.jetbrains.intellij'
+apply plugin: 'java'
+
+jar.archiveName = "nucleus-jps-plugin.jar"
+
+intellij {
+    type='JPS'
+    runIde.enabled = false
+}
