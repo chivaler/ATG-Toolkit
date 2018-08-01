@@ -11,6 +11,11 @@ import com.intellij.psi.PsiPackage;
 import org.idea.plugin.atg.config.AtgToolkitConfig;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 public class AtgConfigHelper {
 
     private AtgConfigHelper() {
@@ -27,8 +32,8 @@ public class AtgConfigHelper {
         VirtualFile moduleDefaultRootFile = ModuleRootManager.getInstance(module).getContentEntries()[0].getFile();
         String moduleDefaultRoot = moduleDefaultRootFile != null ? moduleDefaultRootFile.getCanonicalPath() : "";
 
-        AtgToolkitConfig atgToolkitConfig = AtgToolkitConfig.getInstance(module.getProject());
-        String relativeConfigPath = atgToolkitConfig != null ? atgToolkitConfig.getRelativeConfigPath() : "";
+        AtgToolkitConfig atgToolkitConfig = AtgToolkitConfig.getInstance();
+        String relativeConfigPath = atgToolkitConfig.getRelativeConfigPath();
         return moduleDefaultRoot + relativeConfigPath;
     }
 
@@ -41,6 +46,16 @@ public class AtgConfigHelper {
                 .compute(() -> DirectoryUtil.mkdirs(psiManager, targetDirStr));
     }
 
+    public static List<Pattern> convertToPatternList(@NotNull String str) {
+        String[] patternStrArray = str.replace(".", "\\.")
+                .replace("?", ".?")
+                .replace("*", "[\\w-]+")
+                .split("[,;]");
+        return Stream.of(patternStrArray)
+                .map(s -> s + "$")
+                .map(Pattern::compile)
+                .collect(Collectors.toList());
+    }
 
 
 }

@@ -4,7 +4,6 @@ import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
-import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -12,13 +11,14 @@ import org.jetbrains.annotations.Nullable;
 @State(name = "AtgToolkitConfig", storages = {@Storage("atg-toolkit.xml")})
 public class AtgToolkitConfig implements PersistentStateComponent<AtgToolkitConfig> {
     public static final String ATG_TOOLKIT_ID = "atg-toolkit";
-    private static final String DEFAULT_RELATIVE_CONFIG_PATH = "/src/main/config/";
+    private static final String DEFAULT_RELATIVE_CONFIG_PATH = "src/main/config,src/config";
     private static final String DEFAULT_IGNORED_PARENTS = "atg.nucleus.*";
 
     @SuppressWarnings("WeakerAccess")
     public String ignoredClassesForSetters = DEFAULT_IGNORED_PARENTS;
     @SuppressWarnings("WeakerAccess")
     public String relativeConfigPath = DEFAULT_RELATIVE_CONFIG_PATH;
+    public String configRootsPatterns = DEFAULT_RELATIVE_CONFIG_PATH;
 
     @Nullable
     @Override
@@ -34,8 +34,8 @@ public class AtgToolkitConfig implements PersistentStateComponent<AtgToolkitConf
     }
 
     @NotNull
-    public static AtgToolkitConfig getInstance(Project project) {
-        AtgToolkitConfig service = ServiceManager.getService(project, AtgToolkitConfig.class);
+    public static AtgToolkitConfig getInstance() {
+        AtgToolkitConfig service = ServiceManager.getService(AtgToolkitConfig.class);
         return service != null ? service : new AtgToolkitConfig();
     }
 
@@ -53,5 +53,13 @@ public class AtgToolkitConfig implements PersistentStateComponent<AtgToolkitConf
 
     public void setRelativeConfigPath(String relativeConfigPath) {
         this.relativeConfigPath = relativeConfigPath;
+    }
+
+    public String getConfigRootsPatterns() {
+        return configRootsPatterns;
+    }
+
+    public void setConfigRootsPatterns(String configRootsPatterns) {
+        this.configRootsPatterns = configRootsPatterns;
     }
 }

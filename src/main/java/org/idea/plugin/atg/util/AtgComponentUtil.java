@@ -99,7 +99,7 @@ public class AtgComponentUtil {
     }
 
     @Nullable
-        public static JvmType getJvmTypeForComponentDependency(@NotNull PropertyImpl property) {
+    public static JvmType getJvmTypeForComponentDependency(@NotNull PropertyImpl property) {
         Optional<PsiMethod> setterForKey = getSetterForProperty(property);
         return setterForKey.map(AtgComponentUtil::getJvmTypeForSetterMethod).orElse(null);
     }
@@ -213,7 +213,7 @@ public class AtgComponentUtil {
                 .filter(m -> m.hasModifier(JvmModifier.PUBLIC))
                 .filter(m -> !m.hasModifier(JvmModifier.ABSTRACT))
                 .filter(m -> m.getParameters().length == 1)
-                .filter(new IsMethodIgnored(psiClass.getProject()))
+                .filter(new IsMethodIgnored())
                 .collect(Collectors.toList());
     }
 
@@ -245,17 +245,10 @@ public class AtgComponentUtil {
     static class IsMethodIgnored implements Predicate<PsiMethod> {
         private final List<Pattern> ignoredClassPatterns;
 
-        IsMethodIgnored(Project project) {
-            AtgToolkitConfig atgToolkitConfig = org.idea.plugin.atg.config.AtgToolkitConfig.getInstance(project);
-            String ignoredClassesForSetters =
-                    atgToolkitConfig != null ? atgToolkitConfig.getIgnoredClassesForSetters() : "";
-            String[] ignoredClassesForSettersArray = ignoredClassesForSetters.replace(".", "\\.")
-                    .replace("?", ".?")
-                    .replace("*", ".*?")
-                    .split("[,;]");
-            ignoredClassPatterns = Stream.of(ignoredClassesForSettersArray)
-                    .map(Pattern::compile)
-                    .collect(Collectors.toList());
+        IsMethodIgnored() {
+            AtgToolkitConfig atgToolkitConfig = org.idea.plugin.atg.config.AtgToolkitConfig.getInstance();
+            String ignoredClassesForSetters = atgToolkitConfig.getIgnoredClassesForSetters();
+            ignoredClassPatterns = AtgConfigHelper.convertToPatternList(ignoredClassesForSetters);
         }
 
         @Override

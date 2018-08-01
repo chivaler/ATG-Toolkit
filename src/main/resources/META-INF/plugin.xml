@@ -34,15 +34,19 @@
             <className>org.idea.plugin.atg.CreateATGComponentIntentionAction</className>
             <category>Java/Declaration</category>
         </intentionAction>
-        <projectConfigurable parentId="language" instance="org.idea.plugin.atg.config.AtgToolkitConfigurable"
-                             id="atg-toolkit" displayName="ATG Toolkit"/>
-        <projectService serviceImplementation="org.idea.plugin.atg.config.AtgToolkitConfig"/>
+        <applicationConfigurable parentId="language" instance="org.idea.plugin.atg.config.AtgToolkitConfigurable"
+                                 id="atg-toolkit" displayName="ATG Toolkit"/>
+        <applicationService serviceImplementation="org.idea.plugin.atg.config.AtgToolkitConfig"/>
         <completion.contributor language="Properties"
                                 implementationClass="org.idea.plugin.atg.completion.ComponentPropertiesCompletionContributor"
                                 id="atgPropertiesCompletion" order="first"/>
         <psi.referenceContributor language="Properties"
                                   implementation="org.idea.plugin.atg.psi.AtgReferenceContributor"/>
         <gotoRelatedProvider implementation="org.idea.plugin.atg.navigation.GoToComponentRelatedProvider"/>
+
+        <facetType implementation="org.idea.plugin.atg.module.AtgModuleFacetType"/>
+        <framework.detector implementation="org.idea.plugin.atg.framework.AtgFrameworkDetector"/>
+        <fileIconPatcher implementation="org.idea.plugin.atg.module.AtgIconPatcher" order="last"/>
     </extensions>
 
     <actions>
