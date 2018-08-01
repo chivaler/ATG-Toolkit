@@ -46,7 +46,8 @@
 
         <facetType implementation="org.idea.plugin.atg.module.AtgModuleFacetType"/>
         <framework.detector implementation="org.idea.plugin.atg.framework.AtgFrameworkDetector"/>
-        <fileIconPatcher implementation="org.idea.plugin.atg.module.AtgIconPatcher" order="last"/>
+        <iconProvider implementation="org.idea.plugin.atg.module.AtgIconProvider" id="atgFolders" order="first"/>
+
     </extensions>
 
     <actions>
