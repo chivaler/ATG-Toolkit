@@ -1,14 +1,11 @@
 package org.idea.plugin.atg.config;
 
-import com.intellij.openapi.components.PersistentStateComponent;
-import com.intellij.openapi.components.ServiceManager;
-import com.intellij.openapi.components.State;
-import com.intellij.openapi.components.Storage;
+import com.intellij.openapi.components.*;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-@State(name = "AtgToolkitConfig", storages = {@Storage("atg-toolkit.xml")})
+@State(name = "AtgToolkitConfig", storages = {@Storage(StoragePathMacros.WORKSPACE_FILE)})
 public class AtgToolkitConfig implements PersistentStateComponent<AtgToolkitConfig> {
     public static final String ATG_TOOLKIT_ID = "atg-toolkit";
     private static final String DEFAULT_RELATIVE_CONFIG_PATH = "src/main/config,src/config";

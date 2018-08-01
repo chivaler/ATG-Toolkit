@@ -43,6 +43,11 @@ public class AtgModuleFacetConfiguration implements FacetConfiguration, Persiste
         return result;
     }
 
+    @NotNull
+    public Set<VirtualFile> getConfigRoots() {
+        return configRoots;
+    }
+
     @Override
     public void loadState(@NotNull State state) {
         configRoots = new HashSet<>();
@@ -51,7 +56,6 @@ public class AtgModuleFacetConfiguration implements FacetConfiguration, Persiste
         }
     }
 
-    //    @Tag("client-library")
     static class State {
         @XCollection(elementName = "root", valueAttributeName = "url", propertyElementName = "configRoots")
         public List<String> configRoots = new ArrayList<>();

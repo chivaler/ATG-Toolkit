@@ -1,5 +1,6 @@
 package org.idea.plugin.atg;
 
+import com.intellij.facet.FacetManager;
 import com.intellij.ide.fileTemplates.FileTemplate;
 import com.intellij.ide.fileTemplates.FileTemplateDescriptor;
 import com.intellij.ide.fileTemplates.FileTemplateManager;
@@ -20,6 +21,9 @@ import com.intellij.openapi.util.Computable;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.source.PostprocessReformattingAspect;
 import com.intellij.util.IncorrectOperationException;
+import org.fest.util.Collections;
+import org.idea.plugin.atg.config.AtgConfigHelper;
+import org.idea.plugin.atg.module.AtgModuleFacet;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 
 import javax.annotation.Nullable;
@@ -40,21 +44,24 @@ public class PropertiesGenerator {
         Module module = ModuleUtilCore.findModuleForFile(srcClass.getContainingFile());
         if (module == null || srcPackage == null) return;
 
+        AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(AtgModuleFacet.FACET_TYPE_ID);
+        if (atgFacet == null || Collections.isNullOrEmpty(atgFacet.getConfiguration().getConfigRoots())) return;
+
         CommandProcessor.getInstance().executeCommand(project, () -> DumbService.getInstance(project).withAlternativeResolveEnabled(() ->
-                PropertiesGenerator.generatePropertiesFile(project, module, srcClass, srcPackage)), AtgToolkitBundle.message("intentions.create.component"), null);
+                PropertiesGenerator.generatePropertiesFile(project, atgFacet, srcClass, srcPackage)), AtgToolkitBundle.message("intentions.create.component"), null);
 
     }
 
     @Nullable
     public static PsiElement generatePropertiesFile(final Project project,
-                                                    final Module module,
+                                                    final AtgModuleFacet moduleFacet,
                                                     final PsiClass srcClass,
                                                     final PsiPackage srcPackage) {
         return PostprocessReformattingAspect.getInstance(project).postponeFormattingInside(
                 () -> ApplicationManager.getApplication().runWriteAction((Computable<PsiElement>) () -> {
                     PsiFile targetClass = null;
                     try {
-                        PsiDirectory targetDirectory = AtgConfigHelper.getComponentConfigPsiDirectory(module, srcPackage);
+                        PsiDirectory targetDirectory = AtgConfigHelper.getComponentConfigPsiDirectory(moduleFacet, srcPackage);
 
                         FileTemplateDescriptor fileTemplateDescriptor = new FileTemplateDescriptor("ATG Properties.properties");
                         targetClass = createPropertyFileFromTemplate(fileTemplateDescriptor, targetDirectory, project, srcClass);

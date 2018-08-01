@@ -1,5 +1,6 @@
 package org.idea.plugin.atg.util;
 
+import com.intellij.facet.ProjectFacetManager;
 import com.intellij.lang.jvm.JvmModifier;
 import com.intellij.lang.jvm.JvmParameter;
 import com.intellij.lang.jvm.types.JvmType;
@@ -8,19 +9,16 @@ import com.intellij.lang.properties.PropertiesImplUtil;
 import com.intellij.lang.properties.psi.PropertiesFile;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.lang.properties.psi.impl.PropertyImpl;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
-import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.ClassInheritorsSearch;
 import org.apache.commons.lang.StringUtils;
-import org.idea.plugin.atg.AtgConfigHelper;
+import org.idea.plugin.atg.config.AtgConfigHelper;
 import org.idea.plugin.atg.config.AtgToolkitConfig;
+import org.idea.plugin.atg.module.AtgModuleFacet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -54,11 +52,9 @@ public class AtgComponentUtil {
     @NotNull
     public static Collection<PropertiesFileImpl> getApplicableComponentsByName(@NotNull String componentName,
                                                                                @NotNull Project project) {
-        return Arrays.stream(ModuleManager.getInstance(project)
-                .getModules())
-                .map(AtgConfigHelper::getConfigRoot)
-                .map(path -> LocalFileSystem.getInstance()
-                        .findFileByPath(path))
+
+        return ProjectFacetManager.getInstance(project).getFacets(AtgModuleFacet.FACET_TYPE_ID).stream().map(f -> f.getConfiguration().getConfigRoots())
+                .flatMap(Collection::stream)
                 .filter(Objects::nonNull)
                 .filter(VirtualFile::isDirectory)
                 .map(root -> VfsUtilCore.findRelativeFile(componentName + ".properties", root))
@@ -78,24 +74,13 @@ public class AtgComponentUtil {
 
     @NotNull
     public static Optional<String> getComponentCanonicalName(@NotNull VirtualFile file, @NotNull Project project) {
-        Module module = ModuleUtilCore.findModuleForFile(file, project);
-        if (module == null) {
-            return Optional.empty();
-        }
-        String configRoot = AtgConfigHelper.getConfigRoot(module);
-        VirtualFile configRootFile = LocalFileSystem.getInstance()
-                .findFileByPath(configRoot);
-        if (configRootFile == null) {
-            return Optional.empty();
-        }
-        if (!VfsUtilCore.isAncestor(configRootFile, file, true)) {
-            return Optional.empty();
-        }
-        String relativePath = VfsUtilCore.getRelativeLocation(file, configRootFile);
-        if (relativePath == null) {
-            return Optional.empty();
-        }
-        return Optional.of("/" + relativePath.replace(".properties", ""));
+        return ProjectFacetManager.getInstance(project).getFacets(AtgModuleFacet.FACET_TYPE_ID).stream().map(f -> f.getConfiguration().getConfigRoots())
+                .flatMap(Collection::stream)
+                .filter(Objects::nonNull)
+                .filter(VirtualFile::isDirectory)
+                .filter(r -> VfsUtilCore.isAncestor(r, file, true))
+                .map(r -> "/"  + VfsUtilCore.getRelativeLocation(file, r).replace(".properties", ""))
+                .findFirst();
     }
 
     @Nullable
