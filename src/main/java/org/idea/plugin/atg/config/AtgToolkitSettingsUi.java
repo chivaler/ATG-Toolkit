@@ -12,18 +12,22 @@ import java.awt.*;
 public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
     private final JPanel rootPanel;
     private final JPanel controlsPanel;
-    private final JLabel configRelativePathLabel;
+    private final JLabel configPatternsLabel;
+    private final JLabel configLayersPatternsLabel;
     private final JLabel ignoredClassesLabel;
-    private final JTextField configRelativePathField;
+    private final JTextField configPatternsField;
+    private final JTextField configLayersPatternsField;
     private final JTextField ignoredClassesField;
 
     public AtgToolkitSettingsUi() {
         rootPanel = new JPanel(new VerticalLayout(0));
         controlsPanel = new JPanel(new GridBagLayout());
 
-        configRelativePathLabel = new JLabel(AtgToolkitBundle.message("gui.config.config.dir"));
-        ignoredClassesLabel = new JLabel(AtgToolkitBundle.message("gui.config.config.ignoredClasses"));
-        configRelativePathField = new JTextField();
+        configPatternsLabel = new JLabel(AtgToolkitBundle.message("gui.config.configRoots.title"));
+        configLayersPatternsLabel = new JLabel(AtgToolkitBundle.message("gui.config.configLayersRoots.title"));
+        ignoredClassesLabel = new JLabel(AtgToolkitBundle.message("gui.config.ignoredClasses"));
+        configPatternsField = new JTextField();
+        configLayersPatternsField = new JTextField();
         ignoredClassesField = new JTextField();
 
         GridBagConstraints constraints = new GridBagConstraints();
@@ -34,20 +38,30 @@ public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
         constraints.gridx = 0;
         constraints.gridy = 0;
         constraints.weightx = 0.0;
-        controlsPanel.add(configRelativePathLabel, constraints);
+        controlsPanel.add(configPatternsLabel, constraints);
 
         constraints.gridx = 1;
         constraints.gridy = 0;
         constraints.weightx = 1.0;
-        controlsPanel.add(configRelativePathField, constraints);
+        controlsPanel.add(configPatternsField, constraints);
 
         constraints.gridx = 0;
         constraints.gridy = 1;
         constraints.weightx = 0.0;
-        controlsPanel.add(ignoredClassesLabel, constraints);
+        controlsPanel.add(configLayersPatternsLabel, constraints);
 
         constraints.gridx = 1;
         constraints.gridy = 1;
+        constraints.weightx = 1.0;
+        controlsPanel.add(configLayersPatternsField, constraints);
+
+        constraints.gridx = 0;
+        constraints.gridy = 2;
+        constraints.weightx = 0.0;
+        controlsPanel.add(ignoredClassesLabel, constraints);
+
+        constraints.gridx = 1;
+        constraints.gridy = 2;
         constraints.weightx = 1;
         controlsPanel.add(ignoredClassesField, constraints);
 
@@ -56,25 +70,27 @@ public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
 
     @Override
     public void reset(@NotNull AtgToolkitConfig atgToolkitConfig) {
-        configRelativePathField.setText(atgToolkitConfig.getRelativeConfigPath());
+        configPatternsField.setText(atgToolkitConfig.getConfigRootsPatterns());
+        configLayersPatternsField.setText(atgToolkitConfig.getConfigLayerRootsPatterns());
         ignoredClassesField.setText(atgToolkitConfig.getIgnoredClassesForSetters());
     }
 
     @Override
     public boolean isModified(@NotNull AtgToolkitConfig atgToolkitConfig) {
-        return !(configRelativePathField.getText().equals(atgToolkitConfig.getRelativeConfigPath()) &&
+        return !(configPatternsField.getText().equals(atgToolkitConfig.getConfigRootsPatterns()) &&
+                configLayersPatternsField.getText().equals(atgToolkitConfig.getConfigLayerRootsPatterns()) &&
                 ignoredClassesField.getText().equals(atgToolkitConfig.getIgnoredClassesForSetters()));
     }
 
     @Override
     public void apply(@NotNull AtgToolkitConfig atgToolkitConfig) {
-        String relativeConfigPath = configRelativePathField.getText().replaceAll("\\s", "");
-        if (!relativeConfigPath.startsWith("/")) relativeConfigPath = "/" + relativeConfigPath;
-        if (!relativeConfigPath.endsWith("/")) relativeConfigPath = relativeConfigPath + "/";
+        String configRootPatters = configPatternsField.getText().replaceAll("\\s", "");
+        configPatternsField.setText(configRootPatters);
+        String configLayerRootPatters = configLayersPatternsField.getText().replaceAll("\\s", "");
+        configPatternsField.setText(configLayerRootPatters);
 
-        configRelativePathField.setText(relativeConfigPath);
-
-        atgToolkitConfig.setRelativeConfigPath(relativeConfigPath);
+        atgToolkitConfig.setConfigRootsPatterns(configRootPatters);
+        atgToolkitConfig.setConfigLayerRootsPatterns(configLayerRootPatters);
         atgToolkitConfig.setIgnoredClassesForSetters(ignoredClassesField.getText());
     }
 

@@ -40,6 +40,9 @@
         <completion.contributor language="Properties"
                                 implementationClass="org.idea.plugin.atg.completion.ComponentPropertiesCompletionContributor"
                                 id="atgPropertiesCompletion" order="first"/>
+        <completion.contributor language="TEXT"
+                                implementationClass="org.idea.plugin.atg.completion.JspComponentPropertiesCompletionContributor"
+                                id="atgPropertiesCompletion1" order="first"/>
         <psi.referenceContributor language="Properties"
                                   implementation="org.idea.plugin.atg.psi.AtgReferenceContributor"/>
         <gotoRelatedProvider implementation="org.idea.plugin.atg.navigation.GoToComponentRelatedProvider"/>
@@ -51,6 +54,7 @@
     </extensions>
 
     <actions>
+
         <action id="GoToComponents" class="org.idea.plugin.atg.navigation.GoToComponentCodeAction"
                 text="Go to Components..."
                 description="Go to all components based on the class">
@@ -58,6 +62,14 @@
             <add-to-group group-id="EditorLangPopupMenu" anchor="after" relative-to-action="GotoTest"/>
             <keyboard-shortcut first-keystroke="alt P" keymap="$default"/>
         </action>
+
+        <group id="MarkAtgRootGroup">
+            <action id="MarkAtgConfigRoot" class="org.idea.plugin.atg.roots.MarkAtgConfigRootAction"/>
+            <action id="MarkAtgConfigLayerRoot" class="org.idea.plugin.atg.roots.MarkAtgConfigLayerRootAction"/>
+            <action id="UnmarkAtgRoot" class="org.idea.plugin.atg.roots.UnmarkAtgConfigLayerRootAction"/>
+            <add-to-group group-id="MarkRootGroup" anchor="after" relative-to-action="MarkSourceRootGroup"/>
+        </group>
+
     </actions>
 
 

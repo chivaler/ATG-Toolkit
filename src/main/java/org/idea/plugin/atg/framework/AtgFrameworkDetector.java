@@ -83,13 +83,22 @@ public class AtgFrameworkDetector extends FacetBasedFrameworkDetector<AtgModuleF
     @Override
     public void setupFacet(@NotNull AtgModuleFacet facet, ModifiableRootModel model) {
         Set<VirtualFile> excludeConfigRoots = new HashSet<>();
+        Set<VirtualFile> excludeConfigLayerRoots = new HashSet<>();
 
-        for (VirtualFile configRoot : facet.getConfiguration().configRoots) {
+        facet.getConfiguration().getConfigRoots().forEach(root -> {
             Arrays.stream(model.getContentEntries())
-                    .filter(contentEntry -> ContentEntryEditor.isExcludedOrUnderExcludedDirectory(model.getProject(), contentEntry, configRoot))
-                    .forEach(c -> excludeConfigRoots.add(configRoot));
-        }
-        facet.getConfiguration().configRoots.removeAll(excludeConfigRoots);
+                    .filter(contentEntry -> ContentEntryEditor.isExcludedOrUnderExcludedDirectory(model.getProject(), contentEntry, root))
+                    .forEach(c -> excludeConfigRoots.add(root));
+        });
+        facet.getConfiguration().getConfigLayerRoots().forEach(root -> {
+            Arrays.stream(model.getContentEntries())
+                    .filter(contentEntry -> ContentEntryEditor.isExcludedOrUnderExcludedDirectory(model.getProject(), contentEntry, root))
+                    .forEach(c -> excludeConfigLayerRoots.add(root));
+        });
+
+
+        facet.getConfiguration().getConfigRoots().removeAll(excludeConfigRoots);
+        facet.getConfiguration().getConfigLayerRoots().removeAll(excludeConfigLayerRoots);
     }
 
     @NotNull
@@ -100,14 +109,23 @@ public class AtgFrameworkDetector extends FacetBasedFrameworkDetector<AtgModuleF
             String configRootsPatternsStr = AtgToolkitConfig.getInstance().getConfigRootsPatterns();
             List<Pattern> configRootsPatterns = AtgConfigHelper.convertToPatternList(configRootsPatternsStr);
 
-            if (VfsUtilCore.isUnder(file, atgModuleFacetConfiguration.configRoots)) continue;
+            String configLayerRootsPatternsStr = AtgToolkitConfig.getInstance().getConfigLayerRootsPatterns();
+            List<Pattern> configLayerRootsPatterns = AtgConfigHelper.convertToPatternList(configLayerRootsPatternsStr);
+
+
+            if (VfsUtilCore.isUnder(file, atgModuleFacetConfiguration.getConfigRoots())) continue;
+            if (VfsUtilCore.isUnder(file, atgModuleFacetConfiguration.getConfigLayerRoots())) continue;
 
             VirtualFile parent = file;
             while (parent != null) {
                 final VirtualFile currentFile = parent;
                 if (currentFile.getCanonicalPath() != null) {
                     if (configRootsPatterns.stream().anyMatch(p -> p.matcher(currentFile.getCanonicalPath()).find())) {
-                        atgModuleFacetConfiguration.configRoots.add(parent);
+                        atgModuleFacetConfiguration.getConfigRoots().add(parent);
+                        break;
+                    }
+                    if (configLayerRootsPatterns.stream().anyMatch(p -> p.matcher(currentFile.getCanonicalPath()).find())) {
+                        atgModuleFacetConfiguration.getConfigLayerRoots().add(parent);
                         break;
                     }
                 }

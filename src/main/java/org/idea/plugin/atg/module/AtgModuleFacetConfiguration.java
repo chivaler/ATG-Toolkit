@@ -11,16 +11,15 @@ import com.intellij.util.xmlb.annotations.XCollection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 //@State(name = "External" + FacetManagerImpl.COMPONENT_NAME, externalStorageOnly = true)
 public class AtgModuleFacetConfiguration implements FacetConfiguration, PersistentStateComponent<AtgModuleFacetConfiguration.State> {
 
     @NotNull
-    public Set<VirtualFile> configRoots = new HashSet<>();
+    private Set<VirtualFile> configRoots = new HashSet<>();
+    @NotNull
+    private Set<VirtualFile> configLayerRoots = new HashSet<>();
 
 
     @Override
@@ -34,12 +33,12 @@ public class AtgModuleFacetConfiguration implements FacetConfiguration, Persiste
     @Override
     public State getState() {
         State result = new State();
-        for (VirtualFile configRoot : configRoots) {
-            String canonicalPath = configRoot.getCanonicalPath();
-            if (canonicalPath != null) {
-                result.configRoots.add(configRoot.getUrl());
-            }
-        }
+        configRoots.stream()
+                .filter(Objects::nonNull)
+                .forEach(r -> result.configRoots.add(r.getUrl()));
+        configLayerRoots.stream()
+                .filter(Objects::nonNull)
+                .forEach(r -> result.configLayerRoots.add(r.getUrl()));
         return result;
     }
 
@@ -48,17 +47,26 @@ public class AtgModuleFacetConfiguration implements FacetConfiguration, Persiste
         return configRoots;
     }
 
+    @NotNull
+    public Set<VirtualFile> getConfigLayerRoots() {
+        return configLayerRoots;
+    }
+
     @Override
     public void loadState(@NotNull State state) {
         configRoots = new HashSet<>();
-        for (String configRootStr : state.configRoots) {
-            configRoots.add(VirtualFileManager.getInstance().findFileByUrl(configRootStr));
-        }
+        state.configRoots
+                .forEach(s -> configRoots.add(VirtualFileManager.getInstance().findFileByUrl(s)));
+        state.configLayerRoots
+                .forEach(s -> configLayerRoots.add(VirtualFileManager.getInstance().findFileByUrl(s)));
     }
 
+    @SuppressWarnings("WeakerAccess")
     static class State {
         @XCollection(elementName = "root", valueAttributeName = "url", propertyElementName = "configRoots")
         public List<String> configRoots = new ArrayList<>();
+        @XCollection(elementName = "root", valueAttributeName = "url", propertyElementName = "configLayerRoots")
+        public List<String> configLayerRoots = new ArrayList<>();
     }
 
 }
