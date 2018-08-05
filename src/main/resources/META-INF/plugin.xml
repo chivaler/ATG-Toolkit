@@ -40,11 +40,10 @@
         <completion.contributor language="Properties"
                                 implementationClass="org.idea.plugin.atg.completion.ComponentPropertiesCompletionContributor"
                                 id="atgPropertiesCompletion" order="first"/>
-        <completion.contributor language="TEXT"
-                                implementationClass="org.idea.plugin.atg.completion.JspComponentPropertiesCompletionContributor"
-                                id="atgPropertiesCompletion1" order="first"/>
         <psi.referenceContributor language="Properties"
                                   implementation="org.idea.plugin.atg.psi.AtgReferenceContributor"/>
+        <psi.referenceContributor language=""
+                                  implementation="org.idea.plugin.atg.psi.JspReferenceContributor"/>
         <gotoRelatedProvider implementation="org.idea.plugin.atg.navigation.GoToComponentRelatedProvider"/>
 
         <facetType implementation="org.idea.plugin.atg.module.AtgModuleFacetType"/>
