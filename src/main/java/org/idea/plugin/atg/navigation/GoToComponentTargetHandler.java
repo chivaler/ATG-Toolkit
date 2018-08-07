@@ -21,6 +21,7 @@ import javax.swing.*;
 import java.util.*;
 
 public class GoToComponentTargetHandler extends GotoTargetHandler {
+    //TODO search for injections
     @NotNull
     public static PsiElement getSelectedElement(Editor editor, PsiFile file) {
         return PsiUtilCore.getElementAtOffset(file, editor.getCaretModel().getOffset());

@@ -27,10 +27,13 @@ public class AtgIconProvider extends IconProvider implements DumbAware {
 
             AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(AtgModuleFacet.FACET_TYPE_ID);
             if (atgFacet != null && atgFacet.getConfiguration().getConfigRoots().contains(vFile)) {
-                return Constants.CONFIG_FOLDER_ICON;
+                return Constants.CONFIG_ROOT_ICON;
             }
             if (atgFacet != null && atgFacet.getConfiguration().getConfigLayerRoots().contains(vFile)) {
-                return Constants.CONFIG_LAYER_FOLDER_ICON;
+                return Constants.CONFIG_LAYER_ROOT_ICON;
+            }
+            if (atgFacet != null && atgFacet.getConfiguration().getWebRoots().contains(vFile)) {
+                return Constants.WEB_ROOT_ICON;
             }
         }
         return null;

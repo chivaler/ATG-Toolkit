@@ -65,6 +65,7 @@
         <group id="MarkAtgRootGroup">
             <action id="MarkAtgConfigRoot" class="org.idea.plugin.atg.roots.MarkAtgConfigRootAction"/>
             <action id="MarkAtgConfigLayerRoot" class="org.idea.plugin.atg.roots.MarkAtgConfigLayerRootAction"/>
+            <action id="MarkAtgWebRoot" class="org.idea.plugin.atg.roots.MarkAtgWebRootAction"/>
             <action id="UnmarkAtgRoot" class="org.idea.plugin.atg.roots.UnmarkAtgConfigLayerRootAction"/>
             <add-to-group group-id="MarkRootGroup" anchor="after" relative-to-action="MarkSourceRootGroup"/>
         </group>

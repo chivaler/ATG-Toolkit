@@ -28,10 +28,6 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Created by Igor_Pidgurskyi on 4/20/2017.
- */
-
 public class AtgFrameworkDetector extends FacetBasedFrameworkDetector<AtgModuleFacet, AtgModuleFacetConfiguration> {
     private static final String DETECTOR_ID = "ATG Detector";
     final LanguageFileType MANIFEST = (LanguageFileType) FileTypeManager.getInstance().getStdFileType("Manifest");
@@ -82,8 +78,11 @@ public class AtgFrameworkDetector extends FacetBasedFrameworkDetector<AtgModuleF
 
     @Override
     public void setupFacet(@NotNull AtgModuleFacet facet, ModifiableRootModel model) {
+        facet.getConfiguration().getWebRoots().addAll(AtgConfigHelper.detectWebRootsForModule(model));
+
         Set<VirtualFile> excludeConfigRoots = new HashSet<>();
         Set<VirtualFile> excludeConfigLayerRoots = new HashSet<>();
+        Set<VirtualFile> excludeWebRoots = new HashSet<>();
 
         facet.getConfiguration().getConfigRoots().forEach(root -> {
             Arrays.stream(model.getContentEntries())
@@ -95,10 +94,18 @@ public class AtgFrameworkDetector extends FacetBasedFrameworkDetector<AtgModuleF
                     .filter(contentEntry -> ContentEntryEditor.isExcludedOrUnderExcludedDirectory(model.getProject(), contentEntry, root))
                     .forEach(c -> excludeConfigLayerRoots.add(root));
         });
+        facet.getConfiguration().getWebRoots().forEach(root -> {
+            Arrays.stream(model.getContentEntries())
+                    .filter(contentEntry -> ContentEntryEditor.isExcludedOrUnderExcludedDirectory(model.getProject(), contentEntry, root))
+                    .forEach(c -> excludeWebRoots.add(root));
+        });
 
 
         facet.getConfiguration().getConfigRoots().removeAll(excludeConfigRoots);
         facet.getConfiguration().getConfigLayerRoots().removeAll(excludeConfigLayerRoots);
+        facet.getConfiguration().getWebRoots().removeAll(excludeWebRoots);
+
+
     }
 
     @NotNull
@@ -135,6 +142,10 @@ public class AtgFrameworkDetector extends FacetBasedFrameworkDetector<AtgModuleF
 
         return atgModuleFacetConfiguration;
     }
+
+
+
+
 
     private AtgModuleFacetConfiguration test(@NotNull Collection<VirtualFile> files) {
 //        List<Pair<ATGProjectFacetConfiguration, Collection<VirtualFile>>> result = new ArrayList();;

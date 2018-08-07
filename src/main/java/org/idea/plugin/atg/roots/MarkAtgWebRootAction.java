@@ -19,15 +19,15 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
 
-public class MarkAtgConfigRootAction extends MarkRootActionBase {
-    //TODO Create abstract
+public class MarkAtgWebRootAction extends MarkRootActionBase {
 
-    public MarkAtgConfigRootAction() {
-        String typeName = AtgToolkitBundle.message("gui.markAs.configRoot.title");
+
+    public MarkAtgWebRootAction() {
+        String typeName = AtgToolkitBundle.message("gui.markAs.webRoot.title");
         Presentation presentation = getTemplatePresentation();
         presentation.setText(typeName);
         presentation.setDescription("Mark directory as a " + typeName.toLowerCase(Locale.getDefault()));
-        presentation.setIcon(Constants.CONFIG_ROOT_ICON);
+        presentation.setIcon(Constants.WEB_ROOT_ICON);
     }
 
     @Override
@@ -57,7 +57,7 @@ public class MarkAtgConfigRootAction extends MarkRootActionBase {
                         break;
                     }
                 }
-                atgFacet.getConfiguration().getConfigRoots().add(file);
+                atgFacet.getConfiguration().getWebRoots().add(file);
             }
         }
 

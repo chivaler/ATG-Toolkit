@@ -109,6 +109,7 @@ public class JspReferenceContributor extends PsiReferenceContributor {
                         }
                     }
                 }
+                //TODO scripts, img src, etc
             }
             super.visitElement(element);
         }

@@ -21,11 +21,11 @@ import java.util.Locale;
 
 public class MarkAtgConfigLayerRootAction extends MarkRootActionBase {
     public MarkAtgConfigLayerRootAction() {
-        String typeName = AtgToolkitBundle.message("gui.markAs.configRoot.title");
+        String typeName = AtgToolkitBundle.message("gui.markAs.configLayerRoot.title");
         Presentation presentation = getTemplatePresentation();
         presentation.setText(typeName);
         presentation.setDescription("Mark directory as a " + typeName.toLowerCase(Locale.getDefault()));
-        presentation.setIcon(Constants.CONFIG_LAYER_FOLDER_ICON);
+        presentation.setIcon(Constants.CONFIG_LAYER_ROOT_ICON);
     }
 
     @Override
@@ -35,7 +35,7 @@ public class MarkAtgConfigLayerRootAction extends MarkRootActionBase {
         }
 
         AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(AtgModuleFacet.FACET_TYPE_ID);
-        return (atgFacet!= null && !selection.mySelectedDirectories.isEmpty());
+        return (atgFacet != null && !selection.mySelectedDirectories.isEmpty());
 
     }
 
@@ -68,6 +68,6 @@ public class MarkAtgConfigLayerRootAction extends MarkRootActionBase {
 
     @Override
     protected void modifyRoots(@NotNull VirtualFile vFile, @NotNull ContentEntry entry) {
-
+        //no op
     }
 }
