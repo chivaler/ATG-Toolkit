@@ -11,6 +11,7 @@ import com.intellij.psi.*;
 import com.intellij.psi.impl.source.resolve.reference.impl.providers.JavaClassListReferenceProvider;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
+import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -59,7 +60,7 @@ public class AtgReferenceContributor extends PsiReferenceContributor {
                         PropertyValueImpl property = (PropertyValueImpl) element;
                         String key = ((PropertyImpl) property.getParent()).getKey();
                         String value = property.getText();
-                        if ("$class".equals(key) && !CompletionUtilCore.DUMMY_IDENTIFIER_TRIMMED.equals(value)) {
+                        if (Constants.Keywords.CLASS_PROPERTY.equals(key) && !CompletionUtilCore.DUMMY_IDENTIFIER_TRIMMED.equals(value)) {
                             JavaClassListReferenceProvider javaClassListReferenceProvider = new JavaClassListReferenceProvider();
                             return javaClassListReferenceProvider.getReferencesByString(value, element, 0);
                         }

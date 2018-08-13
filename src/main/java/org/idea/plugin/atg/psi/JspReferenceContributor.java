@@ -9,6 +9,7 @@ import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.ProcessingContext;
+import org.idea.plugin.atg.Constants;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -61,8 +62,8 @@ public class JspReferenceContributor extends PsiReferenceContributor {
                 XmlTag xmlTag = (XmlTag) element;
                 String fullTageName = xmlTag.getName();
                 String tagNameWithoutNameSpace = fullTageName.contains(":") ? fullTageName.substring(fullTageName.indexOf(':') + 1) : fullTageName;
-                if ("importbean".equals(tagNameWithoutNameSpace)) {
-                    XmlAttribute bean = xmlTag.getAttribute("bean");
+                if (Constants.Keywords.IMPORT_BEAN_TAG.equals(tagNameWithoutNameSpace)) {
+                    XmlAttribute bean = xmlTag.getAttribute(Constants.Keywords.BEAN_ATTRIBUTE);
                     if (bean != null) {
                         XmlAttributeValue beanValue = bean.getValueElement();
                         if (beanValue != null) {
@@ -72,8 +73,8 @@ public class JspReferenceContributor extends PsiReferenceContributor {
                         }
                     }
                 }
-                if ("droplet".equals(tagNameWithoutNameSpace)) {
-                    XmlAttribute bean = xmlTag.getAttribute("name");
+                if (Constants.Keywords.DROPLET_TAG.equals(tagNameWithoutNameSpace)) {
+                    XmlAttribute bean = xmlTag.getAttribute(Constants.Keywords.NAME_ATTRIBUTE);
                     if (bean != null) {
                         XmlAttributeValue beanValue = bean.getValueElement();
                         if (beanValue != null) {
@@ -82,7 +83,7 @@ public class JspReferenceContributor extends PsiReferenceContributor {
                     }
                 }
                 if (tagsContainingBeanAttribute.contains(tagNameWithoutNameSpace)) {
-                    XmlAttribute bean = xmlTag.getAttribute("bean");
+                    XmlAttribute bean = xmlTag.getAttribute(Constants.Keywords.BEAN_ATTRIBUTE);
                     if (bean != null) {
                         XmlAttributeValue beanValue = bean.getValueElement();
                         if (beanValue != null) {
@@ -91,7 +92,7 @@ public class JspReferenceContributor extends PsiReferenceContributor {
                     }
                 }
                 if (tagsContainingBeanValueAttribute.contains(tagNameWithoutNameSpace)) {
-                    XmlAttribute bean = xmlTag.getAttribute("beanvalue");
+                    XmlAttribute bean = xmlTag.getAttribute(Constants.Keywords.BEAN_VALUE_ATTRIBUTE);
                     if (bean != null) {
                         XmlAttributeValue beanValue = bean.getValueElement();
                         if (beanValue != null) {
@@ -99,8 +100,8 @@ public class JspReferenceContributor extends PsiReferenceContributor {
                         }
                     }
                 }
-                if ("include".equals(tagNameWithoutNameSpace)) {
-                    XmlAttribute includeFile = xmlTag.getAttribute("page");
+                if (Constants.Keywords.INCLUDE_TAG.equals(tagNameWithoutNameSpace)) {
+                    XmlAttribute includeFile = xmlTag.getAttribute(Constants.Keywords.PAGE_ATTRIBUTE);
                     if (includeFile != null) {
                         XmlAttributeValue pageValue = includeFile.getValueElement();
                         if (pageValue != null && pageValue.getValue() != null) {
@@ -109,7 +110,28 @@ public class JspReferenceContributor extends PsiReferenceContributor {
                         }
                     }
                 }
-                //TODO scripts, img src, etc
+
+                if (Constants.Keywords.IMG_TAG.equals(tagNameWithoutNameSpace)) {
+                    XmlAttribute includeFile = xmlTag.getAttribute(Constants.Keywords.SRC_ATTRIBUTE);
+                    if (includeFile != null) {
+                        XmlAttributeValue pageValue = includeFile.getValueElement();
+                        if (pageValue != null && pageValue.getValue() != null) {
+                            TextRange valueTextRange = pageValue.getValueTextRange();
+                            createdReferences.add(new FileReference(pageValue.getValue(), originalFile, valueTextRange));
+                        }
+                    }
+                }
+
+                if (Constants.Keywords.SCRIPT_TAG.equals(tagNameWithoutNameSpace)) {
+                    XmlAttribute includeFile = xmlTag.getAttribute(Constants.Keywords.SRC_ATTRIBUTE);
+                    if (includeFile != null) {
+                        XmlAttributeValue pageValue = includeFile.getValueElement();
+                        if (pageValue != null && pageValue.getValue() != null) {
+                            TextRange valueTextRange = pageValue.getValueTextRange();
+                            createdReferences.add(new FileReference(pageValue.getValue(), originalFile, valueTextRange));
+                        }
+                    }
+                }
             }
             super.visitElement(element);
         }

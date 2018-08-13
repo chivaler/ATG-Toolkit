@@ -16,6 +16,7 @@ import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PatternCondition;
 import com.intellij.util.ProcessingContext;
 import com.intellij.util.indexing.FileContent;
+import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.config.AtgConfigHelper;
 import org.idea.plugin.atg.config.AtgToolkitConfig;
 import org.idea.plugin.atg.module.AtgModuleFacet;
@@ -56,7 +57,7 @@ public class AtgFrameworkDetector extends FacetBasedFrameworkDetector<AtgModuleF
                         with(new PatternCondition<FileContent>("withContent") {
                             @Override
                             public boolean accepts(@NotNull FileContent fileContent, ProcessingContext context) {
-                                return (new String(fileContent.getContent()).startsWith("$class="));
+                                return (new String(fileContent.getContent()).startsWith(Constants.Keywords.CLASS_PROPERTY + "="));
                             }
                         }))
                 .and(FileContentPattern.fileContent().
@@ -142,9 +143,6 @@ public class AtgFrameworkDetector extends FacetBasedFrameworkDetector<AtgModuleF
 
         return atgModuleFacetConfiguration;
     }
-
-
-
 
 
     private AtgModuleFacetConfiguration test(@NotNull Collection<VirtualFile> files) {

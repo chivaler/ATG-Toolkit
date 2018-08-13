@@ -16,6 +16,7 @@ import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.ClassInheritorsSearch;
 import org.apache.commons.lang.StringUtils;
+import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.config.AtgConfigHelper;
 import org.idea.plugin.atg.config.AtgToolkitConfig;
 import org.idea.plugin.atg.module.AtgModuleFacet;
@@ -38,7 +39,7 @@ public class AtgComponentUtil {
         if (!(propertyFile instanceof PropertiesFile)) {
             return Optional.empty();
         }
-        IProperty propertyClassName = ((PropertiesFile) propertyFile).findPropertyByKey("$class");
+        IProperty propertyClassName = ((PropertiesFile) propertyFile).findPropertyByKey(Constants.Keywords.CLASS_PROPERTY);
         if (propertyClassName == null || StringUtils.isBlank(propertyClassName.getValue())) {
             return Optional.empty();
         }
@@ -163,12 +164,13 @@ public class AtgComponentUtil {
 
     @NotNull
     public static List<PropertiesFileImpl> suggestComponentsByClass(@Nullable PsiClass srcClass) {
+        //TODO $basedOn
         if (srcClass == null) {
             return Collections.emptyList();
         }
         Project project = srcClass.getProject();
         String className = srcClass.getQualifiedName();
-        return PropertiesImplUtil.findPropertiesByKey(project, "$class")
+        return PropertiesImplUtil.findPropertiesByKey(project, Constants.Keywords.CLASS_PROPERTY)
                 .stream()
                 .filter(Objects::nonNull)
                 .filter(p -> p.getValue() != null && p.getValue()
@@ -182,7 +184,7 @@ public class AtgComponentUtil {
 
     @NotNull
     public static List<PropertiesFile> getAllComponents(@NotNull Project project) {
-        return PropertiesImplUtil.findPropertiesByKey(project, "$class")
+        return PropertiesImplUtil.findPropertiesByKey(project, Constants.Keywords.CLASS_PROPERTY)
                 .stream()
                 .filter(Objects::nonNull)
                 .map(IProperty::getPropertiesFile)

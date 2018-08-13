@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Nullable;
 
 @State(name = "AtgToolkitConfig", storages = {@Storage("atg-toolkit.xml")})
 public class AtgToolkitConfig implements PersistentStateComponent<AtgToolkitConfig> {
-    public static final String ATG_TOOLKIT_ID = "atg-toolkit";
+
     private static final String DEFAULT_RELATIVE_CONFIG_PATH = "src/main/config,src/config";
     private static final String DEFAULT_RELATIVE_CONFIG_LAYERS_PATH = "layer/config";
     private static final String DEFAULT_IGNORED_PARENTS = "atg.nucleus.*";

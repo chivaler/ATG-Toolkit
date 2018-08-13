@@ -14,10 +14,7 @@ import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.module.AtgModuleFacet;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -53,22 +50,39 @@ public class AtgConfigHelper {
     }
 
     @NotNull
-    public static Collection<VirtualFile> detectWebRootsForModule(ModifiableRootModel model) {
-        List<VirtualFile> foundWebRoots = new ArrayList<>();
-        for (ContentEntry contentEntry : model.getContentEntries()) {
-            foundWebRoots.addAll(collectWebRoots(contentEntry.getFile()));
-        }
-        return foundWebRoots;
+    public static List<VirtualFile> detectWebRootsForModule(ModifiableRootModel model) {
+        return Arrays.stream(model.getContentEntries())
+                .map(ContentEntry::getFile)
+                .map(AtgConfigHelper::collectWebRoots)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
     }
 
-    private static List<VirtualFile> collectWebRoots(final VirtualFile file) {
+    private static List<VirtualFile> collectWebRoots(final VirtualFile contentEntryRoot) {
         List<VirtualFile> result = new ArrayList<>();
-        VfsUtilCore.visitChildrenRecursively(file, new VirtualFileVisitor() {
+        VfsUtilCore.visitChildrenRecursively(contentEntryRoot, new VirtualFileVisitor() {
             @Override
             public boolean visitFile(@NotNull VirtualFile file) {
                 if (file.isDirectory()) {
                     VirtualFile webInfFolder = file.findChild("WEB-INF");
                     if (webInfFolder != null && webInfFolder.findChild("web.xml") != null) {
+                        result.add(file);
+                        return false;
+                    }
+                }
+                return true;
+            }
+        });
+        return result;
+    }
+
+    private static List<VirtualFile> collectRootsMatchedPatterns(final VirtualFile contentEntryRoot, final List<Pattern> patterns) {
+        List<VirtualFile> result = new ArrayList<>();
+        VfsUtilCore.visitChildrenRecursively(contentEntryRoot, new VirtualFileVisitor() {
+            @Override
+            public boolean visitFile(@NotNull VirtualFile file) {
+                if (file.isDirectory() && file.getCanonicalPath() != null) {
+                    if (patterns.stream().anyMatch(p -> p.matcher(file.getCanonicalPath()).find())) {
                         result.add(file);
                         return false;
                     }

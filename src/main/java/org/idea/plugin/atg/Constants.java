@@ -9,6 +9,8 @@ import javax.swing.*;
 
 public class Constants {
 
+    public static final String ATG_TOOLKIT_CONFIGURABLE_ID = "atg-toolkit";
+
     public static final LayeredIcon CONFIG_ROOT_ICON;
     public static final LayeredIcon CONFIG_LAYER_ROOT_ICON;
     public static final LayeredIcon WEB_ROOT_ICON;
@@ -31,6 +33,29 @@ public class Constants {
     }
 
     private Constants() {
+    }
+
+    public static class Keywords {
+        public static final String BASED_ON = "$basedOn";
+        public static final String CLASS_PROPERTY = "$class";
+        public static final String SCOPE_PROPERTY = "$scope";
+
+
+        public static final String INCLUDE_TAG = "include";
+        public static final String DROPLET_TAG = "droplet";
+        public static final String IMPORT_BEAN_TAG = "importbean";
+        public static final String IMG_TAG = "img";
+        public static final String SCRIPT_TAG = "script";
+
+        public static final String PAGE_ATTRIBUTE = "page";
+        public static final String NAME_ATTRIBUTE = "name";
+        public static final String BEAN_VALUE_ATTRIBUTE = "beanvalue";
+        public static final String BEAN_ATTRIBUTE = "bean";
+        public static final String SRC_ATTRIBUTE = "src";
+
+        private Keywords() {
+        }
+
     }
 
 }

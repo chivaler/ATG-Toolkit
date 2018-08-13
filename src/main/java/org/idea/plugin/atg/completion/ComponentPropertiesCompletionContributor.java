@@ -14,6 +14,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.ProcessingContext;
 import org.apache.commons.lang.StringUtils;
+import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -48,7 +49,7 @@ public class ComponentPropertiesCompletionContributor extends CompletionContribu
                             .map(AtgComponentLookupElement::new)
                             .forEach(result::addElement);
                     result.stopHere();
-                } else if ("$scope".equals(key)) {
+                } else if (Constants.Keywords.SCOPE_PROPERTY.equals(key)) {
                     for (String scope : AVAILABLE_SCOPES) {
                         result.addElement(LookupElementBuilder.create(scope));
                     }
@@ -79,7 +80,7 @@ public class ComponentPropertiesCompletionContributor extends CompletionContribu
                         .map(AtgPropertyLookupElement::new)
                         .forEach(result::addElement);
 
-                if (!existFields.contains("$class")) result.addElement(LookupElementBuilder.create("$class"));
+                if (!existFields.contains(Constants.Keywords.CLASS_PROPERTY)) result.addElement(LookupElementBuilder.create(Constants.Keywords.CLASS_PROPERTY));
                 result.stopHere();
             }
         }
