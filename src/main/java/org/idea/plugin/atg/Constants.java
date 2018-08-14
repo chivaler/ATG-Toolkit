@@ -36,7 +36,7 @@ public class Constants {
     }
 
     public static class Keywords {
-        public static final String BASED_ON = "$basedOn";
+        public static final String BASED_ON_PROPERTY = "$basedOn";
         public static final String CLASS_PROPERTY = "$class";
         public static final String SCOPE_PROPERTY = "$scope";
 
