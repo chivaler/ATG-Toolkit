@@ -1,17 +1,17 @@
 package org.idea.plugin.atg.psi.reference;
 
-import com.intellij.psi.PsiElementResolveResult;
-import com.intellij.psi.PsiPolyVariantReferenceBase;
-import com.intellij.psi.ResolveResult;
-import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.*;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlAttributeValue;
+import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
-import com.jgoodies.common.base.Strings;
+import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 public class PipelineLinkReference extends PsiPolyVariantReferenceBase<XmlAttributeValue> {
 
@@ -28,24 +28,52 @@ public class PipelineLinkReference extends PsiPolyVariantReferenceBase<XmlAttrib
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
-        List<ResolveResult> result = new ArrayList<>();
-        if (Strings.isNotBlank(getElement().getValue())) {
-            XmlTag rootTag = PsiTreeUtil.getTopmostParentOfType(getElement(), XmlTag.class);
-            if (rootTag != null) {
-                for (XmlTag pipelineChain : rootTag.findSubTags("pipelinechain")) {
+        PsiFile containingFile = getElement().getContainingFile();
+        if (!(containingFile instanceof XmlFile)) return ResolveResult.EMPTY_ARRAY;
+
+        String seekingLinkName = getElement().getValue();
+        PsiElement pipelineChainTag;
+
+        if (seekingLinkName == null) return ResolveResult.EMPTY_ARRAY;
+        PsiElement attribute = getElement().getParent();
+        if (attribute instanceof XmlAttribute && "headlink".equals(((XmlAttribute) attribute).getName())) {
+            pipelineChainTag = attribute.getParent();
+        } else {
+            PsiElement transitionTag = attribute.getParent();
+            PsiElement pipelineLinkTag = transitionTag.getParent();
+            pipelineChainTag = pipelineLinkTag.getParent();
+        }
+
+        if (!(pipelineChainTag instanceof XmlTag)) return ResolveResult.EMPTY_ARRAY;
+        String seekingChainName = ((XmlTag) pipelineChainTag).getAttributeValue("name");
+
+        if (seekingChainName == null) return ResolveResult.EMPTY_ARRAY;
+
+        Set<XmlFile> xmlFilesWithSamePath = new HashSet<>();
+        xmlFilesWithSamePath.add((XmlFile) containingFile);
+        Optional<String> xmlRelativePath = AtgComponentUtil.getXmlRelativePath((XmlFile) containingFile);
+        xmlRelativePath.ifPresent(s -> xmlFilesWithSamePath.addAll(AtgComponentUtil.getApplicableXmlsByName(s, containingFile.getProject())));
+        return xmlFilesWithSamePath.stream()
+                .map(f -> findPipelineLinkByName(seekingLinkName, seekingChainName, f))
+                .filter(Objects::nonNull)
+                .map(attr -> new PsiElementResolveResult(attr, true))
+                .toArray(ResolveResult[]::new);
+    }
+
+    private XmlAttributeValue findPipelineLinkByName(@NotNull final String seekingLinkName, @NotNull final String seekingChainName, @NotNull final XmlFile xmlFile) {
+        XmlTag rootTag = xmlFile.getRootTag();
+        if (rootTag != null) {
+            for (XmlTag pipelineChain : rootTag.findSubTags("pipelinechain")) {
+                if (seekingChainName.equals(pipelineChain.getAttributeValue("name"))) {
                     for (XmlTag pipelineLink : pipelineChain.findSubTags("pipelinelink")) {
-                        XmlAttribute nameAttribute = pipelineLink.getAttribute("name");
-                        if (nameAttribute != null) {
-                            XmlAttributeValue nameAttributeValueElement = nameAttribute.getValueElement();
-                            String nameAttributeValue = nameAttribute.getValue();
-                            if (nameAttributeValueElement != null && getElement().getValue().equals(nameAttributeValue)) {
-                                result.add(new PsiElementResolveResult(nameAttributeValueElement, true));
-                            }
+                        XmlAttribute pipelineNameAttribute = pipelineLink.getAttribute("name");
+                        if (pipelineNameAttribute != null && seekingLinkName.equals(pipelineNameAttribute.getValue())) {
+                            return pipelineNameAttribute.getValueElement();
                         }
                     }
                 }
             }
         }
-        return result.toArray(new ResolveResult[0]);
+        return null;
     }
 }

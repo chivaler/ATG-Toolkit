@@ -21,10 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class AtgReferenceContributor extends PsiReferenceContributor {
-    private static final Pattern COMPONENT_NAME_REGEX = Pattern.compile("/[^,=]*");
+
 
     @Override
     public void registerReferenceProviders(@NotNull PsiReferenceRegistrar registrar) {
@@ -86,7 +85,7 @@ public class AtgReferenceContributor extends PsiReferenceContributor {
             String value = propertyValue.getText();
             if (!CompletionUtilCore.DUMMY_IDENTIFIER_TRIMMED.equals(value)) {
                 List<PsiReference> results = new ArrayList<>();
-                Matcher matcher = COMPONENT_NAME_REGEX.matcher(value);
+                Matcher matcher = Constants.SUSPECTED_COMPONENT_NAME_REGEX.matcher(value);
                 while (matcher.find()) {
                     int start = matcher.start(0);
                     int length = matcher.group(0).length();

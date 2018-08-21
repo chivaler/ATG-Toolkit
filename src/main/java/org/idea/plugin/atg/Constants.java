@@ -6,6 +6,7 @@ import com.intellij.ui.LayeredIcon;
 import com.intellij.util.PlatformIcons;
 
 import javax.swing.*;
+import java.util.regex.Pattern;
 
 public class Constants {
 
@@ -16,6 +17,8 @@ public class Constants {
     public static final LayeredIcon WEB_ROOT_ICON;
 
     private static final float LAYERED_ICON_SCALE_FACTOR = 0.75F;
+
+    public static final Pattern SUSPECTED_COMPONENT_NAME_REGEX = Pattern.compile("/[^,=]*");
 
     static {
         CONFIG_ROOT_ICON = new LayeredIcon(2);

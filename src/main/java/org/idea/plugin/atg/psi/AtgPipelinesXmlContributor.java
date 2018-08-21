@@ -19,13 +19,17 @@ public class AtgPipelinesXmlContributor extends PsiReferenceContributor {
     public void registerReferenceProviders(@NotNull PsiReferenceRegistrar registrar) {
         registrar.registerReferenceProvider(XmlPatterns.xmlAttributeValue()
                 .withParent(XmlPatterns.xmlAttribute().withName("jndi")
-                .withParent(XmlPatterns.xmlTag().withName("processor")
-                .withParent(XmlPatterns.xmlTag().withName("pipelinelink")))), new ComponentNamesProvider());
+                        .withParent(XmlPatterns.xmlTag().withName("processor")
+                                .withParent(XmlPatterns.xmlTag().withName("pipelinelink")))), new ComponentNamesProvider());
+
+        registrar.registerReferenceProvider(XmlPatterns.xmlAttributeValue()
+                .withParent(XmlPatterns.xmlAttribute().withName("headlink")
+                        .withParent(XmlPatterns.xmlTag().withName("pipelinechain"))), new PipelineLinksProvider());
 
         registrar.registerReferenceProvider(XmlPatterns.xmlAttributeValue()
                 .withParent(XmlPatterns.xmlAttribute().withName("link")
-                .withParent(XmlPatterns.xmlTag().withName("transition")
-                .withParent(XmlPatterns.xmlTag().withName("pipelinelink")))), new PipelineLinksProvider());
+                        .withParent(XmlPatterns.xmlTag().withName("transition")
+                                .withParent(XmlPatterns.xmlTag().withName("pipelinelink")))), new PipelineLinksProvider());
     }
 
     static class ComponentNamesProvider extends PsiReferenceProvider {

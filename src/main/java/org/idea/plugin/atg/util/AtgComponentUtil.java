@@ -13,8 +13,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
+import com.intellij.psi.impl.source.xml.XmlFileImpl;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.ClassInheritorsSearch;
+import com.intellij.psi.xml.XmlFile;
 import org.apache.commons.lang.StringUtils;
 import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.config.AtgConfigHelper;
@@ -88,8 +90,36 @@ public class AtgComponentUtil {
     }
 
     @NotNull
+    public static Collection<XmlFileImpl> getApplicableXmlsByName(@NotNull String xmlRelativePath,
+                                                                  @NotNull Project project) {
+        return ProjectFacetManager.getInstance(project).getFacets(AtgModuleFacet.FACET_TYPE_ID).stream().map(f -> f.getConfiguration().getConfigRoots())
+                .flatMap(Collection::stream)
+                .filter(Objects::nonNull)
+                .filter(VirtualFile::isDirectory)
+                .map(root -> VfsUtilCore.findRelativeFile(xmlRelativePath + ".xml", root))
+                .filter(Objects::nonNull)
+                .filter(VirtualFile::exists)
+                .map(virtualFile -> PsiManager.getInstance(project)
+                        .findFile(virtualFile))
+                .filter(XmlFileImpl.class::isInstance)
+                .map(f -> (XmlFileImpl) f)
+                .collect(Collectors.toList());
+    }
+
+    @NotNull
     public static Optional<String> getComponentCanonicalName(@NotNull PropertiesFile file) {
         return getComponentCanonicalName(file.getVirtualFile(), file.getProject());
+    }
+
+    @NotNull
+    public static Optional<String> getXmlRelativePath(@NotNull XmlFile file) {
+        return ProjectFacetManager.getInstance(file.getProject()).getFacets(AtgModuleFacet.FACET_TYPE_ID).stream().map(f -> f.getConfiguration().getConfigRoots())
+                .flatMap(Collection::stream)
+                .filter(Objects::nonNull)
+                .filter(VirtualFile::isDirectory)
+                .filter(r -> VfsUtilCore.isAncestor(r, file.getVirtualFile(), true))
+                .map(r -> "/" + VfsUtilCore.getRelativeLocation(file.getVirtualFile(), r).replace(".xml", ""))
+                .findFirst();
     }
 
     @NotNull

@@ -41,8 +41,9 @@
                                 implementationClass="org.idea.plugin.atg.completion.ComponentPropertiesCompletionContributor"
                                 id="atgPropertiesCompletion" order="first"/>
         <psi.referenceContributor language="XML"
-                                  implementation="org.idea.plugin.atg.psi.AtgPipelinesXmlContributor"
-                                  order="first"/>
+                                  implementation="org.idea.plugin.atg.psi.AtgPipelinesXmlContributor"/>
+        <psi.referenceContributor language="XML"
+                                  implementation="org.idea.plugin.atg.psi.RepositoryXmlContributor"/>
         <psi.referenceContributor language="Properties"
                                   implementation="org.idea.plugin.atg.psi.AtgReferenceContributor"/>
         <psi.referenceContributor language=""
