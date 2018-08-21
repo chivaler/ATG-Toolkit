@@ -47,7 +47,8 @@ public class AtgComponentUtil {
                     Collection<PropertiesFileImpl> applicableParents = getApplicableComponentsByName(basedOnComponent.getValue(), propertyFile.getProject());
                     for (PropertiesFileImpl parent : applicableParents) {
                         //TODO after layer sequence is done choose appropriate component, or combined
-                        if (getComponentClass(parent).isPresent()) return getComponentClassStr(parent);
+                        Optional<String> parentComponentClass = getComponentClassStr(parent);
+                        if (parentComponentClass.isPresent()) return parentComponentClass;
                     }
                 }
             } else {

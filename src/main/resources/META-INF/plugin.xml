@@ -49,6 +49,7 @@
         <psi.referenceContributor language=""
                                   implementation="org.idea.plugin.atg.psi.JspReferenceContributor"/>
         <gotoRelatedProvider implementation="org.idea.plugin.atg.navigation.GoToComponentRelatedProvider"/>
+        <webHelpProvider implementation="org.idea.plugin.atg.util.HelpProvider"/>
 
         <facetType implementation="org.idea.plugin.atg.module.AtgModuleFacetType"/>
         <framework.detector implementation="org.idea.plugin.atg.framework.AtgFrameworkDetector"/>

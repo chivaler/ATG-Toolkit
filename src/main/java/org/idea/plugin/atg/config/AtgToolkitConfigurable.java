@@ -10,7 +10,7 @@ public class AtgToolkitConfigurable extends ConfigurableBase<AtgToolkitSettingsU
     private final AtgToolkitConfig atgToolkitConfig;
 
     protected AtgToolkitConfigurable(@NotNull AtgToolkitConfig atgToolkitConfig) {
-        super(Constants.ATG_TOOLKIT_CONFIGURABLE_ID, AtgToolkitBundle.message("gui.config.title"), null);
+        super(Constants.ATG_TOOLKIT_CONFIGURABLE_ID, AtgToolkitBundle.message("gui.config.title"), Constants.HelpTopics.PLUGIN_CONFIGURABLE_EDITOR);
         this.atgToolkitConfig = atgToolkitConfig;
     }
 

@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 
 public class Constants {
 
+    public static final String PLUGIN_ID = "atg-toolkit";
     public static final String ATG_TOOLKIT_CONFIGURABLE_ID = "atg-toolkit";
     public static final LayeredIcon CONFIG_ROOT_ICON;
     public static final LayeredIcon CONFIG_LAYER_ROOT_ICON;
@@ -19,6 +20,7 @@ public class Constants {
     public static final Pattern SUSPECTED_COMPONENT_NAME_REGEX = Pattern.compile("/[^,=]*");
     public static final String DEFAULT_ITEM_DESCRIPTOR_CLASS = "atg.adapter.gsa.GSAPropertyDescriptor";
     public static final List<String> IGNORED_ATTRIBUTES_NAMES_FOR_DESCRIPTOR = Arrays.asList("uiwritable", "uiqueryable", "resourceBundle", "deployable", "propertySortPriority", "references");
+    public static final String WEB_HELP_URL = "https://github.com/chivaler/ATG-Toolkit/wiki/";
 
     private static final float LAYERED_ICON_SCALE_FACTOR = 0.75F;
 
@@ -40,27 +42,27 @@ public class Constants {
     private Constants() {
     }
 
-    public static class Keywords {
-        public static final String BASED_ON_PROPERTY = "$basedOn";
-        public static final String CLASS_PROPERTY = "$class";
-        public static final String SCOPE_PROPERTY = "$scope";
+    public interface Keywords {
+        String BASED_ON_PROPERTY = "$basedOn";
+        String CLASS_PROPERTY = "$class";
+        String SCOPE_PROPERTY = "$scope";
 
+        String INCLUDE_TAG = "include";
+        String DROPLET_TAG = "droplet";
+        String IMPORT_BEAN_TAG = "importbean";
+        String IMG_TAG = "img";
+        String SCRIPT_TAG = "script";
 
-        public static final String INCLUDE_TAG = "include";
-        public static final String DROPLET_TAG = "droplet";
-        public static final String IMPORT_BEAN_TAG = "importbean";
-        public static final String IMG_TAG = "img";
-        public static final String SCRIPT_TAG = "script";
+        String PAGE_ATTRIBUTE = "page";
+        String NAME_ATTRIBUTE = "name";
+        String BEAN_VALUE_ATTRIBUTE = "beanvalue";
+        String BEAN_ATTRIBUTE = "bean";
+        String SRC_ATTRIBUTE = "src";
+    }
 
-        public static final String PAGE_ATTRIBUTE = "page";
-        public static final String NAME_ATTRIBUTE = "name";
-        public static final String BEAN_VALUE_ATTRIBUTE = "beanvalue";
-        public static final String BEAN_ATTRIBUTE = "bean";
-        public static final String SRC_ATTRIBUTE = "src";
-
-        private Keywords() {
-        }
-
+    public interface HelpTopics {
+        String MODULE_FACET_EDITOR = PLUGIN_ID + ".facet";
+        String PLUGIN_CONFIGURABLE_EDITOR = PLUGIN_ID + ".settings";
     }
 
 }

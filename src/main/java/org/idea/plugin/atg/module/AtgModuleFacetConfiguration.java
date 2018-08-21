@@ -20,7 +20,6 @@ public class AtgModuleFacetConfiguration implements FacetConfiguration, Persiste
     private Set<VirtualFile> configRoots = new HashSet<>();
     @NotNull
     private Set<VirtualFile> configLayerRoots = new HashSet<>();
-    //TODO as Map with ContextRoot
     @NotNull
     private Map<VirtualFile, String> webRoots = new HashMap<>();
 

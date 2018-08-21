@@ -3,6 +3,7 @@ package org.idea.plugin.atg.module;
 import com.intellij.facet.ui.FacetEditorContext;
 import com.intellij.facet.ui.FacetEditorTab;
 import com.intellij.facet.ui.FacetValidatorsManager;
+import org.idea.plugin.atg.Constants;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 
@@ -45,6 +46,11 @@ public class AtgModuleFacetEditor extends FacetEditorTab {
     @Override
     public String getDisplayName() {
         return DISPLAY_NAME;
+    }
+
+    @Override
+    public String getHelpTopic() {
+        return Constants.HelpTopics.MODULE_FACET_EDITOR;
     }
 
 //    private static class ConfigRootsComponent {
@@ -130,9 +136,7 @@ public class AtgModuleFacetEditor extends FacetEditorTab {
 //    public void onFacetInitialized(@NotNull Facet facet) {
 //    }
 //
-//    public String getHelpTopic() {
-//        return "reference.settings.modules.facet.web.ejb.jee.settings";
-//    }
+
 //
 //    public void onTabEntering() {
 //        this.myValidatorsManager.validate();
