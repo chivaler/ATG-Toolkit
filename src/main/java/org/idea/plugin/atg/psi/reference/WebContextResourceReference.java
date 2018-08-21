@@ -1,4 +1,4 @@
-package org.idea.plugin.atg.psi;
+package org.idea.plugin.atg.psi.reference;
 
 import com.intellij.facet.Facet;
 import com.intellij.facet.ProjectFacetManager;

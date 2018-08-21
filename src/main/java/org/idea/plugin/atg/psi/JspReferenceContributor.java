@@ -10,6 +10,8 @@ import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.ProcessingContext;
 import org.idea.plugin.atg.Constants;
+import org.idea.plugin.atg.psi.reference.JspFileReference;
+import org.idea.plugin.atg.psi.reference.WebContextResourceReference;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;

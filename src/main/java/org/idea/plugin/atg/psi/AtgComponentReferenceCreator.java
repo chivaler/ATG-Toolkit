@@ -4,6 +4,8 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiPlainTextFile;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.xml.XmlAttributeValue;
+import org.idea.plugin.atg.psi.reference.AtgComponentFieldReference;
+import org.idea.plugin.atg.psi.reference.AtgComponentReference;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

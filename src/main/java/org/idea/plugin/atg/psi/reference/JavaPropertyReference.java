@@ -1,4 +1,4 @@
-package org.idea.plugin.atg.psi;
+package org.idea.plugin.atg.psi.reference;
 
 import com.intellij.lang.properties.psi.impl.PropertyKeyImpl;
 import com.intellij.openapi.util.TextRange;
