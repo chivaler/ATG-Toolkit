@@ -5,12 +5,13 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReferenceBase;
+import com.intellij.psi.xml.XmlAttributeValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 
-public class JavaPropertyReference extends PsiReferenceBase<PropertyKeyImpl> {
+public class JavaPropertyReference extends PsiReferenceBase<PsiElement> {
     private String propertyName;
     private PsiClass srcClass;
 
@@ -18,6 +19,12 @@ public class JavaPropertyReference extends PsiReferenceBase<PropertyKeyImpl> {
         super(element, textRange);
         propertyName = element.getText().substring(textRange.getStartOffset(), textRange.getEndOffset());
         if (propertyName.endsWith("^")) propertyName = propertyName.substring(0, propertyName.length() - 1);
+        this.srcClass = srcClass;
+    }
+
+    public JavaPropertyReference(@NotNull XmlAttributeValue element, @NotNull PsiClass srcClass) {
+        super(element);
+        propertyName = element.getValue();
         this.srcClass = srcClass;
     }
 

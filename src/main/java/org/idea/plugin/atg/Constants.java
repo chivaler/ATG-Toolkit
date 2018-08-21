@@ -6,19 +6,21 @@ import com.intellij.ui.LayeredIcon;
 import com.intellij.util.PlatformIcons;
 
 import javax.swing.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class Constants {
 
     public static final String ATG_TOOLKIT_CONFIGURABLE_ID = "atg-toolkit";
-
     public static final LayeredIcon CONFIG_ROOT_ICON;
     public static final LayeredIcon CONFIG_LAYER_ROOT_ICON;
     public static final LayeredIcon WEB_ROOT_ICON;
+    public static final Pattern SUSPECTED_COMPONENT_NAME_REGEX = Pattern.compile("/[^,=]*");
+    public static final String DEFAULT_ITEM_DESCRIPTOR_CLASS = "atg.adapter.gsa.GSAPropertyDescriptor";
+    public static final List<String> IGNORED_ATTRIBUTES_NAMES_FOR_DESCRIPTOR = Arrays.asList("uiwritable", "uiqueryable", "resourceBundle", "deployable", "propertySortPriority", "references");
 
     private static final float LAYERED_ICON_SCALE_FACTOR = 0.75F;
-
-    public static final Pattern SUSPECTED_COMPONENT_NAME_REGEX = Pattern.compile("/[^,=]*");
 
     static {
         CONFIG_ROOT_ICON = new LayeredIcon(2);
