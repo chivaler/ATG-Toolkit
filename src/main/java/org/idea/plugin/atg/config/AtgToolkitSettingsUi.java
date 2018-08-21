@@ -10,6 +10,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
+    //TODO helpTopic
     private final JPanel rootPanel;
     private final JPanel controlsPanel;
     private final JLabel configPatternsLabel;
