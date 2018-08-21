@@ -79,7 +79,7 @@ public class AtgFrameworkDetector extends FacetBasedFrameworkDetector<AtgModuleF
 
     @Override
     public void setupFacet(@NotNull AtgModuleFacet facet, ModifiableRootModel model) {
-        facet.getConfiguration().getWebRoots().addAll(AtgConfigHelper.detectWebRootsForModule(model));
+        facet.getConfiguration().getWebRoots().putAll(AtgConfigHelper.detectWebRootsForModule(model));
 
         Set<VirtualFile> excludeConfigRoots = new HashSet<>();
         Set<VirtualFile> excludeConfigLayerRoots = new HashSet<>();
@@ -95,7 +95,7 @@ public class AtgFrameworkDetector extends FacetBasedFrameworkDetector<AtgModuleF
                     .filter(contentEntry -> ContentEntryEditor.isExcludedOrUnderExcludedDirectory(model.getProject(), contentEntry, root))
                     .forEach(c -> excludeConfigLayerRoots.add(root));
         });
-        facet.getConfiguration().getWebRoots().forEach(root -> {
+        facet.getConfiguration().getWebRoots().keySet().forEach(root -> {
             Arrays.stream(model.getContentEntries())
                     .filter(contentEntry -> ContentEntryEditor.isExcludedOrUnderExcludedDirectory(model.getProject(), contentEntry, root))
                     .forEach(c -> excludeWebRoots.add(root));
@@ -104,7 +104,7 @@ public class AtgFrameworkDetector extends FacetBasedFrameworkDetector<AtgModuleF
 
         facet.getConfiguration().getConfigRoots().removeAll(excludeConfigRoots);
         facet.getConfiguration().getConfigLayerRoots().removeAll(excludeConfigLayerRoots);
-        facet.getConfiguration().getWebRoots().removeAll(excludeWebRoots);
+        facet.getConfiguration().getWebRoots().keySet().removeAll(excludeWebRoots);
 
 
     }

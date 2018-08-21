@@ -12,10 +12,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
-public class FileReference extends PsiPolyVariantReferenceBase<PsiElement> {
+public class JspFileReference extends PsiPolyVariantReferenceBase<PsiElement> {
     private String filePath;
 
-    public FileReference(@NotNull String filePath, @NotNull PsiElement element, @NotNull TextRange range) {
+    public JspFileReference(@NotNull String filePath, @NotNull PsiElement element, @NotNull TextRange range) {
         super(element, range);
         this.filePath = filePath;
     }
@@ -37,7 +37,7 @@ public class FileReference extends PsiPolyVariantReferenceBase<PsiElement> {
             if (module != null) {
                 AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(AtgModuleFacet.FACET_TYPE_ID);
                 if (atgFacet != null) {
-                    Optional<VirtualFile> webRootForSourceFile = atgFacet.getConfiguration().getWebRoots().stream()
+                    Optional<VirtualFile> webRootForSourceFile = atgFacet.getConfiguration().getWebRoots().keySet().stream()
                             .filter(r -> VfsUtilCore.isAncestor(r, sourceFile.getVirtualFile(), false))
                             .findFirst();
                     if (webRootForSourceFile.isPresent()) {

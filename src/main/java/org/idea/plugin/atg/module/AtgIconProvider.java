@@ -32,7 +32,7 @@ public class AtgIconProvider extends IconProvider implements DumbAware {
             if (atgFacet != null && atgFacet.getConfiguration().getConfigLayerRoots().contains(vFile)) {
                 return Constants.CONFIG_LAYER_ROOT_ICON;
             }
-            if (atgFacet != null && atgFacet.getConfiguration().getWebRoots().contains(vFile)) {
+            if (atgFacet != null && atgFacet.getConfiguration().getWebRoots().keySet().contains(vFile)) {
                 return Constants.WEB_ROOT_ICON;
             }
         }

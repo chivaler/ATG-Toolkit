@@ -106,23 +106,18 @@ public class JspReferenceContributor extends PsiReferenceContributor {
                         XmlAttributeValue pageValue = includeFile.getValueElement();
                         if (pageValue != null && pageValue.getValue() != null) {
                             TextRange valueTextRange = pageValue.getValueTextRange();
-                            createdReferences.add(new FileReference(pageValue.getValue(), originalFile, valueTextRange));
+                            createdReferences.add(new JspFileReference(pageValue.getValue(), originalFile, valueTextRange));
                         }
                     }
                 }
 
                 if (Constants.Keywords.IMG_TAG.equals(tagNameWithoutNameSpace) || Constants.Keywords.SCRIPT_TAG.equals(tagNameWithoutNameSpace)) {
-                    //TODO take context-root from web.xml
-//                      <context-param>
-//    <param-name>context-root</param-name>
-//    <param-value>/common</param-value>
-//  </context-param>
                     XmlAttribute includeFile = xmlTag.getAttribute(Constants.Keywords.SRC_ATTRIBUTE);
                     if (includeFile != null) {
                         XmlAttributeValue pageValue = includeFile.getValueElement();
                         if (pageValue != null && pageValue.getValue() != null) {
                             TextRange valueTextRange = pageValue.getValueTextRange();
-                            createdReferences.add(new FileReference(pageValue.getValue(), originalFile, valueTextRange));
+                            createdReferences.add(new WebContextResourceReference(pageValue.getValue(), originalFile, valueTextRange));
                         }
                     }
                 }
