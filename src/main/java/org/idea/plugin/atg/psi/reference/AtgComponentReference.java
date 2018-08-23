@@ -2,7 +2,8 @@ package org.idea.plugin.atg.psi.reference;
 
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.lang.properties.psi.impl.PropertyValueImpl;
-import com.intellij.openapi.project.Project;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
 import com.intellij.psi.xml.XmlAttributeValue;
@@ -33,8 +34,8 @@ public class AtgComponentReference extends PsiPolyVariantReferenceBase<PsiElemen
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
-        Project project = myElement.getProject();
-        Collection<PropertiesFileImpl> applicableComponents = AtgComponentUtil.getApplicableComponentsByName(componentName, project);
+        Module module = ModuleUtilCore.findModuleForPsiElement(myElement);
+        Collection<PropertiesFileImpl> applicableComponents = AtgComponentUtil.getApplicableComponentsByName(componentName, module, myElement.getProject());
         return applicableComponents.stream()
                 .map(element -> new PsiElementResolveResult(element, true))
                 .toArray(ResolveResult[]::new);

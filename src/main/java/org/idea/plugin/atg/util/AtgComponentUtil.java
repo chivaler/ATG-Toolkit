@@ -9,9 +9,17 @@ import com.intellij.lang.properties.PropertiesImplUtil;
 import com.intellij.lang.properties.psi.PropertiesFile;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.lang.properties.psi.impl.PropertyImpl;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ModifiableRootModel;
+import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.OrderRootType;
+import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
+import com.intellij.openapi.roots.libraries.LibraryTable;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.newvfs.impl.VirtualDirectoryImpl;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.source.xml.XmlFileImpl;
 import com.intellij.psi.search.GlobalSearchScope;
@@ -44,7 +52,8 @@ public class AtgComponentUtil {
             if (propertyClassName == null || StringUtils.isBlank(propertyClassName.getValue())) {
                 IProperty basedOnComponent = componentFile.findPropertyByKey(Constants.Keywords.BASED_ON_PROPERTY);
                 if (basedOnComponent != null && StringUtils.isBlank(basedOnComponent.getValue())) {
-                    Collection<PropertiesFileImpl> applicableParents = getApplicableComponentsByName(basedOnComponent.getValue(), propertyFile.getProject());
+                    Module module = ModuleUtilCore.findModuleForPsiElement(propertyFile);
+                    Collection<PropertiesFileImpl> applicableParents = getApplicableComponentsByName(basedOnComponent.getValue(), module, propertyFile.getProject());
                     for (PropertiesFileImpl parent : applicableParents) {
                         //TODO after layer sequence is done choose appropriate component, or combined
                         Optional<String> parentComponentClass = getComponentClassStr(parent);
@@ -73,11 +82,38 @@ public class AtgComponentUtil {
     }
 
     @NotNull
-    public static Collection<PropertiesFileImpl> getApplicableComponentsByName(@NotNull String componentName,
-                                                                               @NotNull Project project) {
+    public static Collection<VirtualFile> getApplicableConfigRoots(@Nullable Module module,
+                                                                   @NotNull Project project) {
+        LibraryTable libraryTable;
+        if (module == null) {
+            libraryTable = ProjectLibraryTable.getInstance(project);
+        } else {
+            ModifiableRootModel modifiableModel = ModuleRootManager.getInstance(module).getModifiableModel();
+            libraryTable = modifiableModel.getModuleLibraryTable();
+        }
 
-        return ProjectFacetManager.getInstance(project).getFacets(AtgModuleFacet.FACET_TYPE_ID).stream().map(f -> f.getConfiguration().getConfigRoots())
+        List<VirtualFile> sourceConfigRoots = ProjectFacetManager.getInstance(project).getFacets(AtgModuleFacet.FACET_TYPE_ID).stream()
+                .map(f -> f.getConfiguration().getConfigRoots())
                 .flatMap(Collection::stream)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        List<VirtualFile> libraries = Arrays.stream(libraryTable.getLibraries())
+                .filter(l -> l.getName() != null && l.getName().startsWith(Constants.ATG_CONFIG_LIBRARY_PREFIX))
+                .map(l -> l.getFiles(OrderRootType.CLASSES))
+                .flatMap(Arrays::stream)
+                .filter(VirtualDirectoryImpl.class::isInstance)
+                .collect(Collectors.toList());
+
+        sourceConfigRoots.addAll(libraries);
+        return sourceConfigRoots;
+    }
+
+    @NotNull
+    public static Collection<PropertiesFileImpl> getApplicableComponentsByName(@NotNull String componentName,
+                                                                               @Nullable Module module,
+                                                                               @NotNull Project project) {
+        return getApplicableConfigRoots(module, project).stream()
                 .filter(Objects::nonNull)
                 .filter(VirtualFile::isDirectory)
                 .map(root -> VfsUtilCore.findRelativeFile(componentName + ".properties", root))

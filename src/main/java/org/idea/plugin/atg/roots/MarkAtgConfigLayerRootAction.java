@@ -15,6 +15,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.module.AtgModuleFacet;
+import org.idea.plugin.atg.util.AtgEnvironmentUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
@@ -41,6 +42,9 @@ public class MarkAtgConfigLayerRootAction extends MarkRootActionBase {
 
     @Override
     protected void modifyRoots(@NotNull AnActionEvent e, @NotNull Module module, @NotNull VirtualFile[] files) {
+        AtgEnvironmentUtil.suggestManifestFileForModule(module);
+        AtgEnvironmentUtil.getRequiredModules(module);
+        AtgEnvironmentUtil.addLibraries(module, AtgEnvironmentUtil.getConfigs(module));
         AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(AtgModuleFacet.FACET_TYPE_ID);
         if (atgFacet == null) return;
 

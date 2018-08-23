@@ -2,7 +2,8 @@ package org.idea.plugin.atg.psi.reference;
 
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.lang.properties.psi.impl.PropertyImpl;
-import com.intellij.openapi.project.Project;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
 import com.intellij.util.IncorrectOperationException;
@@ -25,8 +26,8 @@ public class AtgComponentFieldReference extends PsiPolyVariantReferenceBase<PsiE
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
-        Project project = myElement.getProject();
-        Collection<PropertiesFileImpl> applicableComponents = AtgComponentUtil.getApplicableComponentsByName(beanName, project);
+        Module module = ModuleUtilCore.findModuleForPsiElement(myElement);
+        Collection<PropertiesFileImpl> applicableComponents = AtgComponentUtil.getApplicableComponentsByName(beanName, module, myElement.getProject());
         return applicableComponents.stream()
                 .map(psiFile -> psiFile.findPropertyByKey(propertyKey))
                 .filter(PropertyImpl.class::isInstance)
@@ -43,7 +44,7 @@ public class AtgComponentFieldReference extends PsiPolyVariantReferenceBase<PsiE
     }
 
     @Override
-    public PsiElement handleElementRename(final String newElementName) throws IncorrectOperationException {
+    public PsiElement handleElementRename(final String newElementName) {
         int endIndex = propertyKey.contains("/") ? propertyKey.lastIndexOf("/") + 1 : 0;
         String newComponentName = propertyKey.substring(0, endIndex) + newElementName.replace(".properties", "");
         return super.handleElementRename(newComponentName);

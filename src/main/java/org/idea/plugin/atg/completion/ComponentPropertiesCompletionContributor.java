@@ -9,6 +9,8 @@ import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.lang.properties.psi.impl.PropertyImpl;
 import com.intellij.lang.properties.psi.impl.PropertyKeyImpl;
 import com.intellij.lang.properties.psi.impl.PropertyValueImpl;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -80,7 +82,8 @@ public class ComponentPropertiesCompletionContributor extends CompletionContribu
                         .map(AtgPropertyLookupElement::new)
                         .forEach(result::addElement);
 
-                if (!existFields.contains(Constants.Keywords.CLASS_PROPERTY)) result.addElement(LookupElementBuilder.create(Constants.Keywords.CLASS_PROPERTY));
+                if (!existFields.contains(Constants.Keywords.CLASS_PROPERTY))
+                    result.addElement(LookupElementBuilder.create(Constants.Keywords.CLASS_PROPERTY));
                 result.stopHere();
             }
         }
@@ -99,7 +102,8 @@ public class ComponentPropertiesCompletionContributor extends CompletionContribu
                     String value = ((PropertyImpl) position).getValue();
                     if (value != null && value.contains(".")) {
                         String componentName = value.substring(0, value.indexOf('.'));
-                        Collection<PropertiesFileImpl> applicableComponents = AtgComponentUtil.getApplicableComponentsByName(componentName, position.getProject());
+                        Module module = ModuleUtilCore.findModuleForPsiElement(position);
+                        Collection<PropertiesFileImpl> applicableComponents = AtgComponentUtil.getApplicableComponentsByName(componentName, module, position.getProject());
                         PsiClass variableClass = AtgComponentUtil.getClassForComponentDependency((PropertyImpl) position);
                         if (variableClass != null) {
                             applicableComponents.stream()

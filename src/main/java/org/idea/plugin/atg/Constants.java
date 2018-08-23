@@ -21,6 +21,8 @@ public class Constants {
     public static final String DEFAULT_ITEM_DESCRIPTOR_CLASS = "atg.adapter.gsa.GSAPropertyDescriptor";
     public static final List<String> IGNORED_ATTRIBUTES_NAMES_FOR_DESCRIPTOR = Arrays.asList("uiwritable", "uiqueryable", "resourceBundle", "deployable", "propertySortPriority", "references");
     public static final String WEB_HELP_URL = "https://github.com/chivaler/ATG-Toolkit/wiki/";
+    public static final String ATG_CONFIG_LIBRARY_PREFIX = "ATGConfig|";
+    public static final String ATG_CLASSES_LIBRARY_PREFIX = "ATGClasses|";
 
     private static final float LAYERED_ICON_SCALE_FACTOR = 0.75F;
 
