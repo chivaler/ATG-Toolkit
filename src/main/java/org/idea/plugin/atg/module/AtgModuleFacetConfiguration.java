@@ -16,6 +16,9 @@ import java.util.*;
 
 public class AtgModuleFacetConfiguration implements FacetConfiguration, PersistentStateComponent<AtgModuleFacetConfiguration.State> {
 
+
+    private String atgModuleName = null;
+
     @NotNull
     private Set<VirtualFile> configRoots = new HashSet<>();
     @NotNull
@@ -60,6 +63,10 @@ public class AtgModuleFacetConfiguration implements FacetConfiguration, Persiste
     @NotNull
     public Map<VirtualFile, String> getWebRoots() {
         return webRoots;
+    }
+
+    public String getAtgModuleName() {
+        return atgModuleName;
     }
 
     @Override

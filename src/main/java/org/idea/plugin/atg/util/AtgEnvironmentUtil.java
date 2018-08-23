@@ -3,6 +3,7 @@ package org.idea.plugin.atg.util;
 import com.intellij.facet.FacetManager;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.*;
 import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
@@ -37,26 +38,34 @@ public class AtgEnvironmentUtil {
                     System.getenv("ATG_HOME") + "/CommerceReferenceStore/",
                     "/home/atg/Git/KITS-App_ATG-Dev/");
 
+    private AtgEnvironmentUtil() {
+    }
+
+    @NotNull
+    public static Optional<ManifestFile> suggestManifestFileForModule(@NotNull final String atgModuleName, @NotNull final Project project) {
+        String atgHome = System.getenv("ATG_HOME");
+        VirtualFile atgHomeVirtualDir = StandardFileSystems.local().findFileByPath(atgHome);
+        if (atgHomeVirtualDir != null && atgHomeVirtualDir.isDirectory()) {
+            VirtualFile manifestFile = VfsUtilCore.findRelativeFile(atgModuleName.replace('.', '/') + "/META-INF/MANIFEST.MF", atgHomeVirtualDir);
+            PsiFile manifestPsiFile = manifestFile != null ? PsiManager.getInstance(project).findFile(manifestFile) : null;
+            if (manifestPsiFile instanceof ManifestFile) return Optional.of((ManifestFile) manifestPsiFile);
+        }
+
+        return Optional.empty();
+    }
+
     @NotNull
     public static Optional<ManifestFile> suggestManifestFileForModule(@NotNull final Module module) {
-        VirtualFile projectRoot = module.getProject().getBaseDir();
         AtgModuleFacet atgModuleFacet = FacetManager.getInstance(module).getFacetByType(AtgModuleFacet.FACET_TYPE_ID);
         if (atgModuleFacet != null) {
             String atgHome = System.getenv("ATG_HOME");
             VirtualFile atgHomeVirtualDir = StandardFileSystems.local().findFileByPath(atgHome);
             if (atgHomeVirtualDir != null && atgHomeVirtualDir.isDirectory()) {
-                String moduleName = projectRoot.getName();
 
-                ContentEntry[] moduleContentEntries = ModuleRootManager.getInstance(module).getContentEntries();
-                if (moduleContentEntries.length > 0) {
-                    VirtualFile contentEntryRoot = moduleContentEntries[0].getFile();
-                    if (!projectRoot.equals(contentEntryRoot)) {
-                        moduleName = VfsUtilCore.getRelativePath(contentEntryRoot, projectRoot);
-                    }
-                }
+                String moduleName = suggestAtgModuleName(module);
 
                 VirtualFile manifestFile = VfsUtilCore.findRelativeFile(moduleName + "/META-INF/MANIFEST.MF", atgHomeVirtualDir);
-                PsiFile manifestPsiFile = PsiManager.getInstance(module.getProject()).findFile(manifestFile);
+                PsiFile manifestPsiFile = manifestFile != null ? PsiManager.getInstance(module.getProject()).findFile(manifestFile) : null;
                 if (manifestPsiFile instanceof ManifestFile) return Optional.of((ManifestFile) manifestPsiFile);
             }
 
@@ -66,21 +75,62 @@ public class AtgEnvironmentUtil {
     }
 
     @NotNull
-    public static List<String> getRequiredModules(@NotNull final Module module) {
-        Optional<ManifestFile> manifestFile = suggestManifestFileForModule(module);
+    public static String suggestAtgModuleName(@NotNull Module module) {
+        VirtualFile projectRoot = module.getProject().getBaseDir();
+        String moduleName = projectRoot.getName();
+        ContentEntry[] moduleContentEntries = ModuleRootManager.getInstance(module).getContentEntries();
+        if (moduleContentEntries.length > 0) {
+            VirtualFile contentEntryRoot = moduleContentEntries[0].getFile();
+            if (contentEntryRoot != null && !projectRoot.equals(contentEntryRoot)) {
+                moduleName = VfsUtilCore.getRelativePath(contentEntryRoot, projectRoot);
+            }
+        }
+        return moduleName != null ? moduleName.replace('/','.').replace('\\','.') : "";
+    }
+
+    @NotNull
+    public static List<String> getRequiredModules(@NotNull final String atgModuleName, @NotNull final Project project) {
+        Optional<ManifestFile> manifestFile = suggestManifestFileForModule(atgModuleName, project);
         if (manifestFile.isPresent()) {
             Header requiredHeader = manifestFile.get().getHeader(ATG_REQUIRED);
             if (requiredHeader != null && requiredHeader.getHeaderValue() != null) {
-                return Arrays.stream(requiredHeader.getHeaderValue().getUnwrappedText().split("\\S"))
+                return Arrays.stream(requiredHeader.getHeaderValue().getUnwrappedText().split("\\s"))
                         .collect(Collectors.toList());
             }
         }
         return Collections.emptyList();
     }
 
+    public static List<String> getRequiredModules(@NotNull final Project project, @NotNull String... loadingModules) {
+        List<String> requiredList = new ArrayList<>();
+        Deque<String> resolvingQueue = new LinkedList<>(Arrays.asList(loadingModules));
+
+        while (!resolvingQueue.isEmpty()) {
+            String nextName = resolvingQueue.removeFirst();
+            if (!requiredList.contains(nextName)) {
+                List<String> requiredModulesForNextModule = getRequiredModules(nextName, project);
+                if (requiredList.containsAll(requiredModulesForNextModule)) {
+                    requiredList.add(nextName);
+                } else {
+                    resolvingQueue.addFirst(nextName);
+                    for (String dependency : requiredModulesForNextModule) {
+                        resolvingQueue.addFirst(dependency);
+                    }
+                }
+            }
+        }
+
+        return requiredList;
+    }
+
     @NotNull
-    public static List<VirtualFile> getConfigs(@NotNull final Module module) {
-        Optional<ManifestFile> manifestFile = suggestManifestFileForModule(module);
+    public static List<String> getRequiredModules(@NotNull final Module module) {
+        return getRequiredModules(module.getProject(), suggestAtgModuleName(module));
+    }
+
+    @NotNull
+    public static List<VirtualFile> getConfigs(@NotNull final String atgModuleName, @NotNull final Project project) {
+        Optional<ManifestFile> manifestFile = suggestManifestFileForModule(atgModuleName, project);
         if (manifestFile.isPresent()) {
             Header configPathHeader = manifestFile.get().getHeader(ATG_CONFIG_PATH);
             if (configPathHeader != null && configPathHeader.getHeaderValue() != null) {
@@ -98,39 +148,51 @@ public class AtgEnvironmentUtil {
         return Collections.emptyList();
     }
 
-    public static void addLibraries(@NotNull final Module module, @NotNull List<VirtualFile> configs) {
+    @NotNull
+    public static List<VirtualFile> getConfigs(@NotNull final Module module) {
+        return getConfigs(suggestAtgModuleName(module), module.getProject());
+    }
+
+    public static void addDependantConfigs(@NotNull final Module module) {
+        String atgModuleName = suggestAtgModuleName(module);
+        List<String> requiredModules = getRequiredModules(module);
+        requiredModules.remove(atgModuleName);
+
         ApplicationManager.getApplication().runWriteAction(() ->
-        {
-            LibraryTable projectLibraryTable = ProjectLibraryTable.getInstance(module.getProject());
-            ModifiableRootModel moduleModifiableModel = ModuleRootManager.getInstance(module).getModifiableModel();
+                requiredModules.forEach(m -> {
+                    List<VirtualFile> moduleConfigs = getConfigs(m, module.getProject());
+                    moduleConfigs.forEach(c -> addDependantConfigToModule(module, m, c));
+                }));
+    }
 
-            LibraryTable.ModifiableModel libraryTableModel = projectLibraryTable.getModifiableModel();
-            for (VirtualFile config : configs) {
-                String libraryName = Constants.ATG_CONFIG_LIBRARY_PREFIX + config.getName();
-                Library library = libraryTableModel.getLibraryByName(libraryName);
-                if (library == null) {
-                    library = libraryTableModel.createLibrary(libraryName);
-                    Library.ModifiableModel libraryModel = library.getModifiableModel();
-                    if (!config.isDirectory()) {
-                        config = JarFileSystem.getInstance().getRootByLocal(config);
-                    }
-                    if (config != null) {
-                        libraryModel.addRoot(config, OrderRootType.CLASSES);
-                    }
-                    libraryModel.commit();
-                }
-                Optional<LibraryOrderEntry> moduleLibraryEntry = Arrays.stream(moduleModifiableModel.getOrderEntries())
-                        .filter(LibraryOrderEntry.class::isInstance)
-                        .map(f -> (LibraryOrderEntry) f)
-                        .filter(l -> libraryName.equals(l.getLibraryName()))
-                        .findAny();
-                if (!moduleLibraryEntry.isPresent()) {
-                    moduleModifiableModel.addLibraryEntry(library);
-                }
+    public static void addDependantConfigToModule(@NotNull Module module, @NotNull String atgModuleName, @NotNull VirtualFile config) {
+        LibraryTable projectLibraryTable = ProjectLibraryTable.getInstance(module.getProject());
+        ModifiableRootModel moduleModifiableModel = ModuleRootManager.getInstance(module).getModifiableModel();
+        LibraryTable.ModifiableModel libraryTableModel = projectLibraryTable.getModifiableModel();
+
+        String libraryName = Constants.ATG_CONFIG_LIBRARY_PREFIX + atgModuleName + Constants.ATG_LIBRARY_SEPARATOR + config.getName();
+        Library library = libraryTableModel.getLibraryByName(libraryName);
+        if (library == null) {
+            library = libraryTableModel.createLibrary(libraryName);
+            Library.ModifiableModel libraryModel = library.getModifiableModel();
+            if (!config.isDirectory()) {
+                config = JarFileSystem.getInstance().getRootByLocal(config);
             }
-            libraryTableModel.commit();
-            moduleModifiableModel.commit();
-        });
+            if (config != null) {
+                libraryModel.addRoot(config, OrderRootType.CLASSES);
+            }
+            libraryModel.commit();
+        }
+        Optional<LibraryOrderEntry> moduleLibraryEntry = Arrays.stream(moduleModifiableModel.getOrderEntries())
+                .filter(LibraryOrderEntry.class::isInstance)
+                .map(f -> (LibraryOrderEntry) f)
+                .filter(l -> libraryName.equals(l.getLibraryName()))
+                .findAny();
+        if (!moduleLibraryEntry.isPresent()) {
+            moduleModifiableModel.addLibraryEntry(library);
+        }
 
+        libraryTableModel.commit();
+        moduleModifiableModel.commit();
     }
 }

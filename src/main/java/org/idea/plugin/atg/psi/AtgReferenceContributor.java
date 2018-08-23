@@ -12,6 +12,7 @@ import com.intellij.psi.impl.source.resolve.reference.impl.providers.JavaClassLi
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import org.idea.plugin.atg.Constants;
+import org.idea.plugin.atg.psi.reference.AtgComponentFieldReference;
 import org.idea.plugin.atg.psi.reference.AtgComponentReference;
 import org.idea.plugin.atg.psi.reference.JavaPropertyReference;
 import org.idea.plugin.atg.util.AtgComponentUtil;
@@ -87,9 +88,21 @@ public class AtgReferenceContributor extends PsiReferenceContributor {
                 List<PsiReference> results = new ArrayList<>();
                 Matcher matcher = Constants.SUSPECTED_COMPONENT_NAME_REGEX.matcher(value);
                 while (matcher.find()) {
+                    String beanName = matcher.group(0);
                     int start = matcher.start(0);
-                    int length = matcher.group(0).length();
-                    results.add(new AtgComponentReference(propertyValue, new TextRange(start, start + length)));
+                    int length = beanName.length();
+                    TextRange beanTextRange = new TextRange(start, start + length);
+                    if (beanName.contains(".")) {
+                        String firstField = beanName.substring(beanName.indexOf('.') + 1);
+                        beanName = beanName.substring(0, beanName.indexOf('.'));
+                        length = beanName.length();
+                        beanTextRange = new TextRange(start, start + length);
+                        TextRange fieldTextRange = new TextRange(start + length + 1, start + length + firstField.length() + 1);
+                        results.add(new AtgComponentReference(propertyValue, beanTextRange));
+                        results.add(new AtgComponentFieldReference(beanName, firstField, fieldTextRange, element.getContainingFile()));
+                    } else {
+                        results.add(new AtgComponentReference(propertyValue, beanTextRange));
+                    }
                 }
                 return results.toArray(new PsiReference[0]);
 

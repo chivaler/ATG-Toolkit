@@ -17,7 +17,7 @@ public class AtgComponentFieldReference extends PsiPolyVariantReferenceBase<PsiE
     private final String beanName;
     private final String propertyKey;
 
-    public AtgComponentFieldReference(@NotNull String beanName, @NotNull String propertyKey, @NotNull TextRange textRange, @NotNull PsiPlainTextFile originalFile) {
+    public AtgComponentFieldReference(@NotNull String beanName, @NotNull String propertyKey, @NotNull TextRange textRange, @NotNull PsiFile originalFile) {
         super(originalFile, textRange);
         this.beanName = beanName;
         this.propertyKey = propertyKey;
