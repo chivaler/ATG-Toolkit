@@ -3,10 +3,7 @@ package org.idea.plugin.atg.util;
 import com.intellij.facet.FacetManager;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.roots.ContentEntry;
-import com.intellij.openapi.roots.ModifiableRootModel;
-import com.intellij.openapi.roots.ModuleRootManager;
-import com.intellij.openapi.roots.OrderRootType;
+import com.intellij.openapi.roots.*;
 import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
@@ -119,7 +116,14 @@ public class AtgEnvironmentUtil {
                     }
                     libraryModel.commit();
                 }
-                moduleModifiableModel.addLibraryEntry(library);
+                Optional<LibraryOrderEntry> moduleLibraryEntry = Arrays.stream(moduleModifiableModel.getOrderEntries())
+                        .filter(LibraryOrderEntry.class::isInstance)
+                        .map(f -> (LibraryOrderEntry) f)
+                        .filter(l -> libraryName.equals(l.getLibraryName()))
+                        .findAny();
+                if (!moduleLibraryEntry.isPresent()) {
+                    moduleModifiableModel.addLibraryEntry(library);
+                }
             }
             libraryTableModel.commit();
             moduleModifiableModel.commit();
