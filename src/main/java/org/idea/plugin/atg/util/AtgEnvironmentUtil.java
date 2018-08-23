@@ -7,6 +7,7 @@ import com.intellij.openapi.roots.*;
 import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
+import com.intellij.openapi.vfs.JarFileSystem;
 import com.intellij.openapi.vfs.StandardFileSystems;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -65,15 +66,16 @@ public class AtgEnvironmentUtil {
     }
 
     @NotNull
-    public static String[] getRequiredModules(@NotNull final Module module) {
+    public static List<String> getRequiredModules(@NotNull final Module module) {
         Optional<ManifestFile> manifestFile = suggestManifestFileForModule(module);
         if (manifestFile.isPresent()) {
             Header requiredHeader = manifestFile.get().getHeader(ATG_REQUIRED);
             if (requiredHeader != null && requiredHeader.getHeaderValue() != null) {
-                return requiredHeader.getHeaderValue().getUnwrappedText().split("\\S");
+                return Arrays.stream(requiredHeader.getHeaderValue().getUnwrappedText().split("\\S"))
+                        .collect(Collectors.toList());
             }
         }
-        return new String[0];
+        return Collections.emptyList();
     }
 
     @NotNull
@@ -109,10 +111,11 @@ public class AtgEnvironmentUtil {
                 if (library == null) {
                     library = libraryTableModel.createLibrary(libraryName);
                     Library.ModifiableModel libraryModel = library.getModifiableModel();
-                    if (config.isDirectory()) {
+                    if (!config.isDirectory()) {
+                        config = JarFileSystem.getInstance().getRootByLocal(config);
+                    }
+                    if (config != null) {
                         libraryModel.addRoot(config, OrderRootType.CLASSES);
-                    } else {
-                        libraryModel.addJarDirectory(config, true, OrderRootType.CLASSES);
                     }
                     libraryModel.commit();
                 }
