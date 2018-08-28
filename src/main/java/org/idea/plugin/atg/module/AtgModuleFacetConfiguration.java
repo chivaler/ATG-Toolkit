@@ -7,6 +7,7 @@ import com.intellij.facet.ui.FacetValidatorsManager;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.util.xmlb.annotations.Tag;
 import com.intellij.util.xmlb.annotations.XCollection;
 import com.intellij.util.xmlb.annotations.XMap;
 import org.jetbrains.annotations.NotNull;
@@ -16,9 +17,7 @@ import java.util.*;
 
 public class AtgModuleFacetConfiguration implements FacetConfiguration, PersistentStateComponent<AtgModuleFacetConfiguration.State> {
 
-
-    private String atgModuleName = null;
-
+    private String atgModuleName = "";
     @NotNull
     private Set<VirtualFile> configRoots = new HashSet<>();
     @NotNull
@@ -47,6 +46,7 @@ public class AtgModuleFacetConfiguration implements FacetConfiguration, Persiste
         webRoots.entrySet().stream()
                 .filter(Objects::nonNull)
                 .forEach(r -> result.webRoots.put(r.getKey().getUrl(), r.getValue()));
+        result.atgModuleName = atgModuleName;
         return result;
     }
 
@@ -74,6 +74,7 @@ public class AtgModuleFacetConfiguration implements FacetConfiguration, Persiste
         configRoots = new HashSet<>();
         configLayerRoots = new HashSet<>();
         webRoots = new HashMap<>();
+        atgModuleName = state.atgModuleName;
         state.configRoots
                 .forEach(s -> configRoots.add(VirtualFileManager.getInstance().findFileByUrl(s)));
         state.configLayerRoots
@@ -84,12 +85,12 @@ public class AtgModuleFacetConfiguration implements FacetConfiguration, Persiste
 
     @SuppressWarnings("WeakerAccess")
     static class State {
+        @Tag(value = "atgModuleName")
+        public String atgModuleName = "";
         @XCollection(elementName = "root", valueAttributeName = "url", propertyElementName = "configRoots")
         public List<String> configRoots = new ArrayList<>();
         @XCollection(elementName = "root", valueAttributeName = "url", propertyElementName = "configLayerRoots")
         public List<String> configLayerRoots = new ArrayList<>();
-//        @XCollection(elementName = "root", valueAttributeName = "url", propertyElementName = "webRoots")
-
         @XMap(entryTagName = "root", keyAttributeName = "url", valueAttributeName = "context", propertyElementName = "webRoots")
         public Map<String, String> webRoots = new HashMap<>();
     }

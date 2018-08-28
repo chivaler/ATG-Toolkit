@@ -35,7 +35,7 @@
             <category>Java/Declaration</category>
         </intentionAction>
         <applicationConfigurable parentId="language" instance="org.idea.plugin.atg.config.AtgToolkitConfigurable"
-                                 id="atg-toolkit" displayName="ATG Toolkit"/>
+                                 displayName="ATG Toolkit"/>
         <applicationService serviceImplementation="org.idea.plugin.atg.config.AtgToolkitConfig"/>
         <completion.contributor language="Properties"
                                 implementationClass="org.idea.plugin.atg.completion.ComponentPropertiesCompletionContributor"
@@ -77,5 +77,10 @@
 
     </actions>
 
+    <project-components>
+        <component>
+            <implementation-class>org.idea.plugin.atg.roots.AtgEnvironmentRegistrar</implementation-class>
+        </component>
+    </project-components>
 
 </idea-plugin>

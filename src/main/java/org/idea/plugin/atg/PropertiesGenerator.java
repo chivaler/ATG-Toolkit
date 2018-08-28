@@ -9,7 +9,6 @@ import com.intellij.ide.util.EditorHelper;
 import com.intellij.lang.jvm.types.JvmType;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.fileEditor.ex.IdeDocumentHistory;
@@ -72,15 +71,11 @@ public class PropertiesGenerator {
                         }
 
                     } catch (IncorrectOperationException e) {
-                        Notification notification = new Notification(AtgToolkitBundle.message("notifications.groupId"),
-                                AtgToolkitBundle.message("intentions.create.component.error"),
-                                e.getMessage(), NotificationType.INFORMATION);
-                        Notifications.Bus.notify(notification, project);
+                        new Notification(Constants.NOTIFICATION_GROUP_ID, AtgToolkitBundle.message("intentions.create.component.error"),
+                                e.getMessage(), NotificationType.INFORMATION).notify(project);
                     } catch (Exception e) {
-                        Notification notification = new Notification(AtgToolkitBundle.message("notifications.groupId"),
-                                AtgToolkitBundle.message("intentions.create.component.error"),
-                                e.getMessage(), NotificationType.ERROR);
-                        Notifications.Bus.notify(notification, project);
+                        new Notification(Constants.NOTIFICATION_GROUP_ID, AtgToolkitBundle.message("intentions.create.component.error"),
+                                e.getMessage(), NotificationType.ERROR).notify(project);
                     }
                     return targetClass;
                 }));

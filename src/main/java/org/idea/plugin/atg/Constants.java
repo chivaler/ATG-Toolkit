@@ -12,8 +12,10 @@ import java.util.regex.Pattern;
 
 public class Constants {
 
-    public static final String PLUGIN_ID = "atg-toolkit";
-    public static final String ATG_TOOLKIT_CONFIGURABLE_ID = "atg-toolkit";
+    public static final String PLUGIN_ID = "atg-toolkit"; //don't change this in future releases
+    public static final String NOTIFICATION_GROUP_ID = PLUGIN_ID; //don't change this in future releases
+    public static final String ATG_TOOLKIT_CONFIGURABLE_ID = PLUGIN_ID;
+
     public static final LayeredIcon CONFIG_ROOT_ICON;
     public static final LayeredIcon CONFIG_LAYER_ROOT_ICON;
     public static final LayeredIcon WEB_ROOT_ICON;
@@ -24,6 +26,7 @@ public class Constants {
     public static final String ATG_LIBRARY_SEPARATOR = "|";
     public static final String ATG_CONFIG_LIBRARY_PREFIX = "ATGConfig" + ATG_LIBRARY_SEPARATOR;
     public static final String ATG_CLASSES_LIBRARY_PREFIX = "ATGClasses" + ATG_LIBRARY_SEPARATOR;
+    public static final String ATG_HOME = "ATG_HOME";
 
     private static final float LAYERED_ICON_SCALE_FACTOR = 0.75F;
 
