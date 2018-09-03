@@ -59,11 +59,10 @@
 
     <actions>
 
-        <action id="GoToComponents" class="org.idea.plugin.atg.navigation.GoToComponentCodeAction"
-                text="Go to Components..."
+        <action id="GoToAtgComponents" class="org.idea.plugin.atg.navigation.GoToComponentCodeAction"
                 description="Go to all components based on the class">
             <add-to-group group-id="GoToCodeGroup" anchor="after" relative-to-action="GotoTest"/>
-            <add-to-group group-id="EditorLangPopupMenu" anchor="after" relative-to-action="GotoTest"/>
+            <add-to-group group-id="EditorPopupMenu.GoTo" anchor="after" relative-to-action="GotoTest"/>
             <keyboard-shortcut first-keystroke="alt P" keymap="$default"/>
         </action>
 
