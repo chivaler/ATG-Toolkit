@@ -1,6 +1,7 @@
 package org.idea.plugin.atg.navigation;
 
 import com.intellij.codeInsight.actions.BaseCodeInsightAction;
+import com.intellij.lang.properties.psi.PropertiesFile;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.Presentation;
@@ -35,16 +36,19 @@ public class GoToComponentCodeAction extends BaseCodeInsightAction {
         if (editor == null || project == null) return;
 
         PsiFile psiFile = PsiUtilBase.getPsiFileInEditor(editor, project);
-        if (!(psiFile instanceof PsiJavaFile)) return;
-        Optional<PsiClass> srcClass = Arrays.stream(((PsiJavaFile) psiFile).getClasses())
-                .filter(AtgComponentUtil::isApplicableToHaveComponents)
-                .findAny();
-
-        if (srcClass.isPresent()) {
-            presentation.setText(AtgToolkitBundle.message("navigation.goto.component.text"));
-            presentation.setDescription(AtgToolkitBundle.message("navigation.goto.component.description"));
+        if (psiFile instanceof PsiJavaFile) {
+            Optional<PsiClass> srcClass = Arrays.stream(((PsiJavaFile) psiFile).getClasses())
+                    .filter(AtgComponentUtil::isApplicableToHaveComponents)
+                    .findAny();
+            if (srcClass.isPresent()) {
+                presentation.setText(AtgToolkitBundle.message("goto.component.from.class.text"));
+                presentation.setDescription(AtgToolkitBundle.message("goto.component.from.class.description"));
+                presentation.setEnabledAndVisible(true);
+            }
+        } else if (psiFile instanceof PropertiesFile) {
+            presentation.setText(AtgToolkitBundle.message("goto.component.from.component.text"));
+            presentation.setDescription(AtgToolkitBundle.message("goto.component.from.component.description"));
             presentation.setEnabledAndVisible(true);
         }
-
     }
 }

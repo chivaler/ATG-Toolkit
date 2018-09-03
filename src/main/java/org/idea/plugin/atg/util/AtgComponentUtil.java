@@ -18,6 +18,7 @@ import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
+import com.intellij.openapi.vfs.JarFileSystem;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
@@ -164,6 +165,11 @@ public class AtgComponentUtil {
 
     @NotNull
     public static Optional<String> getComponentCanonicalName(@NotNull VirtualFile file, @NotNull Project project) {
+        if (file.getFileSystem() instanceof JarFileSystem) {
+            String path = file.getPath();
+            int separatorIndex = path.indexOf("!/");
+            return Optional.of(path.substring(separatorIndex + 1).replace(".properties", ""));
+        }
         return ProjectFacetManager.getInstance(project).getFacets(AtgModuleFacet.FACET_TYPE_ID).stream().map(f -> f.getConfiguration().getConfigRoots())
                 .flatMap(Collection::stream)
                 .filter(Objects::nonNull)
