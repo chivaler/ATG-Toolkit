@@ -26,6 +26,7 @@ import com.intellij.psi.impl.source.xml.XmlFileImpl;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.ClassInheritorsSearch;
 import com.intellij.psi.xml.XmlFile;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.config.AtgConfigHelper;
@@ -46,23 +47,32 @@ public class AtgComponentUtil {
     }
 
     @NotNull
-    public static Optional<String> getComponentClassStr(@Nullable PsiFile propertyFile) {
+    public static Optional<String> getComponentClassStr(@Nullable PsiFile propertyFile, PropertiesFile... ignoredFiles) {
         if (propertyFile instanceof PropertiesFile) {
             PropertiesFile componentFile = (PropertiesFile) propertyFile;
             IProperty propertyClassName = componentFile.findPropertyByKey(Constants.Keywords.CLASS_PROPERTY);
-            if (propertyClassName == null || StringUtils.isBlank(propertyClassName.getValue())) {
+            if (propertyClassName != null && StringUtils.isNotBlank(propertyClassName.getValue())) {
+                return Optional.of(propertyClassName.getValue());
+            } else {
+                String componentToFind = getComponentCanonicalName((PropertiesFile) propertyFile).orElse(null);
                 IProperty basedOnComponent = componentFile.findPropertyByKey(Constants.Keywords.BASED_ON_PROPERTY);
-                if (basedOnComponent != null && StringUtils.isBlank(basedOnComponent.getValue())) {
+                if (basedOnComponent != null && StringUtils.isNotBlank(basedOnComponent.getValue())) {
+                    componentToFind = basedOnComponent.getValue();
+                }
+                if (componentToFind != null) {
                     Module module = ModuleUtilCore.findModuleForPsiElement(propertyFile);
-                    Collection<PropertiesFileImpl> applicableParents = getApplicableComponentsByName(basedOnComponent.getValue(), module, propertyFile.getProject());
+                    Collection<PropertiesFileImpl> applicableParents = getApplicableComponentsByName(componentToFind, module, propertyFile.getProject());
+                    PropertiesFile[] incrementedIgnoredFiles = new PropertiesFile[ignoredFiles.length + 1];
+                    System.arraycopy(ignoredFiles, 0, incrementedIgnoredFiles, 0, ignoredFiles.length);
+                    incrementedIgnoredFiles[ignoredFiles.length] = componentFile;
                     for (PropertiesFileImpl parent : applicableParents) {
                         //TODO after layer sequence is done choose appropriate component, or combined
-                        Optional<String> parentComponentClass = getComponentClassStr(parent);
-                        if (parentComponentClass.isPresent()) return parentComponentClass;
+                        if (!ArrayUtils.contains(ignoredFiles, parent)) {
+                            Optional<String> parentComponentClass = getComponentClassStr(parent, incrementedIgnoredFiles);
+                            if (parentComponentClass.isPresent()) return parentComponentClass;
+                        }
                     }
                 }
-            } else {
-                return Optional.of(propertyClassName.getValue());
             }
         }
         return Optional.empty();
@@ -117,7 +127,13 @@ public class AtgComponentUtil {
     public static Collection<PropertiesFileImpl> getApplicableComponentsByName(@NotNull String componentName,
                                                                                @Nullable Module module,
                                                                                @NotNull Project project) {
-        return getApplicableConfigRoots(module, project).stream()
+        List<VirtualFile> applicableRoots = Arrays.stream(ProjectLibraryTable.getInstance(project).getLibraries())
+                .filter(l -> l.getName() != null && l.getName().startsWith(Constants.ATG_CONFIG_LIBRARY_PREFIX))
+                .map(l -> l.getRootProvider().getFiles(OrderRootType.CLASSES))
+                .flatMap(Arrays::stream)
+                .collect(Collectors.toList());
+        applicableRoots.addAll(getApplicableConfigRoots(module, project));
+        return applicableRoots.stream()
                 .filter(Objects::nonNull)
                 .filter(VirtualFile::isDirectory)
                 .map(root -> VfsUtilCore.findRelativeFile(componentName + ".properties", root))

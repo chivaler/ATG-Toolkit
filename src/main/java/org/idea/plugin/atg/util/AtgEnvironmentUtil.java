@@ -2,6 +2,7 @@ package org.idea.plugin.atg.util;
 
 import com.intellij.facet.FacetManager;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.*;
@@ -25,6 +26,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class AtgEnvironmentUtil {
+    private static final Logger LOG = Logger.getInstance(AtgEnvironmentUtil.class);
+
     public static final String ATG_CONFIG_PATH = "ATG-Config-Path";
     public static final String ATG_REQUIRED = "ATG-Required";
     public static final String ATG_VERSION = "ATG-Version";
@@ -85,7 +88,7 @@ public class AtgEnvironmentUtil {
                 moduleName = VfsUtilCore.getRelativePath(contentEntryRoot, projectRoot);
             }
         }
-        return moduleName != null ? moduleName.replace('/','.').replace('\\','.') : "";
+        return moduleName != null ? moduleName.replace('/', '.').replace('\\', '.') : "";
     }
 
     @NotNull
@@ -160,39 +163,47 @@ public class AtgEnvironmentUtil {
 
         ApplicationManager.getApplication().runWriteAction(() ->
                 requiredModules.forEach(m -> {
-                    List<VirtualFile> moduleConfigs = getConfigs(m, module.getProject());
-                    moduleConfigs.forEach(c -> addDependantConfigToModule(module, m, c));
+                    VirtualFile[] moduleConfigs = getConfigs(m, module.getProject()).toArray(new VirtualFile[0]);
+                    if (moduleConfigs.length > 0) addDependantConfigToModule(module, m, moduleConfigs);
                 }));
     }
 
-    public static void addDependantConfigToModule(@NotNull Module module, @NotNull String atgModuleName, @NotNull VirtualFile config) {
+    public static void addDependantConfigToModule(@NotNull Module module, @NotNull String atgModuleName, @NotNull VirtualFile... configs) {
         LibraryTable projectLibraryTable = ProjectLibraryTable.getInstance(module.getProject());
         ModifiableRootModel moduleModifiableModel = ModuleRootManager.getInstance(module).getModifiableModel();
         LibraryTable.ModifiableModel libraryTableModel = projectLibraryTable.getModifiableModel();
 
-        String libraryName = Constants.ATG_CONFIG_LIBRARY_PREFIX + atgModuleName + Constants.ATG_LIBRARY_SEPARATOR + config.getName();
+        String libraryName = Constants.ATG_CONFIG_LIBRARY_PREFIX + atgModuleName;
         Library library = libraryTableModel.getLibraryByName(libraryName);
         if (library == null) {
             library = libraryTableModel.createLibrary(libraryName);
             Library.ModifiableModel libraryModel = library.getModifiableModel();
-            if (!config.isDirectory()) {
-                config = JarFileSystem.getInstance().getRootByLocal(config);
-            }
-            if (config != null) {
+
+            for (VirtualFile config : configs) {
+                if (!config.isDirectory()) {
+                    VirtualFile jarConfig = JarFileSystem.getInstance().getRootByLocal(config);
+                    if (jarConfig != null) {
+                        config = jarConfig;
+                    } else {
+                        LOG.warn("Wrong config root:" + config.getName() + " found in MANIFEST.MF of:" + atgModuleName);
+                        continue;
+                    }
+                }
                 libraryModel.addRoot(config, OrderRootType.CLASSES);
             }
-            libraryModel.commit();
-        }
-        Optional<LibraryOrderEntry> moduleLibraryEntry = Arrays.stream(moduleModifiableModel.getOrderEntries())
-                .filter(LibraryOrderEntry.class::isInstance)
-                .map(f -> (LibraryOrderEntry) f)
-                .filter(l -> libraryName.equals(l.getLibraryName()))
-                .findAny();
-        if (!moduleLibraryEntry.isPresent()) {
-            moduleModifiableModel.addLibraryEntry(library);
-        }
 
-        libraryTableModel.commit();
-        moduleModifiableModel.commit();
+            libraryModel.commit();
+            libraryTableModel.commit();
+
+            Optional<LibraryOrderEntry> moduleLibraryEntry = Arrays.stream(moduleModifiableModel.getOrderEntries())
+                    .filter(LibraryOrderEntry.class::isInstance)
+                    .map(f -> (LibraryOrderEntry) f)
+                    .filter(l -> libraryName.equals(l.getLibraryName()))
+                    .findAny();
+            if (!moduleLibraryEntry.isPresent()) {
+                moduleModifiableModel.addLibraryEntry(library);
+                moduleModifiableModel.commit();
+            }
+        }
     }
 }

@@ -1,15 +1,16 @@
 package org.idea.plugin.atg;
 
+import com.google.common.collect.ImmutableList;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.util.ScalableIcon;
 import com.intellij.ui.LayeredIcon;
 import com.intellij.util.PlatformIcons;
 
 import javax.swing.*;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
+@SuppressWarnings("WeakerAccess")
 public class Constants {
 
     public static final String PLUGIN_ID = "atg-toolkit"; //don't change this in future releases
@@ -21,9 +22,9 @@ public class Constants {
     public static final LayeredIcon WEB_ROOT_ICON;
     public static final Pattern SUSPECTED_COMPONENT_NAME_REGEX = Pattern.compile("/[^,=]*");
     public static final String DEFAULT_ITEM_DESCRIPTOR_CLASS = "atg.adapter.gsa.GSAPropertyDescriptor";
-    public static final List<String> IGNORED_ATTRIBUTES_NAMES_FOR_DESCRIPTOR = Arrays.asList("uiwritable", "uiqueryable", "resourceBundle", "deployable", "propertySortPriority", "references");
+    public static final List<String> IGNORED_ATTRIBUTES_NAMES_FOR_DESCRIPTOR = ImmutableList.of("uiwritable", "uiqueryable", "resourceBundle", "deployable", "propertySortPriority", "references");
     public static final String WEB_HELP_URL = "https://github.com/chivaler/ATG-Toolkit/wiki/";
-    public static final String ATG_LIBRARY_SEPARATOR = "|";
+    public static final String ATG_LIBRARY_SEPARATOR = ":";
     public static final String ATG_CONFIG_LIBRARY_PREFIX = "ATGConfig" + ATG_LIBRARY_SEPARATOR;
     public static final String ATG_CLASSES_LIBRARY_PREFIX = "ATGClasses" + ATG_LIBRARY_SEPARATOR;
     public static final String ATG_HOME = "ATG_HOME";
