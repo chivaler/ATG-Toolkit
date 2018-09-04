@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 
 public class ComponentPropertiesCompletionContributor extends CompletionContributor {
-    static final String[] AVAILABLE_SCOPES = new String[]{"global", "session", "request", "window", "prototype"};
+
 
     public ComponentPropertiesCompletionContributor() {
         extend(CompletionType.BASIC, psiElement(PropertyValueImpl.class), new SuggestDependenciesByClassCompletionProvider());
@@ -51,8 +51,8 @@ public class ComponentPropertiesCompletionContributor extends CompletionContribu
                             .map(AtgComponentLookupElement::new)
                             .forEach(result::addElement);
                     result.stopHere();
-                } else if (Constants.Keywords.SCOPE_PROPERTY.equals(key)) {
-                    for (String scope : AVAILABLE_SCOPES) {
+                } else if (Constants.Keywords.Properties.SCOPE_PROPERTY.equals(key)) {
+                    for (String scope : Constants.Keywords.Properties.AVAILABLE_SCOPES) {
                         result.addElement(LookupElementBuilder.create(scope));
                     }
                     result.stopHere();
@@ -82,8 +82,8 @@ public class ComponentPropertiesCompletionContributor extends CompletionContribu
                         .map(AtgPropertyLookupElement::new)
                         .forEach(result::addElement);
 
-                if (!existFields.contains(Constants.Keywords.CLASS_PROPERTY))
-                    result.addElement(LookupElementBuilder.create(Constants.Keywords.CLASS_PROPERTY));
+                if (!existFields.contains(Constants.Keywords.Properties.CLASS_PROPERTY))
+                    result.addElement(LookupElementBuilder.create(Constants.Keywords.Properties.CLASS_PROPERTY));
                 result.stopHere();
             }
         }

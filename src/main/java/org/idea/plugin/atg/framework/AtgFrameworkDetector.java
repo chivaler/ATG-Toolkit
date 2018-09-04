@@ -57,7 +57,7 @@ public class AtgFrameworkDetector extends FacetBasedFrameworkDetector<AtgModuleF
                         with(new PatternCondition<FileContent>("withContent") {
                             @Override
                             public boolean accepts(@NotNull FileContent fileContent, ProcessingContext context) {
-                                return (new String(fileContent.getContent()).startsWith(Constants.Keywords.CLASS_PROPERTY + "="));
+                                return (new String(fileContent.getContent()).startsWith(Constants.Keywords.Properties.CLASS_PROPERTY + "="));
                             }
                         }))
                 .and(FileContentPattern.fileContent().
@@ -158,7 +158,7 @@ public class AtgFrameworkDetector extends FacetBasedFrameworkDetector<AtgModuleF
         //TODO validate existance of all modules
 //        System.out.println("conf: " + configuration.getConfigRoots());
 //        System.out.println("web: " + configuration.getWebRoots());
-//        System.out.println("required: " + configuration.getRequiredModules());
+//        System.out.println("required: " + configuration.getAllRequiredModules());
 
         return configuration;
     }
@@ -195,7 +195,7 @@ public class AtgFrameworkDetector extends FacetBasedFrameworkDetector<AtgModuleF
                     Matcher matcherRequired = patternRequired.matcher(line);
                     if (matcherRequired.matches()) {
                         for (String module : matcherRequired.group(2).split(" ")) {
-//                            configuration.getRequiredModules().put(module, "");
+//                            configuration.getAllRequiredModules().put(module, "");
                         }
 
                     }

@@ -50,12 +50,12 @@ public class AtgComponentUtil {
     public static Optional<String> getComponentClassStr(@Nullable PsiFile propertyFile, PropertiesFile... ignoredFiles) {
         if (propertyFile instanceof PropertiesFile) {
             PropertiesFile componentFile = (PropertiesFile) propertyFile;
-            IProperty propertyClassName = componentFile.findPropertyByKey(Constants.Keywords.CLASS_PROPERTY);
+            IProperty propertyClassName = componentFile.findPropertyByKey(Constants.Keywords.Properties.CLASS_PROPERTY);
             if (propertyClassName != null && StringUtils.isNotBlank(propertyClassName.getValue())) {
                 return Optional.of(propertyClassName.getValue());
             } else {
                 String componentToFind = getComponentCanonicalName((PropertiesFile) propertyFile).orElse(null);
-                IProperty basedOnComponent = componentFile.findPropertyByKey(Constants.Keywords.BASED_ON_PROPERTY);
+                IProperty basedOnComponent = componentFile.findPropertyByKey(Constants.Keywords.Properties.BASED_ON_PROPERTY);
                 if (basedOnComponent != null && StringUtils.isNotBlank(basedOnComponent.getValue())) {
                     componentToFind = basedOnComponent.getValue();
                 }
@@ -245,7 +245,7 @@ public class AtgComponentUtil {
 
 
     @NotNull
-    public static List<String> suggestComponentsNamesByClass(@Nullable PsiClass psiClass) {
+    public static Collection<String> suggestComponentsNamesByClass(@Nullable PsiClass psiClass) {
         if (psiClass == null) {
             return Collections.emptyList();
         }
@@ -274,7 +274,7 @@ public class AtgComponentUtil {
     }
 
     @NotNull
-    public static List<PropertiesFileImpl> suggestComponentsByClass(@Nullable PsiClass srcClass) {
+    public static Collection<PropertiesFileImpl> suggestComponentsByClass(@Nullable PsiClass srcClass) {
         if (srcClass == null) {
             return Collections.emptyList();
         }
@@ -284,30 +284,41 @@ public class AtgComponentUtil {
             return Collections.emptyList();
         }
 
-        Stream<PropertiesFileImpl> originalComponentsFiles = PropertiesImplUtil.findPropertiesByKey(project, Constants.Keywords.CLASS_PROPERTY)
+        Set<PropertiesFileImpl> originalPropertiesFiles = PropertiesImplUtil.findPropertiesByKey(project, Constants.Keywords.Properties.CLASS_PROPERTY)
                 .stream()
                 .filter(Objects::nonNull)
                 .filter(p -> className.equals(p.getValue()))
                 .map(IProperty::getPropertiesFile)
                 .filter(PropertiesFileImpl.class::isInstance)
-                .map(p -> (PropertiesFileImpl) p);
+                .map(p -> (PropertiesFileImpl) p)
+                .collect(Collectors.toSet());
 
-        List<IProperty> allBasedOnProperties = PropertiesImplUtil.findPropertiesByKey(project, Constants.Keywords.BASED_ON_PROPERTY);
-        Stream<PropertiesFileImpl> basedOnPropertiesFiles = allBasedOnProperties.stream()
+        Set<PropertiesFileImpl> result = originalPropertiesFiles.stream()
+                .map(AtgComponentUtil::getComponentCanonicalName)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(name -> getApplicableComponentsByName(name, null, project))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
+        result.addAll(originalPropertiesFiles);
+
+        PropertiesImplUtil.findPropertiesByKey(project, Constants.Keywords.Properties.BASED_ON_PROPERTY).stream()
                 .filter(Objects::nonNull)
                 .map(IProperty::getPropertiesFile)
-                .filter(f -> f.findPropertyByKey(Constants.Keywords.CLASS_PROPERTY) == null)
+                .filter(f -> f.findPropertyByKey(Constants.Keywords.Properties.CLASS_PROPERTY) == null)
                 .filter(PropertiesFileImpl.class::isInstance)
                 .map(p -> (PropertiesFileImpl) p)
-                .filter(f -> className.equals(getComponentClassStr(f).orElse(null)));
-        return Stream.concat(originalComponentsFiles, basedOnPropertiesFiles)
-                .distinct()
-                .collect(Collectors.toList());
+                .filter(f -> className.equals(getComponentClassStr(f).orElse(null)))
+                .forEach(result::add);
+
+
+
+        return result;
     }
 
     @NotNull
     public static List<PropertiesFile> getAllComponents(@NotNull Project project) {
-        return PropertiesImplUtil.findPropertiesByKey(project, Constants.Keywords.CLASS_PROPERTY)
+        return PropertiesImplUtil.findPropertiesByKey(project, Constants.Keywords.Properties.CLASS_PROPERTY)
                 .stream()
                 .filter(Objects::nonNull)
                 .map(IProperty::getPropertiesFile)

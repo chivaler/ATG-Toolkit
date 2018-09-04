@@ -26,6 +26,7 @@ import org.idea.plugin.atg.module.AtgModuleFacet;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.function.Function;
@@ -103,9 +104,9 @@ public class PropertiesGenerator {
         Function<PsiMethod, String> populatePropertiesWithSuggestedComponents = psiMethod -> {
             String variableName = AtgComponentUtil.convertSetterToVariableName(psiMethod);
             PsiClass dependencyClass = AtgComponentUtil.getPsiClassForSetterMethod(psiMethod);
-            List<String> possibleComponents = AtgComponentUtil.suggestComponentsNamesByClass(dependencyClass);
+            Collection<String> possibleComponents = AtgComponentUtil.suggestComponentsNamesByClass(dependencyClass);
             if (possibleComponents.size() == 1) {
-                return variableName + "=" + possibleComponents.get(0);
+                return variableName + "=" + possibleComponents.iterator().next();
             }
             return variableName + "=";
         };

@@ -8,6 +8,7 @@ import com.intellij.util.xmlb.XmlSerializerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@SuppressWarnings("WeakerAccess")
 @State(name = "AtgToolkitConfig", storages = {@Storage("atg-toolkit.xml")})
 public class AtgToolkitConfig implements PersistentStateComponent<AtgToolkitConfig> {
 
@@ -15,12 +16,11 @@ public class AtgToolkitConfig implements PersistentStateComponent<AtgToolkitConf
     private static final String DEFAULT_RELATIVE_CONFIG_LAYERS_PATH = "layer/config";
     private static final String DEFAULT_IGNORED_PARENTS = "atg.nucleus.*";
 
-    @SuppressWarnings("WeakerAccess")
     public String ignoredClassesForSetters = DEFAULT_IGNORED_PARENTS;
-    @SuppressWarnings("WeakerAccess")
     public String configRootsPatterns = DEFAULT_RELATIVE_CONFIG_PATH;
-    @SuppressWarnings("WeakerAccess")
     public String configLayerRootsPatterns = DEFAULT_RELATIVE_CONFIG_LAYERS_PATH;
+    public boolean attachClassPathOfAtgDependencies= true;
+    public boolean attachConfigsOfAtgDependencies = true;
 
     @Nullable
     @Override
@@ -63,5 +63,21 @@ public class AtgToolkitConfig implements PersistentStateComponent<AtgToolkitConf
 
     public void setConfigLayerRootsPatterns(String configLayerRootsPatterns) {
         this.configLayerRootsPatterns = configLayerRootsPatterns;
+    }
+
+    public boolean isAttachClassPathOfAtgDependencies() {
+        return attachClassPathOfAtgDependencies;
+    }
+
+    public void setAttachClassPathOfAtgDependencies(boolean attachClassPathOfAtgDependencies) {
+        this.attachClassPathOfAtgDependencies = attachClassPathOfAtgDependencies;
+    }
+
+    public boolean isAttachConfigsOfAtgDependencies() {
+        return attachConfigsOfAtgDependencies;
+    }
+
+    public void setAttachConfigsOfAtgDependencies(boolean attachConfigsOfAtgDependencies) {
+        this.attachConfigsOfAtgDependencies = attachConfigsOfAtgDependencies;
     }
 }

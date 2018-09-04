@@ -50,8 +50,12 @@ public class AtgReferenceContributor extends PsiReferenceContributor {
                 PropertiesFileImpl properties = PsiTreeUtil.getTopmostParentOfType(element, PropertiesFileImpl.class);
                 Optional<PsiClass> componentClass = AtgComponentUtil.getComponentClass(properties);
                 if (componentClass.isPresent()) {
+                    int offsetForRange = 0;
+                    if (key.endsWith("^") || key.endsWith("+") || key.endsWith("-")) {
+                        offsetForRange++;
+                    }
                     return new PsiReference[]{
-                            new JavaPropertyReference(propertyKey, componentClass.get(), new TextRange(0, key.length()))
+                            new JavaPropertyReference(propertyKey, componentClass.get(), new TextRange(0, key.length() - offsetForRange))
                     };
                 }
             }
@@ -68,7 +72,7 @@ public class AtgReferenceContributor extends PsiReferenceContributor {
             PropertyValueImpl property = (PropertyValueImpl) element;
             String key = ((PropertyImpl) property.getParent()).getKey();
             String value = property.getText();
-            if (Constants.Keywords.CLASS_PROPERTY.equals(key) && !CompletionUtilCore.DUMMY_IDENTIFIER_TRIMMED.equals(value)) {
+            if (Constants.Keywords.Properties.CLASS_PROPERTY.equals(key) && !CompletionUtilCore.DUMMY_IDENTIFIER_TRIMMED.equals(value)) {
                 JavaClassListReferenceProvider javaClassListReferenceProvider = new JavaClassListReferenceProvider();
                 return javaClassListReferenceProvider.getReferencesByString(value, element, 0);
             }

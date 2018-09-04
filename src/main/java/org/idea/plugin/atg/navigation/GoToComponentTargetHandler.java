@@ -6,12 +6,14 @@ import com.intellij.icons.AllIcons;
 import com.intellij.lang.properties.psi.PropertiesFile;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.JarFileSystem;
 import com.intellij.pom.Navigatable;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.psi.util.PsiUtilCore;
 import org.idea.plugin.atg.AtgToolkitBundle;
+import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.PropertiesGenerator;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
@@ -36,7 +38,7 @@ public class GoToComponentTargetHandler extends GotoTargetHandler {
                     .filter(AtgComponentUtil::isApplicableToHaveComponents)
                     .findFirst();
             if (srcClass.isPresent()) {
-                Collection<PsiElement> candidates = new ArrayList<>(AtgComponentUtil.suggestComponentsByClass(srcClass.get()));
+                List<PsiElement> candidates = new ArrayList<>(AtgComponentUtil.suggestComponentsByClass(srcClass.get()));
                 List<AdditionalAction> actions = Collections.singletonList(new AdditionalAction() {
                     @NotNull
                     @Override
@@ -70,7 +72,7 @@ public class GoToComponentTargetHandler extends GotoTargetHandler {
 
     @Override
     protected boolean shouldSortTargets() {
-        return false;
+        return true;
     }
 
     @NotNull
@@ -110,4 +112,34 @@ public class GoToComponentTargetHandler extends GotoTargetHandler {
             element.navigate(true);
         }
     }
+
+
+
+    @NotNull
+    @Override
+    protected Comparator<PsiElement> createComparator(@NotNull GotoData gotoData) {
+        return new ComparatorForGotoResults();
+    }
+
+    static class ComparatorForGotoResults implements Comparator<PsiElement> {
+        @Override
+        public int compare(PsiElement first, PsiElement second) {
+            if (first instanceof PropertiesFile && second instanceof PropertiesFile) {
+                boolean isFirstInLibrary = first.getContainingFile().getVirtualFile().getFileSystem() instanceof JarFileSystem;
+                boolean isSecondInLibrary = second.getContainingFile().getVirtualFile().getFileSystem() instanceof JarFileSystem;
+                if (isFirstInLibrary && !isSecondInLibrary) return 1;
+                if (!isFirstInLibrary && isSecondInLibrary) return -1;
+
+                boolean isFirstHaveClassProperty = ((PropertiesFile) first).findPropertyByKey(Constants.Keywords.Properties.CLASS_PROPERTY) != null;
+                boolean isSecondHaveClassProperty = ((PropertiesFile) second).findPropertyByKey(Constants.Keywords.Properties.CLASS_PROPERTY) != null;
+                if (isFirstHaveClassProperty && !isSecondHaveClassProperty) return -1;
+                if (!isFirstHaveClassProperty && isSecondHaveClassProperty) return 1;
+
+            }
+            return 0;
+        }
+
+    }
+
+
 }

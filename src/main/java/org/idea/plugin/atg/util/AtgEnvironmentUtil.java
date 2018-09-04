@@ -1,7 +1,9 @@
 package org.idea.plugin.atg.util;
 
-import com.intellij.facet.FacetManager;
+import com.intellij.facet.Facet;
+import com.intellij.facet.ProjectFacetManager;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.PathMacros;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -17,7 +19,9 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import org.apache.commons.lang.StringUtils;
 import org.idea.plugin.atg.Constants;
+import org.idea.plugin.atg.config.AtgToolkitConfig;
 import org.idea.plugin.atg.module.AtgModuleFacet;
+import org.idea.plugin.atg.module.AtgModuleFacetConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.lang.manifest.psi.Header;
 import org.jetbrains.lang.manifest.psi.ManifestFile;
@@ -28,25 +32,13 @@ import java.util.stream.Collectors;
 public class AtgEnvironmentUtil {
     private static final Logger LOG = Logger.getInstance(AtgEnvironmentUtil.class);
 
-    public static final String ATG_CONFIG_PATH = "ATG-Config-Path";
-    public static final String ATG_REQUIRED = "ATG-Required";
-    public static final String ATG_VERSION = "ATG-Version";
-
-    private static final List<String> moduleRoots = Arrays
-            .asList(System.getenv("ATG_HOME"), System.getenv("ATG_HOME") + "/CSC10.1.2/",
-                    System.getenv("ATG_HOME") + "/CAF10.1.2/", System.getenv("ATG_HOME") + "/CSC-UI10.1.2/",
-                    System.getenv("ATG_HOME") + "/Search10.1.2/",
-                    System.getenv("ATG_HOME") + "/Service10.1.2/",
-                    System.getenv("ATG_HOME") + "/Service-UI10.1.2/",
-                    System.getenv("ATG_HOME") + "/CommerceReferenceStore/",
-                    "/home/atg/Git/KITS-App_ATG-Dev/");
-
     private AtgEnvironmentUtil() {
     }
 
     @NotNull
     public static Optional<ManifestFile> suggestManifestFileForModule(@NotNull final String atgModuleName, @NotNull final Project project) {
-        String atgHome = System.getenv("ATG_HOME");
+        String macroAtgHome = PathMacros.getInstance().getValue(Constants.ATG_HOME);
+        String atgHome = macroAtgHome != null ? macroAtgHome : System.getenv(Constants.ATG_HOME);
         VirtualFile atgHomeVirtualDir = StandardFileSystems.local().findFileByPath(atgHome);
         if (atgHomeVirtualDir != null && atgHomeVirtualDir.isDirectory()) {
             VirtualFile manifestFile = VfsUtilCore.findRelativeFile(atgModuleName.replace('.', '/') + "/META-INF/MANIFEST.MF", atgHomeVirtualDir);
@@ -54,26 +46,6 @@ public class AtgEnvironmentUtil {
             if (manifestPsiFile instanceof ManifestFile) return Optional.of((ManifestFile) manifestPsiFile);
         }
 
-        return Optional.empty();
-    }
-
-    @NotNull
-    public static Optional<ManifestFile> suggestManifestFileForModule(@NotNull final Module module) {
-        AtgModuleFacet atgModuleFacet = FacetManager.getInstance(module).getFacetByType(AtgModuleFacet.FACET_TYPE_ID);
-        if (atgModuleFacet != null) {
-            String atgHome = System.getenv("ATG_HOME");
-            VirtualFile atgHomeVirtualDir = StandardFileSystems.local().findFileByPath(atgHome);
-            if (atgHomeVirtualDir != null && atgHomeVirtualDir.isDirectory()) {
-
-                String moduleName = suggestAtgModuleName(module);
-
-                VirtualFile manifestFile = VfsUtilCore.findRelativeFile(moduleName + "/META-INF/MANIFEST.MF", atgHomeVirtualDir);
-                PsiFile manifestPsiFile = manifestFile != null ? PsiManager.getInstance(module.getProject()).findFile(manifestFile) : null;
-                if (manifestPsiFile instanceof ManifestFile) return Optional.of((ManifestFile) manifestPsiFile);
-            }
-
-
-        }
         return Optional.empty();
     }
 
@@ -95,7 +67,7 @@ public class AtgEnvironmentUtil {
     public static List<String> getRequiredModules(@NotNull final String atgModuleName, @NotNull final Project project) {
         Optional<ManifestFile> manifestFile = suggestManifestFileForModule(atgModuleName, project);
         if (manifestFile.isPresent()) {
-            Header requiredHeader = manifestFile.get().getHeader(ATG_REQUIRED);
+            Header requiredHeader = manifestFile.get().getHeader(Constants.Keywords.Manifest.ATG_REQUIRED);
             if (requiredHeader != null && requiredHeader.getHeaderValue() != null) {
                 return Arrays.stream(requiredHeader.getHeaderValue().getUnwrappedText().split("\\s"))
                         .collect(Collectors.toList());
@@ -104,7 +76,7 @@ public class AtgEnvironmentUtil {
         return Collections.emptyList();
     }
 
-    public static List<String> getRequiredModules(@NotNull final Project project, @NotNull String... loadingModules) {
+    public static List<String> getAllRequiredModules(@NotNull final Project project, @NotNull String... loadingModules) {
         List<String> requiredList = new ArrayList<>();
         Deque<String> resolvingQueue = new LinkedList<>(Arrays.asList(loadingModules));
 
@@ -127,15 +99,10 @@ public class AtgEnvironmentUtil {
     }
 
     @NotNull
-    public static List<String> getRequiredModules(@NotNull final Module module) {
-        return getRequiredModules(module.getProject(), suggestAtgModuleName(module));
-    }
-
-    @NotNull
-    public static List<VirtualFile> getConfigs(@NotNull final String atgModuleName, @NotNull final Project project) {
+    public static List<VirtualFile> getJarsForHeader(@NotNull final String atgModuleName, @NotNull final Project project, @NotNull String header) {
         Optional<ManifestFile> manifestFile = suggestManifestFileForModule(atgModuleName, project);
         if (manifestFile.isPresent()) {
-            Header configPathHeader = manifestFile.get().getHeader(ATG_CONFIG_PATH);
+            Header configPathHeader = manifestFile.get().getHeader(header);
             if (configPathHeader != null && configPathHeader.getHeaderValue() != null) {
                 String[] configs = configPathHeader.getHeaderValue().getUnwrappedText().split("\\s");
                 VirtualFile moduleRoot = manifestFile.get().getVirtualFile().getParent().getParent();
@@ -151,45 +118,55 @@ public class AtgEnvironmentUtil {
         return Collections.emptyList();
     }
 
-    @NotNull
-    public static List<VirtualFile> getConfigs(@NotNull final Module module) {
-        return getConfigs(suggestAtgModuleName(module), module.getProject());
-    }
-
     public static void addDependantConfigs(@NotNull final Module module) {
         String atgModuleName = suggestAtgModuleName(module);
-        List<String> requiredModules = getRequiredModules(module);
+        List<String> requiredModules = getAllRequiredModules(module.getProject(), atgModuleName);
         requiredModules.remove(atgModuleName);
+
+        Set<String> presentModulesInProject = ProjectFacetManager.getInstance(module.getProject()).getFacets(AtgModuleFacet.FACET_TYPE_ID).stream()
+                .map(Facet::getConfiguration)
+                .map(AtgModuleFacetConfiguration::getAtgModuleName)
+                .filter(StringUtils::isNotBlank)
+                .collect(Collectors.toSet());
+
 
         ApplicationManager.getApplication().runWriteAction(() ->
                 requiredModules.forEach(m -> {
-                    VirtualFile[] moduleConfigs = getConfigs(m, module.getProject()).toArray(new VirtualFile[0]);
-                    if (moduleConfigs.length > 0) addDependantConfigToModule(module, m, moduleConfigs);
+                    if (!presentModulesInProject.contains(m)) {
+                        if (AtgToolkitConfig.getInstance().isAttachConfigsOfAtgDependencies()) {
+                            List<VirtualFile> configJars = getJarsForHeader(m, module.getProject(), Constants.Keywords.Manifest.ATG_CONFIG_PATH);
+                            addDependantClassesToModule(module, m, configJars, Constants.ATG_CONFIG_LIBRARY_PREFIX);
+                        }
+                        if (AtgToolkitConfig.getInstance().isAttachClassPathOfAtgDependencies()) {
+                            List<VirtualFile> classPathJars = getJarsForHeader(m, module.getProject(), Constants.Keywords.Manifest.ATG_CLASS_PATH);
+                            addDependantClassesToModule(module, m, classPathJars, Constants.ATG_CLASSES_LIBRARY_PREFIX);
+                        }
+                    }
                 }));
     }
 
-    public static void addDependantConfigToModule(@NotNull Module module, @NotNull String atgModuleName, @NotNull VirtualFile... configs) {
+    public static void addDependantClassesToModule(@NotNull Module module, @NotNull String atgModuleName, @NotNull List<VirtualFile> jarFiles, @NotNull String prefix) {
         LibraryTable projectLibraryTable = ProjectLibraryTable.getInstance(module.getProject());
         ModifiableRootModel moduleModifiableModel = ModuleRootManager.getInstance(module).getModifiableModel();
         LibraryTable.ModifiableModel libraryTableModel = projectLibraryTable.getModifiableModel();
 
-        String libraryName = Constants.ATG_CONFIG_LIBRARY_PREFIX + atgModuleName;
+        String libraryName = prefix + atgModuleName;
         Library library = libraryTableModel.getLibraryByName(libraryName);
         if (library == null) {
             library = libraryTableModel.createLibrary(libraryName);
             Library.ModifiableModel libraryModel = library.getModifiableModel();
 
-            for (VirtualFile config : configs) {
-                if (!config.isDirectory()) {
-                    VirtualFile jarConfig = JarFileSystem.getInstance().getRootByLocal(config);
+            for (VirtualFile jarFile : jarFiles) {
+                if (!jarFile.isDirectory()) {
+                    VirtualFile jarConfig = JarFileSystem.getInstance().getRootByLocal(jarFile);
                     if (jarConfig != null) {
-                        config = jarConfig;
+                        jarFile = jarConfig;
                     } else {
-                        LOG.warn("Wrong config root:" + config.getName() + " found in MANIFEST.MF of:" + atgModuleName);
+                        LOG.warn("Wrong config root:" + jarFile.getName() + " found in MANIFEST.MF of:" + atgModuleName);
                         continue;
                     }
                 }
-                libraryModel.addRoot(config, OrderRootType.CLASSES);
+                libraryModel.addRoot(jarFile, OrderRootType.CLASSES);
             }
 
             libraryModel.commit();
