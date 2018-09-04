@@ -1,5 +1,6 @@
 package org.idea.plugin.atg.util;
 
+import com.intellij.facet.FacetManager;
 import com.intellij.facet.ProjectFacetManager;
 import com.intellij.lang.jvm.JvmModifier;
 import com.intellij.lang.jvm.JvmParameter;
@@ -12,10 +13,7 @@ import com.intellij.lang.properties.psi.impl.PropertyImpl;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.LibraryOrderEntry;
-import com.intellij.openapi.roots.ModifiableRootModel;
-import com.intellij.openapi.roots.ModuleRootManager;
-import com.intellij.openapi.roots.OrderRootType;
+import com.intellij.openapi.roots.*;
 import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.vfs.JarFileSystem;
@@ -45,6 +43,22 @@ public class AtgComponentUtil {
 
     private AtgComponentUtil() {
     }
+
+    public static boolean isInsideConfigRoots(@Nullable PsiFile propertyFile) {
+        Module module = ModuleUtilCore.findModuleForPsiElement(propertyFile);
+        if (module != null) {
+            AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(AtgModuleFacet.FACET_TYPE_ID);
+            if (atgFacet != null) {
+                atgFacet.getConfiguration().getConfigRoots();
+            }
+        } else {
+
+
+        }
+
+        return false;
+    }
+
 
     @NotNull
     public static Optional<String> getComponentClassStr(@Nullable PsiFile propertyFile, PropertiesFile... ignoredFiles) {
@@ -165,7 +179,37 @@ public class AtgComponentUtil {
 
     @NotNull
     public static Optional<String> getComponentCanonicalName(@NotNull PropertiesFile file) {
-        return getComponentCanonicalName(file.getVirtualFile(), file.getProject());
+        VirtualFile virtualFile = file.getVirtualFile();
+
+        if (virtualFile.getFileSystem() instanceof JarFileSystem) {
+            Optional<Library> libraryForFile = ProjectFileIndex.getInstance(file.getProject()).getOrderEntriesForFile(virtualFile).stream()
+                    .filter(LibraryOrderEntry.class::isInstance)
+                    .map(f -> ((LibraryOrderEntry) f).getLibrary())
+                    .filter(Objects::nonNull)
+                    .filter(l -> l.getName() != null && l.getName().startsWith(Constants.ATG_CONFIG_LIBRARY_PREFIX))
+                    .findAny();
+            if (libraryForFile.isPresent()) {
+                String path = virtualFile.getPath();
+                int separatorIndex = path.indexOf("!/");
+                return Optional.of(path.substring(separatorIndex + 1).replace(".properties", ""));
+            }
+        }
+
+        Project project = file.getProject();
+        Module module = ModuleUtilCore.findModuleForFile(virtualFile, project);
+        if (module != null) {
+            AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(AtgModuleFacet.FACET_TYPE_ID);
+            if (atgFacet != null) {
+                return atgFacet.getConfiguration().getConfigRoots().stream()
+                        .filter(Objects::nonNull)
+                        .filter(VirtualFile::isDirectory)
+                        .filter(r -> VfsUtilCore.isAncestor(r, virtualFile, true))
+                        .map(r -> "/" + VfsUtilCore.getRelativeLocation(virtualFile, r).replace(".properties", ""))
+                        .findFirst();
+            }
+        }
+
+        return Optional.empty();
     }
 
     @NotNull
@@ -176,22 +220,6 @@ public class AtgComponentUtil {
                 .filter(VirtualFile::isDirectory)
                 .filter(r -> VfsUtilCore.isAncestor(r, file.getVirtualFile(), true))
                 .map(r -> "/" + VfsUtilCore.getRelativeLocation(file.getVirtualFile(), r).replace(".xml", ""))
-                .findFirst();
-    }
-
-    @NotNull
-    public static Optional<String> getComponentCanonicalName(@NotNull VirtualFile file, @NotNull Project project) {
-        if (file.getFileSystem() instanceof JarFileSystem) {
-            String path = file.getPath();
-            int separatorIndex = path.indexOf("!/");
-            return Optional.of(path.substring(separatorIndex + 1).replace(".properties", ""));
-        }
-        return ProjectFacetManager.getInstance(project).getFacets(AtgModuleFacet.FACET_TYPE_ID).stream().map(f -> f.getConfiguration().getConfigRoots())
-                .flatMap(Collection::stream)
-                .filter(Objects::nonNull)
-                .filter(VirtualFile::isDirectory)
-                .filter(r -> VfsUtilCore.isAncestor(r, file, true))
-                .map(r -> "/" + VfsUtilCore.getRelativeLocation(file, r).replace(".properties", ""))
                 .findFirst();
     }
 
@@ -310,7 +338,6 @@ public class AtgComponentUtil {
                 .map(p -> (PropertiesFileImpl) p)
                 .filter(f -> className.equals(getComponentClassStr(f).orElse(null)))
                 .forEach(result::add);
-
 
 
         return result;

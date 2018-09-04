@@ -128,12 +128,12 @@ public class GoToComponentTargetHandler extends GotoTargetHandler {
 
             @Override
             public int compare(PsiElement firstElement, PsiElement secondElement) {
-                PropertiesFile first = PsiTreeUtil.getTopmostParentOfType(firstElement, PropertiesFileImpl.class);
-                PropertiesFile second = PsiTreeUtil.getTopmostParentOfType(secondElement, PropertiesFileImpl.class);
+                PropertiesFile first = PsiTreeUtil.getParentOfType(firstElement, PropertiesFileImpl.class, false);
+                PropertiesFile second = PsiTreeUtil.getParentOfType(secondElement, PropertiesFileImpl.class, false);
 
                 if (first == null && second == null) return 0;
-                if (first == null && second != null) return -1;
-                if (first != null && second == null) return 1;
+                if (first == null && second != null) return 1;
+                if (first != null && second == null) return -1;
 
                 if (sourceComponentName != null) {
                     boolean isFirstNameSameForSource = sourceComponentName.equals(AtgComponentUtil.getComponentCanonicalName(first).orElse(null));

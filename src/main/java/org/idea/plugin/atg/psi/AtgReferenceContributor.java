@@ -45,19 +45,22 @@ public class AtgReferenceContributor extends PsiReferenceContributor {
         public PsiReference[] getReferencesByElement(@NotNull PsiElement element,
                                                      @NotNull ProcessingContext
                                                              context) {
-            PropertyKeyImpl propertyKey = (PropertyKeyImpl) element;
-            String key = propertyKey.getText();
-            if (!CompletionUtilCore.DUMMY_IDENTIFIER_TRIMMED.equals(key) && !key.startsWith("$")) {
-                PropertiesFileImpl properties = PsiTreeUtil.getTopmostParentOfType(element, PropertiesFileImpl.class);
-                Optional<PsiClass> componentClass = AtgComponentUtil.getComponentClass(properties);
-                if (componentClass.isPresent()) {
-                    int offsetForRange = 0;
-                    if (key.endsWith("^") || key.endsWith("+") || key.endsWith("-")) {
-                        offsetForRange++;
+            PropertiesFileImpl propertiesFile = PsiTreeUtil.getTopmostParentOfType(element, PropertiesFileImpl.class);
+            if (propertiesFile != null && AtgComponentUtil.getComponentCanonicalName(propertiesFile).isPresent()) {
+                PropertyKeyImpl propertyKey = (PropertyKeyImpl) element;
+                String key = propertyKey.getText();
+                if (!CompletionUtilCore.DUMMY_IDENTIFIER_TRIMMED.equals(key) && !key.startsWith("$")) {
+                    PropertiesFileImpl properties = PsiTreeUtil.getTopmostParentOfType(element, PropertiesFileImpl.class);
+                    Optional<PsiClass> componentClass = AtgComponentUtil.getComponentClass(properties);
+                    if (componentClass.isPresent()) {
+                        int offsetForRange = 0;
+                        if (key.endsWith("^") || key.endsWith("+") || key.endsWith("-")) {
+                            offsetForRange++;
+                        }
+                        return new PsiReference[]{
+                                new JavaPropertyReference(propertyKey, componentClass.get(), new TextRange(0, key.length() - offsetForRange))
+                        };
                     }
-                    return new PsiReference[]{
-                            new JavaPropertyReference(propertyKey, componentClass.get(), new TextRange(0, key.length() - offsetForRange))
-                    };
                 }
             }
             return PsiReference.EMPTY_ARRAY;
@@ -70,12 +73,15 @@ public class AtgReferenceContributor extends PsiReferenceContributor {
         public PsiReference[] getReferencesByElement(@NotNull PsiElement element,
                                                      @NotNull ProcessingContext
                                                              context) {
-            PropertyValueImpl property = (PropertyValueImpl) element;
-            String key = ((PropertyImpl) property.getParent()).getKey();
-            String value = property.getText();
-            if (Constants.Keywords.Properties.CLASS_PROPERTY.equals(key) && !CompletionUtilCore.DUMMY_IDENTIFIER_TRIMMED.equals(value)) {
-                JavaClassListReferenceProvider javaClassListReferenceProvider = new JavaClassListReferenceProvider();
-                return javaClassListReferenceProvider.getReferencesByString(value, element, 0);
+            PropertiesFileImpl propertiesFile = PsiTreeUtil.getTopmostParentOfType(element, PropertiesFileImpl.class);
+            if (propertiesFile != null && AtgComponentUtil.getComponentCanonicalName(propertiesFile).isPresent()) {
+                PropertyValueImpl property = (PropertyValueImpl) element;
+                String key = ((PropertyImpl) property.getParent()).getKey();
+                String value = property.getText();
+                if (Constants.Keywords.Properties.CLASS_PROPERTY.equals(key) && !CompletionUtilCore.DUMMY_IDENTIFIER_TRIMMED.equals(value)) {
+                    JavaClassListReferenceProvider javaClassListReferenceProvider = new JavaClassListReferenceProvider();
+                    return javaClassListReferenceProvider.getReferencesByString(value, element, 0);
+                }
             }
             return PsiReference.EMPTY_ARRAY;
         }
@@ -87,30 +93,33 @@ public class AtgReferenceContributor extends PsiReferenceContributor {
         public PsiReference[] getReferencesByElement(@NotNull PsiElement element,
                                                      @NotNull ProcessingContext
                                                              context) {
-            PropertyValueImpl propertyValue = (PropertyValueImpl) element;
-            String value = propertyValue.getText();
-            if (!CompletionUtilCore.DUMMY_IDENTIFIER_TRIMMED.equals(value)) {
-                List<PsiReference> results = new ArrayList<>();
-                Matcher matcher = Constants.SUSPECTED_COMPONENT_NAME_REGEX.matcher(value);
-                while (matcher.find()) {
-                    String beanName = matcher.group(0);
-                    int start = matcher.start(0);
-                    int length = beanName.length();
-                    TextRange beanTextRange = new TextRange(start, start + length);
-                    if (beanName.contains(".")) {
-                        String firstField = beanName.substring(beanName.indexOf('.') + 1);
-                        beanName = beanName.substring(0, beanName.indexOf('.'));
-                        length = beanName.length();
-                        beanTextRange = new TextRange(start, start + length);
-                        TextRange fieldTextRange = new TextRange(start + length + 1, start + length + firstField.length() + 1);
-                        results.add(new AtgComponentReference(propertyValue, beanTextRange));
-                        results.add(new AtgComponentFieldReference(beanName, firstField, fieldTextRange, element.getContainingFile()));
-                    } else {
-                        results.add(new AtgComponentReference(propertyValue, beanTextRange));
+            PropertiesFileImpl propertiesFile = PsiTreeUtil.getTopmostParentOfType(element, PropertiesFileImpl.class);
+            if (propertiesFile != null && AtgComponentUtil.getComponentCanonicalName(propertiesFile).isPresent()) {
+                PropertyValueImpl propertyValue = (PropertyValueImpl) element;
+                String value = propertyValue.getText();
+                if (!CompletionUtilCore.DUMMY_IDENTIFIER_TRIMMED.equals(value)) {
+                    List<PsiReference> results = new ArrayList<>();
+                    Matcher matcher = Constants.SUSPECTED_COMPONENT_NAME_REGEX.matcher(value);
+                    while (matcher.find()) {
+                        String beanName = matcher.group(0);
+                        int start = matcher.start(0);
+                        int length = beanName.length();
+                        TextRange beanTextRange = new TextRange(start, start + length);
+                        if (beanName.contains(".")) {
+                            String firstField = beanName.substring(beanName.indexOf('.') + 1);
+                            beanName = beanName.substring(0, beanName.indexOf('.'));
+                            length = beanName.length();
+                            beanTextRange = new TextRange(start, start + length);
+                            TextRange fieldTextRange = new TextRange(start + length + 1, start + length + firstField.length() + 1);
+                            results.add(new AtgComponentReference(propertyValue, beanTextRange));
+                            results.add(new AtgComponentFieldReference(beanName, firstField, fieldTextRange, element.getContainingFile()));
+                        } else {
+                            results.add(new AtgComponentReference(propertyValue, beanTextRange));
+                        }
                     }
-                }
-                return results.toArray(new PsiReference[0]);
+                    return results.toArray(new PsiReference[0]);
 
+                }
             }
             return PsiReference.EMPTY_ARRAY;
         }
