@@ -17,6 +17,7 @@ import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.source.PostprocessReformattingAspect;
 import com.intellij.util.IncorrectOperationException;
@@ -70,10 +71,6 @@ public class PropertiesGenerator {
                             IdeDocumentHistory.getInstance(project).includeCurrentPlaceAsChangePlace();
                             EditorHelper.openInEditor(targetClass, false);
                         }
-
-                    } catch (IncorrectOperationException e) {
-                        new Notification(Constants.NOTIFICATION_GROUP_ID, AtgToolkitBundle.message("intentions.create.component.error"),
-                                e.getMessage(), NotificationType.INFORMATION).notify(project);
                     } catch (Exception e) {
                         new Notification(Constants.NOTIFICATION_GROUP_ID, AtgToolkitBundle.message("intentions.create.component.error"),
                                 e.getMessage(), NotificationType.ERROR).notify(project);
@@ -131,7 +128,17 @@ public class PropertiesGenerator {
         properties.setProperty("DEPENDENCIES", "".equals(dependencies) ? "" : "\n" + dependencies + "\n");
         properties.setProperty("VARS", variables);
 
-        PsiElement psiElement = FileTemplateUtil.createFromTemplate(fileTemplate, srcClass.getName(), properties, targetDirectory);
+        PsiElement psiElement;
+        try {
+            psiElement = FileTemplateUtil.createFromTemplate(fileTemplate, srcClass.getName(), properties, targetDirectory);
+        } catch (IncorrectOperationException e) {
+            new Notification(Constants.NOTIFICATION_GROUP_ID, AtgToolkitBundle.message("intentions.create.component.exist"),
+                    e.getMessage(), NotificationType.INFORMATION).notify(project);
+
+            VirtualFile existVirtualFile = srcClass.getName() != null ? targetDirectory.getVirtualFile().findFileByRelativePath(srcClass.getName() + ".properties") : null;
+            psiElement = existVirtualFile != null ? PsiManager.getInstance(project).findFile(existVirtualFile) : null;
+        }
+
         if (psiElement instanceof PsiFile) {
             return (PsiFile) psiElement;
         }

@@ -34,10 +34,11 @@ public class AtgConfigHelper {
         Iterator<VirtualFile> iterator = atgModuleFacet.getConfiguration().getConfigRoots().iterator();
         if (iterator.hasNext()) {
             String targetDirStr = iterator.next().getCanonicalPath();
-
-            return targetDirStr == null ? null : WriteCommandAction.writeCommandAction(srcPackage.getProject())
-                    .withName(AtgToolkitBundle.message("create.directory.command"))
-                    .compute(() -> DirectoryUtil.mkdirs(psiManager, targetDirStr));
+            if (targetDirStr != null) {
+                return WriteCommandAction.writeCommandAction(srcPackage.getProject())
+                        .withName(AtgToolkitBundle.message("create.directory.command"))
+                        .compute(() -> DirectoryUtil.mkdirs(psiManager, targetDirStr + "/" + srcPackage.getQualifiedName().replace('.', '/')));
+            }
         }
 
         return null;
