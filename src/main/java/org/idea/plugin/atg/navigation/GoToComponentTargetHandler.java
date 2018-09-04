@@ -4,6 +4,7 @@ import com.intellij.codeInsight.navigation.GotoTargetHandler;
 import com.intellij.codeInsight.navigation.NavigationUtil;
 import com.intellij.icons.AllIcons;
 import com.intellij.lang.properties.psi.PropertiesFile;
+import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.JarFileSystem;
@@ -11,6 +12,7 @@ import com.intellij.pom.Navigatable;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.ReferencesSearch;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtilCore;
 import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.Constants;
@@ -58,11 +60,16 @@ public class GoToComponentTargetHandler extends GotoTargetHandler {
                 });
                 return new GotoData(srcClass.get(), PsiUtilCore.toPsiElementArray(candidates), actions);
             }
-        } else if (file instanceof PropertiesFile) {
+        } else if (file instanceof PropertiesFileImpl) {
             Optional<String> componentName = AtgComponentUtil.getComponentCanonicalName((PropertiesFile) file);
             if (componentName.isPresent()) {
                 GlobalSearchScope scope = GlobalSearchScope.everythingScope(file.getProject());
                 List<PsiElement> candidates = ReferencesSearch.search(file, scope, true).findAll().stream().map(PsiReference::getElement).collect(Collectors.toList());
+
+                Collection<PropertiesFileImpl> componentsWithSameName = AtgComponentUtil.getApplicableComponentsByName(componentName.get(), null, file.getProject());
+                componentsWithSameName.remove(file);
+                candidates.addAll(componentsWithSameName);
+
                 return new GotoData(file, PsiUtilCore.toPsiElementArray(candidates), Collections.emptyList());
             }
         }
@@ -113,33 +120,43 @@ public class GoToComponentTargetHandler extends GotoTargetHandler {
         }
     }
 
-
-
     @NotNull
     @Override
     protected Comparator<PsiElement> createComparator(@NotNull GotoData gotoData) {
-        return new ComparatorForGotoResults();
-    }
+        return new Comparator<PsiElement>() {
+            private final String sourceComponentName = (gotoData.source instanceof PropertiesFile) ? AtgComponentUtil.getComponentCanonicalName((PropertiesFile) gotoData.source).orElse(null) : null;
 
-    static class ComparatorForGotoResults implements Comparator<PsiElement> {
-        @Override
-        public int compare(PsiElement first, PsiElement second) {
-            if (first instanceof PropertiesFile && second instanceof PropertiesFile) {
+            @Override
+            public int compare(PsiElement firstElement, PsiElement secondElement) {
+                PropertiesFile first = PsiTreeUtil.getTopmostParentOfType(firstElement, PropertiesFileImpl.class);
+                PropertiesFile second = PsiTreeUtil.getTopmostParentOfType(secondElement, PropertiesFileImpl.class);
+
+                if (first == null && second == null) return 0;
+                if (first == null && second != null) return -1;
+                if (first != null && second == null) return 1;
+
+                if (sourceComponentName != null) {
+                    boolean isFirstNameSameForSource = sourceComponentName.equals(AtgComponentUtil.getComponentCanonicalName(first).orElse(null));
+                    boolean isSecondNameSameForSource = sourceComponentName.equals(AtgComponentUtil.getComponentCanonicalName(second).orElse(null));
+
+                    if (isFirstNameSameForSource && !isSecondNameSameForSource) return -1;
+                    if (!isFirstNameSameForSource && isSecondNameSameForSource) return 1;
+                }
+
                 boolean isFirstInLibrary = first.getContainingFile().getVirtualFile().getFileSystem() instanceof JarFileSystem;
                 boolean isSecondInLibrary = second.getContainingFile().getVirtualFile().getFileSystem() instanceof JarFileSystem;
                 if (isFirstInLibrary && !isSecondInLibrary) return 1;
                 if (!isFirstInLibrary && isSecondInLibrary) return -1;
 
-                boolean isFirstHaveClassProperty = ((PropertiesFile) first).findPropertyByKey(Constants.Keywords.Properties.CLASS_PROPERTY) != null;
-                boolean isSecondHaveClassProperty = ((PropertiesFile) second).findPropertyByKey(Constants.Keywords.Properties.CLASS_PROPERTY) != null;
+                boolean isFirstHaveClassProperty = first.findPropertyByKey(Constants.Keywords.Properties.CLASS_PROPERTY) != null;
+                boolean isSecondHaveClassProperty = second.findPropertyByKey(Constants.Keywords.Properties.CLASS_PROPERTY) != null;
                 if (isFirstHaveClassProperty && !isSecondHaveClassProperty) return -1;
                 if (!isFirstHaveClassProperty && isSecondHaveClassProperty) return 1;
 
+                return 0;
             }
-            return 0;
-        }
+        };
 
     }
-
 
 }
