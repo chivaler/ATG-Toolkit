@@ -75,6 +75,12 @@ public class ComponentPropertiesCompletionContributor extends CompletionContribu
                 Set<String> existFields = ((PropertiesFile) propertyFile).getProperties().stream()
                         .map(IProperty::getKey)
                         .filter(Objects::nonNull)
+                        .map(p -> {
+                            if (p.endsWith("^") || p.endsWith("+") || p.endsWith("-")) {
+                                return p.substring(0, p.length() - 1);
+                            }
+                            return p;
+                        })
                         .collect(Collectors.toSet());
 
                 AtgComponentUtil.getSettersOfClass(componentClass.get()).stream()

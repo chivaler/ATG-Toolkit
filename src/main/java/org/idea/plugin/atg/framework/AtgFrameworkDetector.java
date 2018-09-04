@@ -1,6 +1,5 @@
 package org.idea.plugin.atg.framework;
 
-import com.intellij.facet.FacetType;
 import com.intellij.framework.FrameworkType;
 import com.intellij.framework.detection.FacetBasedFrameworkDetector;
 import com.intellij.framework.detection.FileContentPattern;
@@ -142,25 +141,6 @@ public class AtgFrameworkDetector extends FacetBasedFrameworkDetector<AtgModuleF
         }
 
         return atgModuleFacetConfiguration;
-    }
-
-
-    private AtgModuleFacetConfiguration test(@NotNull Collection<VirtualFile> files) {
-//        List<Pair<ATGProjectFacetConfiguration, Collection<VirtualFile>>> result = new ArrayList();;
-        FacetType<AtgModuleFacet, AtgModuleFacetConfiguration> facetType = getFacetType();
-        AtgModuleFacetConfiguration configuration = facetType.createDefaultConfiguration();
-
-        for (VirtualFile file : files) {
-            System.out.println(file.getCanonicalPath() + " " + file.getUrl());
-
-            this.setupConfiguration(configuration, file);
-        }
-        //TODO validate existance of all modules
-//        System.out.println("conf: " + configuration.getConfigRoots());
-//        System.out.println("web: " + configuration.getWebRoots());
-//        System.out.println("required: " + configuration.getAllRequiredModules());
-
-        return configuration;
     }
 
     protected void setupConfiguration(AtgModuleFacetConfiguration configuration, VirtualFile file) {

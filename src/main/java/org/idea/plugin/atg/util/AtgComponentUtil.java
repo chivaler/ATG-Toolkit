@@ -179,7 +179,8 @@ public class AtgComponentUtil {
 
     @NotNull
     public static Optional<String> getComponentCanonicalName(@NotNull PropertiesFile file) {
-        VirtualFile virtualFile = file.getVirtualFile();
+        VirtualFile virtualFile = file.getContainingFile().getOriginalFile().getVirtualFile();
+        if (virtualFile == null) return Optional.empty();
 
         if (virtualFile.getFileSystem() instanceof JarFileSystem) {
             Optional<Library> libraryForFile = ProjectFileIndex.getInstance(file.getProject()).getOrderEntriesForFile(virtualFile).stream()

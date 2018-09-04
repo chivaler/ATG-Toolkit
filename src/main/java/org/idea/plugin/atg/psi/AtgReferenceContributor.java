@@ -24,7 +24,6 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 
 public class AtgReferenceContributor extends PsiReferenceContributor {
-    //TODO remain only Components classes by checking root folder
     //TODO replace filters
 
     @Override
