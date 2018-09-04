@@ -8,7 +8,7 @@ import com.intellij.util.xmlb.XmlSerializerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "squid:ClassVariableVisibilityCheck"})
 @State(name = "AtgToolkitConfig", storages = {@Storage("atg-toolkit.xml")})
 public class AtgToolkitConfig implements PersistentStateComponent<AtgToolkitConfig> {
 
