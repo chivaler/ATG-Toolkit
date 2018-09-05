@@ -6,7 +6,7 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
-import org.idea.plugin.atg.module.AtgModuleFacet;
+import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.module.AtgModuleFacetConfiguration;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,7 +27,7 @@ public class WebContextResourceReference extends PsiPolyVariantReferenceBase<Psi
     public ResolveResult[] multiResolve(boolean incompleteCode) {
         PsiFile sourceFile = myElement.getContainingFile();
         if (filePath.startsWith("/")) {
-            return ProjectFacetManager.getInstance(sourceFile.getProject()).getFacets(AtgModuleFacet.FACET_TYPE_ID).stream()
+            return ProjectFacetManager.getInstance(sourceFile.getProject()).getFacets(Constants.FACET_TYPE_ID).stream()
                     .map(Facet::getConfiguration)
                     .map(AtgModuleFacetConfiguration::getWebRoots)
                     .map(Map::entrySet)

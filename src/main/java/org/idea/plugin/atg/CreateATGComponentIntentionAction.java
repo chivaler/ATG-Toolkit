@@ -45,7 +45,7 @@ public class CreateATGComponentIntentionAction extends PsiElementBaseIntentionAc
 
         Module module = ModuleUtilCore.findModuleForFile(file);
         if (module == null) return false;
-        AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(AtgModuleFacet.FACET_TYPE_ID);
+        AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
         if (atgFacet == null || Collections.isNullOrEmpty(atgFacet.getConfiguration().getConfigRoots())) return false;
 
         return true;

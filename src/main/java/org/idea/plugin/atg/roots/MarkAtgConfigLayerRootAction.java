@@ -26,7 +26,7 @@ public class MarkAtgConfigLayerRootAction extends MarkRootActionBase {
         Presentation presentation = getTemplatePresentation();
         presentation.setText(typeName);
         presentation.setDescription("Mark directory as a " + typeName.toLowerCase(Locale.getDefault()));
-        presentation.setIcon(Constants.CONFIG_LAYER_ROOT_ICON);
+        presentation.setIcon(Constants.Icons.CONFIG_LAYER_ROOT_ICON);
     }
 
     @Override
@@ -35,7 +35,7 @@ public class MarkAtgConfigLayerRootAction extends MarkRootActionBase {
             return false;
         }
 
-        AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(AtgModuleFacet.FACET_TYPE_ID);
+        AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
         return (atgFacet != null && !selection.mySelectedDirectories.isEmpty());
 
     }
@@ -43,7 +43,7 @@ public class MarkAtgConfigLayerRootAction extends MarkRootActionBase {
     @Override
     protected void modifyRoots(@NotNull AnActionEvent e, @NotNull Module module, @NotNull VirtualFile[] files) {
         AtgEnvironmentUtil.addDependantConfigs(module);
-        AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(AtgModuleFacet.FACET_TYPE_ID);
+        AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
         if (atgFacet == null) return;
 
         final ModifiableRootModel model = ModuleRootManager.getInstance(module).getModifiableModel();

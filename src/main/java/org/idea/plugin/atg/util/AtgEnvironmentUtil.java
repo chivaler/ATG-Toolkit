@@ -20,7 +20,6 @@ import com.intellij.psi.PsiManager;
 import org.apache.commons.lang.StringUtils;
 import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.config.AtgToolkitConfig;
-import org.idea.plugin.atg.module.AtgModuleFacet;
 import org.idea.plugin.atg.module.AtgModuleFacetConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.lang.manifest.psi.Header;
@@ -123,7 +122,7 @@ public class AtgEnvironmentUtil {
         List<String> requiredModules = getAllRequiredModules(module.getProject(), atgModuleName);
         requiredModules.remove(atgModuleName);
 
-        Set<String> presentModulesInProject = ProjectFacetManager.getInstance(module.getProject()).getFacets(AtgModuleFacet.FACET_TYPE_ID).stream()
+        Set<String> presentModulesInProject = ProjectFacetManager.getInstance(module.getProject()).getFacets(Constants.FACET_TYPE_ID).stream()
                 .map(Facet::getConfiguration)
                 .map(AtgModuleFacetConfiguration::getAtgModuleName)
                 .filter(StringUtils::isNotBlank)

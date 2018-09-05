@@ -47,7 +47,7 @@ public class AtgComponentUtil {
     public static boolean isInsideConfigRoots(@Nullable PsiFile propertyFile) {
         Module module = ModuleUtilCore.findModuleForPsiElement(propertyFile);
         if (module != null) {
-            AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(AtgModuleFacet.FACET_TYPE_ID);
+            AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
             if (atgFacet != null) {
                 atgFacet.getConfiguration().getConfigRoots();
             }
@@ -121,7 +121,7 @@ public class AtgComponentUtil {
                     .collect(Collectors.toList());
         }
 
-        List<VirtualFile> sourceConfigRoots = ProjectFacetManager.getInstance(project).getFacets(AtgModuleFacet.FACET_TYPE_ID).stream()
+        List<VirtualFile> sourceConfigRoots = ProjectFacetManager.getInstance(project).getFacets(Constants.FACET_TYPE_ID).stream()
                 .map(f -> f.getConfiguration().getConfigRoots())
                 .flatMap(Collection::stream)
                 .filter(Objects::nonNull)
@@ -163,7 +163,7 @@ public class AtgComponentUtil {
     @NotNull
     public static Collection<XmlFileImpl> getApplicableXmlsByName(@NotNull String xmlRelativePath,
                                                                   @NotNull Project project) {
-        return ProjectFacetManager.getInstance(project).getFacets(AtgModuleFacet.FACET_TYPE_ID).stream().map(f -> f.getConfiguration().getConfigRoots())
+        return ProjectFacetManager.getInstance(project).getFacets(Constants.FACET_TYPE_ID).stream().map(f -> f.getConfiguration().getConfigRoots())
                 .flatMap(Collection::stream)
                 .filter(Objects::nonNull)
                 .filter(VirtualFile::isDirectory)
@@ -199,7 +199,7 @@ public class AtgComponentUtil {
         Project project = file.getProject();
         Module module = ModuleUtilCore.findModuleForFile(virtualFile, project);
         if (module != null) {
-            AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(AtgModuleFacet.FACET_TYPE_ID);
+            AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
             if (atgFacet != null) {
                 return atgFacet.getConfiguration().getConfigRoots().stream()
                         .filter(Objects::nonNull)
@@ -215,7 +215,7 @@ public class AtgComponentUtil {
 
     @NotNull
     public static Optional<String> getXmlRelativePath(@NotNull XmlFile file) {
-        return ProjectFacetManager.getInstance(file.getProject()).getFacets(AtgModuleFacet.FACET_TYPE_ID).stream().map(f -> f.getConfiguration().getConfigRoots())
+        return ProjectFacetManager.getInstance(file.getProject()).getFacets(Constants.FACET_TYPE_ID).stream().map(f -> f.getConfiguration().getConfigRoots())
                 .flatMap(Collection::stream)
                 .filter(Objects::nonNull)
                 .filter(VirtualFile::isDirectory)

@@ -11,6 +11,7 @@ import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.idea.plugin.atg.AtgToolkitBundle;
+import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.module.AtgModuleFacet;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,7 +33,7 @@ public class UnmarkAtgConfigLayerRootAction extends MarkRootActionBase {
             return false;
         }
 
-        AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(AtgModuleFacet.FACET_TYPE_ID);
+        AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
         if (atgFacet == null) {
             return false;
         }
@@ -50,7 +51,7 @@ public class UnmarkAtgConfigLayerRootAction extends MarkRootActionBase {
 
     @Override
     protected void modifyRoots(@NotNull AnActionEvent e, @NotNull Module module, @NotNull VirtualFile[] files) {
-        AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(AtgModuleFacet.FACET_TYPE_ID);
+        AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
         if (atgFacet == null) return;
 
         List<VirtualFile> configRootsToRemove = new ArrayList<>();

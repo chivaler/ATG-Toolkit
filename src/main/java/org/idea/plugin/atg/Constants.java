@@ -1,10 +1,12 @@
 package org.idea.plugin.atg;
 
 import com.google.common.collect.ImmutableList;
+import com.intellij.facet.FacetTypeId;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.util.ScalableIcon;
 import com.intellij.ui.LayeredIcon;
 import com.intellij.util.PlatformIcons;
+import org.idea.plugin.atg.module.AtgModuleFacet;
 
 import javax.swing.*;
 import java.util.List;
@@ -17,9 +19,10 @@ public class Constants {
     public static final String NOTIFICATION_GROUP_ID = PLUGIN_ID; //don't change this in future releases
     public static final String ATG_TOOLKIT_CONFIGURABLE_ID = PLUGIN_ID;
 
-    public static final LayeredIcon CONFIG_ROOT_ICON;
-    public static final LayeredIcon CONFIG_LAYER_ROOT_ICON;
-    public static final LayeredIcon WEB_ROOT_ICON;
+    public static final FacetTypeId<AtgModuleFacet> FACET_TYPE_ID = new FacetTypeId<>("config");
+    public static final String FACET_STRING_ID = "AtgModuleConfigurationV1"; //don't change this in future releases
+    public static final String FACET_PRESENTABLE_NAME = "ATG Facet Configuration"; //don't change this in future releases
+
     public static final Pattern SUSPECTED_COMPONENT_NAME_REGEX = Pattern.compile("/[^,=]*");
     public static final String DEFAULT_ITEM_DESCRIPTOR_CLASS = "atg.adapter.gsa.GSAPropertyDescriptor";
     public static final List<String> IGNORED_ATTRIBUTES_NAMES_FOR_DESCRIPTOR = ImmutableList.of("uiwritable", "uiqueryable", "resourceBundle", "deployable", "propertySortPriority", "references");
@@ -29,21 +32,27 @@ public class Constants {
     public static final String ATG_CLASSES_LIBRARY_PREFIX = "ATG" + ATG_LIBRARY_SEPARATOR;
     public static final String ATG_HOME = "ATG_HOME";
 
-    private static final float LAYERED_ICON_SCALE_FACTOR = 0.75F;
+    public static class Icons {
+        public static final LayeredIcon CONFIG_ROOT_ICON;
+        public static final LayeredIcon CONFIG_LAYER_ROOT_ICON;
+        public static final LayeredIcon WEB_ROOT_ICON;
 
-    static {
-        CONFIG_ROOT_ICON = new LayeredIcon(2);
-        CONFIG_ROOT_ICON.setIcon(PlatformIcons.DIRECTORY_CLOSED_ICON, 0);
-        CONFIG_ROOT_ICON.setIcon(((ScalableIcon) AllIcons.Nodes.Artifact).scale(LAYERED_ICON_SCALE_FACTOR), 1, SwingConstants.SOUTH_EAST);
+        private static final float LAYERED_ICON_SCALE_FACTOR = 0.75F;
 
-        CONFIG_LAYER_ROOT_ICON = new LayeredIcon(3);
-        CONFIG_LAYER_ROOT_ICON.setIcon(PlatformIcons.DIRECTORY_CLOSED_ICON, 0);
-        CONFIG_LAYER_ROOT_ICON.setIcon(((ScalableIcon) AllIcons.Nodes.Artifact).scale(LAYERED_ICON_SCALE_FACTOR), 1, SwingConstants.SOUTH_EAST);
-        CONFIG_LAYER_ROOT_ICON.setIcon(((ScalableIcon) AllIcons.Welcome.CreateNewProject).scale(0.5f), 2, SwingConstants.NORTH_WEST);
+        static {
+            CONFIG_ROOT_ICON = new LayeredIcon(2);
+            CONFIG_ROOT_ICON.setIcon(PlatformIcons.DIRECTORY_CLOSED_ICON, 0);
+            CONFIG_ROOT_ICON.setIcon(((ScalableIcon) AllIcons.Nodes.Artifact).scale(LAYERED_ICON_SCALE_FACTOR), 1, SwingConstants.SOUTH_EAST);
 
-        WEB_ROOT_ICON = new LayeredIcon(2);
-        WEB_ROOT_ICON.setIcon(PlatformIcons.DIRECTORY_CLOSED_ICON, 0);
-        WEB_ROOT_ICON.setIcon(((ScalableIcon) AllIcons.General.Web).scale(LAYERED_ICON_SCALE_FACTOR), 1, SwingConstants.SOUTH_EAST);
+            CONFIG_LAYER_ROOT_ICON = new LayeredIcon(3);
+            CONFIG_LAYER_ROOT_ICON.setIcon(PlatformIcons.DIRECTORY_CLOSED_ICON, 0);
+            CONFIG_LAYER_ROOT_ICON.setIcon(((ScalableIcon) AllIcons.Nodes.Artifact).scale(LAYERED_ICON_SCALE_FACTOR), 1, SwingConstants.SOUTH_EAST);
+            CONFIG_LAYER_ROOT_ICON.setIcon(((ScalableIcon) AllIcons.Welcome.CreateNewProject).scale(0.5f), 2, SwingConstants.NORTH_WEST);
+
+            WEB_ROOT_ICON = new LayeredIcon(2);
+            WEB_ROOT_ICON.setIcon(PlatformIcons.DIRECTORY_CLOSED_ICON, 0);
+            WEB_ROOT_ICON.setIcon(((ScalableIcon) AllIcons.General.Web).scale(LAYERED_ICON_SCALE_FACTOR), 1, SwingConstants.SOUTH_EAST);
+        }
     }
 
     public static class Keywords {

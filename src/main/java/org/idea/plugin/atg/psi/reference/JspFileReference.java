@@ -7,6 +7,7 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
+import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.module.AtgModuleFacet;
 import org.jetbrains.annotations.NotNull;
 
@@ -35,7 +36,7 @@ public class JspFileReference extends PsiPolyVariantReferenceBase<PsiElement> {
         } else {
             Module module = ModuleUtilCore.findModuleForFile(sourceFile);
             if (module != null) {
-                AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(AtgModuleFacet.FACET_TYPE_ID);
+                AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
                 if (atgFacet != null) {
                     Optional<VirtualFile> webRootForSourceFile = atgFacet.getConfiguration().getWebRoots().keySet().stream()
                             .filter(r -> VfsUtilCore.isAncestor(r, sourceFile.getVirtualFile(), false))

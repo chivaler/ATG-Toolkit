@@ -6,6 +6,7 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.module.JavaModuleType;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleType;
+import org.idea.plugin.atg.Constants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,7 +23,7 @@ public class AtgModuleFacetType extends FacetType<AtgModuleFacet, AtgModuleFacet
     }
 
     private AtgModuleFacetType() {
-        super(AtgModuleFacet.FACET_TYPE_ID, "ATGConfig", "ATG Config Module");
+        super(Constants.FACET_TYPE_ID, Constants.FACET_STRING_ID, Constants.FACET_PRESENTABLE_NAME);
     }
 
     public AtgModuleFacetConfiguration createDefaultConfiguration() {

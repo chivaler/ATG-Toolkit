@@ -3,10 +3,10 @@ package org.idea.plugin.atg.module;
 import com.intellij.facet.Facet;
 import com.intellij.facet.FacetManager;
 import com.intellij.facet.FacetType;
-import com.intellij.facet.FacetTypeId;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.psi.PsiElement;
+import org.idea.plugin.atg.Constants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,8 +14,6 @@ import org.jetbrains.annotations.Nullable;
  * Created by Igor_Pidgurskyi on 4/19/2017.
  */
 public class AtgModuleFacet extends Facet<AtgModuleFacetConfiguration> {
-
-    public static final FacetTypeId<AtgModuleFacet> FACET_TYPE_ID = new FacetTypeId<>("config");
 
     public AtgModuleFacet(@NotNull final FacetType facetType,
                           @NotNull final Module module,
@@ -34,7 +32,7 @@ public class AtgModuleFacet extends Facet<AtgModuleFacetConfiguration> {
      */
     @Nullable
     public static AtgModuleFacet getInstance(@NotNull final Module module) {
-        return FacetManager.getInstance(module).getFacetByType(FACET_TYPE_ID);
+        return FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
     }
 
     /**
