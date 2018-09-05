@@ -15,7 +15,7 @@ public class JavaPropertyReference extends PsiReferenceBase<PsiElement> {
     private String propertyName;
     private PsiClass srcClass;
 
-    public JavaPropertyReference(@NotNull PropertyKeyImpl element, @NotNull PsiClass srcClass, TextRange textRange) {
+    public JavaPropertyReference(@NotNull PropertyKeyImpl element, @NotNull PsiClass srcClass, @NotNull TextRange textRange) {
         super(element, textRange);
         propertyName = element.getText().substring(textRange.getStartOffset(), textRange.getEndOffset());
         this.srcClass = srcClass;

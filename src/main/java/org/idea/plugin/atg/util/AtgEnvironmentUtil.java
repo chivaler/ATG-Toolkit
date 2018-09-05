@@ -66,6 +66,7 @@ public class AtgEnvironmentUtil {
     public static List<String> getRequiredModules(@NotNull final String atgModuleName, @NotNull final Project project) {
         Optional<ManifestFile> manifestFile = suggestManifestFileForModule(atgModuleName, project);
         if (manifestFile.isPresent()) {
+            //TODO Require-if-present
             Header requiredHeader = manifestFile.get().getHeader(Constants.Keywords.Manifest.ATG_REQUIRED);
             if (requiredHeader != null && requiredHeader.getHeaderValue() != null) {
                 return Arrays.stream(requiredHeader.getHeaderValue().getUnwrappedText().split("\\s"))

@@ -85,21 +85,15 @@ public class AtgFrameworkDetector extends FacetBasedFrameworkDetector<AtgModuleF
         Set<VirtualFile> excludeConfigLayerRoots = new HashSet<>();
         Set<VirtualFile> excludeWebRoots = new HashSet<>();
 
-        facet.getConfiguration().getConfigRoots().forEach(root -> {
-            Arrays.stream(model.getContentEntries())
-                    .filter(contentEntry -> ContentEntryEditor.isExcludedOrUnderExcludedDirectory(model.getProject(), contentEntry, root))
-                    .forEach(c -> excludeConfigRoots.add(root));
-        });
-        facet.getConfiguration().getConfigLayerRoots().keySet().forEach(root -> {
-            Arrays.stream(model.getContentEntries())
-                    .filter(contentEntry -> ContentEntryEditor.isExcludedOrUnderExcludedDirectory(model.getProject(), contentEntry, root))
-                    .forEach(c -> excludeConfigLayerRoots.add(root));
-        });
-        facet.getConfiguration().getWebRoots().keySet().forEach(root -> {
-            Arrays.stream(model.getContentEntries())
-                    .filter(contentEntry -> ContentEntryEditor.isExcludedOrUnderExcludedDirectory(model.getProject(), contentEntry, root))
-                    .forEach(c -> excludeWebRoots.add(root));
-        });
+        facet.getConfiguration().getConfigRoots().forEach(root -> Arrays.stream(model.getContentEntries())
+                .filter(contentEntry -> ContentEntryEditor.isExcludedOrUnderExcludedDirectory(model.getProject(), contentEntry, root))
+                .forEach(c -> excludeConfigRoots.add(root)));
+        facet.getConfiguration().getConfigLayerRoots().keySet().forEach(root -> Arrays.stream(model.getContentEntries())
+                .filter(contentEntry -> ContentEntryEditor.isExcludedOrUnderExcludedDirectory(model.getProject(), contentEntry, root))
+                .forEach(c -> excludeConfigLayerRoots.add(root)));
+        facet.getConfiguration().getWebRoots().keySet().forEach(root -> Arrays.stream(model.getContentEntries())
+                .filter(contentEntry -> ContentEntryEditor.isExcludedOrUnderExcludedDirectory(model.getProject(), contentEntry, root))
+                .forEach(c -> excludeWebRoots.add(root)));
 
 
         facet.getConfiguration().getConfigRoots().removeAll(excludeConfigRoots);

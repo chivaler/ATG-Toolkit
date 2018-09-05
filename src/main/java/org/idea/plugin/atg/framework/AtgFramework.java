@@ -10,7 +10,6 @@ import com.intellij.openapi.module.ModuleType;
 import com.intellij.openapi.roots.ModifiableModelsProvider;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
@@ -51,7 +50,7 @@ public class AtgFramework extends FrameworkTypeEx {
             @Override
             public FrameworkSupportInModuleConfigurable createConfigurable(@NotNull FrameworkSupportModel model) {
                 return new FrameworkSupportInModuleConfigurable() {
-                    @Nullable
+
                     @Override
                     public JComponent createComponent() {
                         return new JCheckBox("Extra Option");
