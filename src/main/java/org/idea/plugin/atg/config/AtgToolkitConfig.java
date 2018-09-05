@@ -4,6 +4,7 @@ import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
+import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,8 +20,19 @@ public class AtgToolkitConfig implements PersistentStateComponent<AtgToolkitConf
     public String ignoredClassesForSetters = DEFAULT_IGNORED_PARENTS;
     public String configRootsPatterns = DEFAULT_RELATIVE_CONFIG_PATH;
     public String configLayerRootsPatterns = DEFAULT_RELATIVE_CONFIG_LAYERS_PATH;
-    public boolean attachClassPathOfAtgDependencies= true;
+    public boolean attachClassPathOfAtgDependencies = true;
     public boolean attachConfigsOfAtgDependencies = true;
+
+    @NotNull
+    public static AtgToolkitConfig getInstance() {
+        return new AtgToolkitConfig();
+    }
+
+    @NotNull
+    public static AtgToolkitConfig getInstance(@NotNull Project project) {
+        AtgToolkitConfig service = ServiceManager.getService(project, AtgToolkitConfig.class);
+        return service != null ? service : new AtgToolkitConfig();
+    }
 
     @Nullable
     @Override
@@ -33,12 +45,6 @@ public class AtgToolkitConfig implements PersistentStateComponent<AtgToolkitConf
     @Override
     public void loadState(@NotNull AtgToolkitConfig state) {
         XmlSerializerUtil.copyBean(state, this);
-    }
-
-    @NotNull
-    public static AtgToolkitConfig getInstance() {
-        AtgToolkitConfig service = ServiceManager.getService(AtgToolkitConfig.class);
-        return service != null ? service : new AtgToolkitConfig();
     }
 
     public String getIgnoredClassesForSetters() {

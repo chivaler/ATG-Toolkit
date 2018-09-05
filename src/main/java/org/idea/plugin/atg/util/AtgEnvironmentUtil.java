@@ -119,10 +119,11 @@ public class AtgEnvironmentUtil {
 
     public static void addDependantConfigs(@NotNull final Module module) {
         String atgModuleName = suggestAtgModuleName(module);
-        List<String> requiredModules = getAllRequiredModules(module.getProject(), atgModuleName);
+        Project project = module.getProject();
+        List<String> requiredModules = getAllRequiredModules(project, atgModuleName);
         requiredModules.remove(atgModuleName);
 
-        Set<String> presentModulesInProject = ProjectFacetManager.getInstance(module.getProject()).getFacets(Constants.FACET_TYPE_ID).stream()
+        Set<String> presentModulesInProject = ProjectFacetManager.getInstance(project).getFacets(Constants.FACET_TYPE_ID).stream()
                 .map(Facet::getConfiguration)
                 .map(AtgModuleFacetConfiguration::getAtgModuleName)
                 .filter(StringUtils::isNotBlank)
@@ -132,12 +133,12 @@ public class AtgEnvironmentUtil {
         ApplicationManager.getApplication().runWriteAction(() ->
                 requiredModules.forEach(m -> {
                     if (!presentModulesInProject.contains(m)) {
-                        if (AtgToolkitConfig.getInstance().isAttachConfigsOfAtgDependencies()) {
-                            List<VirtualFile> configJars = getJarsForHeader(m, module.getProject(), Constants.Keywords.Manifest.ATG_CONFIG_PATH);
+                        if (AtgToolkitConfig.getInstance(project).isAttachConfigsOfAtgDependencies()) {
+                            List<VirtualFile> configJars = getJarsForHeader(m, project, Constants.Keywords.Manifest.ATG_CONFIG_PATH);
                             addDependantClassesToModule(module, m, configJars, Constants.ATG_CONFIG_LIBRARY_PREFIX);
                         }
-                        if (AtgToolkitConfig.getInstance().isAttachClassPathOfAtgDependencies()) {
-                            List<VirtualFile> classPathJars = getJarsForHeader(m, module.getProject(), Constants.Keywords.Manifest.ATG_CLASS_PATH);
+                        if (AtgToolkitConfig.getInstance(project).isAttachClassPathOfAtgDependencies()) {
+                            List<VirtualFile> classPathJars = getJarsForHeader(m, project, Constants.Keywords.Manifest.ATG_CLASS_PATH);
                             addDependantClassesToModule(module, m, classPathJars, Constants.ATG_CLASSES_LIBRARY_PREFIX);
                         }
                     }

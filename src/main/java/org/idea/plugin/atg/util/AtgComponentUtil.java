@@ -362,7 +362,7 @@ public class AtgComponentUtil {
                 .filter(m -> m.hasModifier(JvmModifier.PUBLIC))
                 .filter(m -> !m.hasModifier(JvmModifier.ABSTRACT))
                 .filter(m -> m.getParameters().length == 1)
-                .filter(new IsMethodIgnored())
+                .filter(new IsMethodIgnored(psiClass.getProject()))
                 .collect(Collectors.toList());
     }
 
@@ -394,8 +394,8 @@ public class AtgComponentUtil {
     static class IsMethodIgnored implements Predicate<PsiMethod> {
         private final List<Pattern> ignoredClassPatterns;
 
-        IsMethodIgnored() {
-            AtgToolkitConfig atgToolkitConfig = org.idea.plugin.atg.config.AtgToolkitConfig.getInstance();
+        IsMethodIgnored(@NotNull Project project) {
+            AtgToolkitConfig atgToolkitConfig = org.idea.plugin.atg.config.AtgToolkitConfig.getInstance(project);
             String ignoredClassesForSetters = atgToolkitConfig.getIgnoredClassesForSetters();
             ignoredClassPatterns = AtgConfigHelper.convertToPatternList(ignoredClassesForSetters);
         }

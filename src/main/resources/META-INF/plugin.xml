@@ -34,9 +34,9 @@
             <className>org.idea.plugin.atg.CreateATGComponentIntentionAction</className>
             <category>Java/Declaration</category>
         </intentionAction>
-        <applicationConfigurable parentId="language" instance="org.idea.plugin.atg.config.AtgToolkitConfigurable"
+        <projectConfigurable parentId="language" instance="org.idea.plugin.atg.config.AtgToolkitConfigurable"
                                  displayName="ATG Toolkit"/>
-        <applicationService serviceImplementation="org.idea.plugin.atg.config.AtgToolkitConfig"/>
+        <projectService serviceImplementation="org.idea.plugin.atg.config.AtgToolkitConfig"/>
         <completion.contributor language="Properties"
                                 implementationClass="org.idea.plugin.atg.completion.ComponentPropertiesCompletionContributor"
                                 id="atgPropertiesCompletion" order="first"/>
