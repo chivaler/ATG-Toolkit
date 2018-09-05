@@ -1,24 +1,37 @@
 package org.idea.plugin.atg.module;
 
+import com.google.common.collect.Lists;
 import com.intellij.facet.ui.FacetEditorContext;
 import com.intellij.facet.ui.FacetEditorTab;
 import com.intellij.facet.ui.FacetValidatorsManager;
+import com.intellij.openapi.fileChooser.FileChooserDescriptor;
+import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.ui.AddEditDeleteListPanel;
+import com.intellij.uiDesigner.core.GridConstraints;
+import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.Constants;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.awt.*;
+import java.util.List;
 
-/**
- * Created by Igor_Pidgurskyi on 4/19/2017.
- */
 public class AtgModuleFacetEditor extends FacetEditorTab {
-    private static final String DISPLAY_NAME = "ATG Module Parameters";
     private boolean modified = false;
     private AtgModuleFacet facet;
     private FacetEditorContext context;
     private FacetValidatorsManager validatorsManager;
+
+    private FileChooserDescriptor myDescriptor;
+    private JPanel rootPanel;
+    private JPanel configRootsPanel;
+    private JPanel configRootsHolderPanel;
+    private JPanel configLayerRootsPanel;
+    private JPanel configLayerHolderRootsPanel;
+    private JPanel webRootsHolderPanel;
+    private JPanel webRootsPanel;
+    private JTextField atgModuleName;
 
     protected AtgModuleFacetEditor(AtgModuleFacet facet, FacetEditorContext context, FacetValidatorsManager validatorsManager) {
         this.context = context;
@@ -29,23 +42,36 @@ public class AtgModuleFacetEditor extends FacetEditorTab {
     @NotNull
     @Override
     public JComponent createComponent() {
-        JPanel contentPanel = new JPanel(new BorderLayout());
-        JPanel myPanel = new JPanel(new GridBagLayout());
-        contentPanel.add("Center", myPanel);
-        JCheckBox myCheckBok = new JCheckBox("Extra Option");
-        myPanel.add(myCheckBok);
-        return contentPanel;
+        AtgModuleFacetConfiguration atgFacetConfiguration = facet.getConfiguration();
+
+        GridConstraints constraints = new GridConstraints();
+        constraints.setFill(GridConstraints.FILL_HORIZONTAL);
+        constraints.setAnchor(GridConstraints.ANCHOR_SOUTH);
+        constraints.setIndent(1);
+
+        configRootsPanel = new MyPanel<>(AtgToolkitBundle.message("gui.facet.configRoots.title"), Lists.newArrayList(atgFacetConfiguration.getConfigRoots()));
+        configRootsPanel.setEnabled(false);
+        configLayerRootsPanel = new MyPanel<>(AtgToolkitBundle.message("gui.facet.configLayersRoots.title"), Lists.newArrayList(atgFacetConfiguration.getConfigLayerRoots()));
+        configLayerRootsPanel.setEnabled(false);
+        webRootsPanel = new MyPanel<>(AtgToolkitBundle.message("gui.facet.webRoots.title"), Lists.newArrayList(atgFacetConfiguration.getWebRoots().keySet()));
+        webRootsPanel.setEnabled(false);
+
+        this.configRootsHolderPanel.add(configRootsPanel, constraints);
+        this.configLayerHolderRootsPanel.add(configLayerRootsPanel, constraints);
+        this.webRootsHolderPanel.add(webRootsPanel, constraints);
+
+        return rootPanel;
     }
 
     @Override
     public boolean isModified() {
-        return modified;
+        return isModified(atgModuleName, facet.getConfiguration().getAtgModuleName());
     }
 
     @Nls
     @Override
     public String getDisplayName() {
-        return DISPLAY_NAME;
+        return AtgToolkitBundle.message("gui.facet.title");
     }
 
     @Override
@@ -53,100 +79,39 @@ public class AtgModuleFacetEditor extends FacetEditorTab {
         return Constants.HelpTopics.MODULE_FACET_EDITOR;
     }
 
-//    private static class ConfigRootsComponent {
-//
-//        public JComponent createComponent() {
-//            ColumnInfo[] columnInfos = new ColumnInfo[]{ColumnInfo, "LAYER"};
-//            ListTableModel<DescriptorInfo> listModel = new ListTableModel(columnInfos);
-//            this.myDeploymentDescriptorsEditorPanel.add(this.myConfigFilesEditor.createComponent(), "Center");
-//            this.myInfoLabel.setVisible(this.myInsideAddModuleWizard);
-//            this.myAddAppServerDescriptorButton.addActionListener(new EditingDeploymentDescriptorSetComponent.AddAppServerDescriptorListener(this.myConfigFilesEditor.getTableModel()));
-//            this.myAddAppServerDescriptorButton.setEnabled(CreateAppServerDescriptorDialog.hasDescriptorsToCreate(this.myMetaDataProvider, this));
-//            return this.myPanel;
+    private class MyPanel<T> extends AddEditDeleteListPanel<T> {
 
-//    protected final F myFacet;
-//    private J2EEGeneralModuleViewlets myViewlets;
-//    private JComponent myComponent;
-//    private final FacetEditorContext myContext;
-//    private final FacetValidatorsManager myValidatorsManager;
-//
-//    protected J2EEModuleElementsEditor(Facet facet, FacetEditorContext context, FacetValidatorsManager validatorsManager) {
-//        this.myContext = context;
-//        this.myFacet = facet;
-//        this.myValidatorsManager = validatorsManager;
-//    }
-//
-//    public void disposeUIResources() {
-//        if(this.myViewlets != null) {
-//            this.myViewlets.dispose();
-//        }
-//
-//    }
-//
-//    public String getDisplayName() {
-//        return getEditorName(this.myFacet.getType());
-//    }
-//
-//    public static String getEditorName(FacetType type) {
-//        return J2EEBundle.message("javaee.facet.settings.display.name", new Object[]{type.getPresentableName()});
-//    }
-//
-//    public void apply() {
-//        (new WriteAction() {
-//            protected void run(@NotNull Result result) {
-//                J2EEModuleElementsEditor.this.saveData();
-//            }
-//        }).execute();
-//    }
-//
-//    public void saveData() {
-//        if(this.myViewlets != null) {
-//            this.myViewlets.saveData();
-//        }
-//
-//    }
-//
-//    public boolean isModified() {
-//        return this.myViewlets.isModified() || this.myViewlets.isEditing();
-//    }
-//
-//    public JComponent createComponentImpl() {
-//        this.myViewlets = this.createViewlets(this.myContext);
-//        return this.myViewlets.createComponent();
-//    }
-//
-//
-//    @NotNull
-//    public JComponent createComponent() {
-//        if(this.myComponent == null) {
-//            this.myComponent = this.createComponentImpl();
-//        }
-//
-//        JComponent var10000 = this.myComponent;
-//        if(this.myComponent == null) {
-//            throw new IllegalStateException(String.format("@NotNull method %s.%s must not return null", new Object[]{"com/intellij/javaee/module/view/common/J2EEModuleElementsEditor", "createComponent"}));
-//        } else {
-//            return var10000;
-//        }
-//    }
-//
-//    public void reset() {
-//    }
-//
-//    public void onFacetInitialized(@NotNull Facet facet) {
-//    }
-//
+        public MyPanel(String title, List<T> initialList) {
+            super(title, initialList);
+        }
 
-//
-//    public void onTabEntering() {
-//        this.myValidatorsManager.validate();
-//    }
-//
-//
-//    protected J2EEGeneralModuleViewlets createViewlets(FacetEditorContext context) {
-//        return new ConfigureWebGeneralModuleViewlets(this.myFacet, context);
-//    }
-//
-//
+        @Nullable
+        @Override
+        protected T editSelectedItem(T item) {
+            return null;
+        }
+
+        @Nullable
+        @Override
+        protected T findItemToAdd() {
+            return null;
+        }
+    }
+
+    @Override
+    public void apply() {
+        facet.getConfiguration().setAtgModuleName(atgModuleName.getText().trim());
+    }
+
+    @Override
+    public void reset() {
+        atgModuleName.setText(facet.getConfiguration().getAtgModuleName());
+    }
+
+    @Override
+    public boolean isModified(@NotNull JTextField textField, @NotNull String value) {
+        return !StringUtil.equals(textField.getText().trim(), value);
+    }
+
 
 }

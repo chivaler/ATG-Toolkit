@@ -69,6 +69,10 @@ public class AtgModuleFacetConfiguration implements FacetConfiguration, Persiste
         return atgModuleName;
     }
 
+    public void setAtgModuleName(String atgModuleName) {
+        this.atgModuleName = atgModuleName;
+    }
+
     @Override
     public void loadState(@NotNull State state) {
         configRoots = new HashSet<>();
