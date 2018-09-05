@@ -57,7 +57,7 @@ public class MarkAtgConfigLayerRootAction extends MarkRootActionBase {
                         break;
                     }
                 }
-                atgFacet.getConfiguration().getConfigLayerRoots().add(file);
+                atgFacet.getConfiguration().getConfigLayerRoots().put(file, "");
             }
         }
 

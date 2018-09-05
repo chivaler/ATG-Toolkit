@@ -1,5 +1,6 @@
 package org.idea.plugin.atg.framework;
 
+import com.google.common.collect.Sets;
 import com.intellij.framework.FrameworkType;
 import com.intellij.framework.detection.FacetBasedFrameworkDetector;
 import com.intellij.framework.detection.FileContentPattern;
@@ -89,7 +90,7 @@ public class AtgFrameworkDetector extends FacetBasedFrameworkDetector<AtgModuleF
                     .filter(contentEntry -> ContentEntryEditor.isExcludedOrUnderExcludedDirectory(model.getProject(), contentEntry, root))
                     .forEach(c -> excludeConfigRoots.add(root));
         });
-        facet.getConfiguration().getConfigLayerRoots().forEach(root -> {
+        facet.getConfiguration().getConfigLayerRoots().keySet().forEach(root -> {
             Arrays.stream(model.getContentEntries())
                     .filter(contentEntry -> ContentEntryEditor.isExcludedOrUnderExcludedDirectory(model.getProject(), contentEntry, root))
                     .forEach(c -> excludeConfigLayerRoots.add(root));
@@ -102,7 +103,7 @@ public class AtgFrameworkDetector extends FacetBasedFrameworkDetector<AtgModuleF
 
 
         facet.getConfiguration().getConfigRoots().removeAll(excludeConfigRoots);
-        facet.getConfiguration().getConfigLayerRoots().removeAll(excludeConfigLayerRoots);
+        facet.getConfiguration().getConfigLayerRoots().keySet().removeAll(excludeConfigLayerRoots);
         facet.getConfiguration().getWebRoots().keySet().removeAll(excludeWebRoots);
 
 
@@ -120,8 +121,8 @@ public class AtgFrameworkDetector extends FacetBasedFrameworkDetector<AtgModuleF
             List<Pattern> configLayerRootsPatterns = AtgConfigHelper.convertToPatternList(configLayerRootsPatternsStr);
 
 
-            if (VfsUtilCore.isUnder(file, atgModuleFacetConfiguration.getConfigRoots())) continue;
-            if (VfsUtilCore.isUnder(file, atgModuleFacetConfiguration.getConfigLayerRoots())) continue;
+            if (VfsUtilCore.isUnder(file, Sets.newHashSet(atgModuleFacetConfiguration.getConfigRoots()))) continue;
+            if (VfsUtilCore.isUnder(file, atgModuleFacetConfiguration.getConfigLayerRoots().keySet())) continue;
 
             VirtualFile parent = file;
             while (parent != null) {
@@ -132,7 +133,7 @@ public class AtgFrameworkDetector extends FacetBasedFrameworkDetector<AtgModuleF
                         break;
                     }
                     if (configLayerRootsPatterns.stream().anyMatch(p -> p.matcher(currentFile.getCanonicalPath()).find())) {
-                        atgModuleFacetConfiguration.getConfigLayerRoots().add(parent);
+                        atgModuleFacetConfiguration.getConfigLayerRoots().put(parent, "");
                         break;
                     }
                 }

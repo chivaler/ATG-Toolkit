@@ -39,7 +39,7 @@ public class UnmarkAtgConfigLayerRootAction extends MarkRootActionBase {
 
         for (VirtualFile selectedRoot : selection.mySelectedDirectories) {
             boolean configRootFound = atgFacet.getConfiguration().getConfigRoots().contains(selectedRoot);
-            boolean configLayerFound = atgFacet.getConfiguration().getConfigLayerRoots().contains(selectedRoot);
+            boolean configLayerFound = atgFacet.getConfiguration().getConfigLayerRoots().keySet().contains(selectedRoot);
             boolean webRootFound = atgFacet.getConfiguration().getWebRoots().keySet().contains(selectedRoot);
             if (configRootFound || configLayerFound || webRootFound) return true;
         }
@@ -61,7 +61,7 @@ public class UnmarkAtgConfigLayerRootAction extends MarkRootActionBase {
             atgFacet.getConfiguration().getConfigRoots().stream()
                     .filter(c -> c.equals(selectedFile))
                     .forEach(configRootsToRemove::add);
-            atgFacet.getConfiguration().getConfigLayerRoots().stream()
+            atgFacet.getConfiguration().getConfigLayerRoots().keySet().stream()
                     .filter(c -> c.equals(selectedFile))
                     .forEach(configLayerRootsToRemove::add);
             atgFacet.getConfiguration().getWebRoots().keySet().stream()
@@ -70,7 +70,7 @@ public class UnmarkAtgConfigLayerRootAction extends MarkRootActionBase {
         }
 
         atgFacet.getConfiguration().getConfigRoots().removeAll(configRootsToRemove);
-        atgFacet.getConfiguration().getConfigLayerRoots().removeAll(configLayerRootsToRemove);
+        atgFacet.getConfiguration().getConfigLayerRoots().keySet().removeAll(configLayerRootsToRemove);
         atgFacet.getConfiguration().getWebRoots().keySet().removeAll(webRootsToRemove);
 
 
