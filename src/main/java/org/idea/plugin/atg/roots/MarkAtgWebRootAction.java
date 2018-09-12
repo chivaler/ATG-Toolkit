@@ -11,16 +11,13 @@ import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.SourceFolder;
 import com.intellij.openapi.util.Comparing;
-import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.Constants;
-import org.idea.plugin.atg.config.AtgConfigHelper;
 import org.idea.plugin.atg.module.AtgModuleFacet;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
-import java.util.Optional;
 
 public class MarkAtgWebRootAction extends MarkRootActionBase {
 
@@ -60,11 +57,9 @@ public class MarkAtgWebRootAction extends MarkRootActionBase {
                         break;
                     }
                 }
-                Optional<Pair<VirtualFile, String>> webRoot = AtgConfigHelper.suggestWebRootForRoot(file, module.getProject());
-                if (webRoot.isPresent()) {
-                    atgFacet.getConfiguration().getWebRoots().put(webRoot.get().getFirst(), webRoot.get().getSecond());
-                } else {
-                    atgFacet.getConfiguration().getWebRoots().put(file, "/");
+//                Optional<Pair<VirtualFile, String>> webRoot = AtgConfigHelper.suggestWebRootForRoot(file, module.getProject());
+                if (!atgFacet.getConfiguration().getWebRoots().contains(file)) {
+                    atgFacet.getConfiguration().getWebRoots().add(file);
                 }
             }
         }

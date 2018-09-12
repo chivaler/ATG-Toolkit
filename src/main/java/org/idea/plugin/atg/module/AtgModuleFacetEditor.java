@@ -51,9 +51,9 @@ public class AtgModuleFacetEditor extends FacetEditorTab {
 
         configRootsPanel = new MyPanel<>(AtgToolkitBundle.message("gui.facet.configRoots.title"), Lists.newArrayList(atgFacetConfiguration.getConfigRoots()));
         configRootsPanel.setEnabled(false);
-        configLayerRootsPanel = new MyPanel<>(AtgToolkitBundle.message("gui.facet.configLayersRoots.title"), Lists.newArrayList(atgFacetConfiguration.getConfigLayerRoots()));
+        configLayerRootsPanel = new MyPanel<>(AtgToolkitBundle.message("gui.facet.configLayersRoots.title"), Lists.newArrayList(atgFacetConfiguration.getConfigLayerRoots().keySet()));
         configLayerRootsPanel.setEnabled(false);
-        webRootsPanel = new MyPanel<>(AtgToolkitBundle.message("gui.facet.webRoots.title"), Lists.newArrayList(atgFacetConfiguration.getWebRoots().keySet()));
+        webRootsPanel = new MyPanel<>(AtgToolkitBundle.message("gui.facet.webRoots.title"), Lists.newArrayList(atgFacetConfiguration.getWebRoots()));
         webRootsPanel.setEnabled(false);
 
         this.configRootsHolderPanel.add(configRootsPanel, constraints);

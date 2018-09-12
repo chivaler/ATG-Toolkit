@@ -1,11 +1,15 @@
 package org.idea.plugin.atg.config;
 
 import com.intellij.openapi.options.ConfigurableUi;
+import com.intellij.openapi.project.Project;
+import org.idea.plugin.atg.util.AtgEnvironmentUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
 public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
+
+    private Project project;
 
     private JPanel rootPanel;
     private JTextField configPatternsField;
@@ -13,8 +17,11 @@ public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
     private JTextField ignoredClassesField;
     private JCheckBox attachClassPathOfAtgDependencies;
     private JCheckBox attachConfigsOfAtgDependencies;
-    private JButton detectAllFacets;
     private JLabel errorLabel;
+
+    public AtgToolkitSettingsUi(Project project) {
+        this.project = project;
+    }
 
     @Override
     public void reset(@NotNull AtgToolkitConfig atgToolkitConfig) {
@@ -51,8 +58,21 @@ public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
         atgToolkitConfig.setConfigRootsPatterns(configRootPatters);
         atgToolkitConfig.setConfigLayerRootsPatterns(configLayerRootPatters);
         atgToolkitConfig.setIgnoredClassesForSetters(ignoredClassesField.getText());
+
+        boolean dependenciesResolvingChanged = false;
+        if (attachClassPathOfAtgDependencies.isSelected() != atgToolkitConfig.isAttachClassPathOfAtgDependencies()) {
+            dependenciesResolvingChanged = true;
+        }
+        if (attachConfigsOfAtgDependencies.isSelected() != atgToolkitConfig.isAttachConfigsOfAtgDependencies()) {
+            dependenciesResolvingChanged = true;
+        }
         atgToolkitConfig.setAttachClassPathOfAtgDependencies(attachClassPathOfAtgDependencies.isSelected());
         atgToolkitConfig.setAttachConfigsOfAtgDependencies(attachConfigsOfAtgDependencies.isSelected());
+
+        if (dependenciesResolvingChanged) {
+            AtgEnvironmentUtil.removeAtgDependenciesForAllModules(project);
+            AtgEnvironmentUtil.addAtgDependenciesForAllModules(project);
+        }
     }
 
     @NotNull

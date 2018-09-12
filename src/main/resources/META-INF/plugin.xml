@@ -2,7 +2,7 @@
     <id>org.idea.plugin.atg</id>
     <name>ATG Toolkit (Beta)</name>
     <id>atg-toolkit</id>
-    <version>0.5</version>
+    <version>0.6</version>
     <vendor email="chivaler@gmail.com">Igor Pidgurskyi</vendor>
 
     <description><![CDATA[

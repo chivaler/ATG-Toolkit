@@ -7,7 +7,7 @@ import com.intellij.facet.ui.FacetValidatorsManager;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
-import com.intellij.util.xmlb.annotations.Tag;
+import com.intellij.util.xmlb.annotations.OptionTag;
 import com.intellij.util.xmlb.annotations.XCollection;
 import com.intellij.util.xmlb.annotations.XMap;
 import org.jetbrains.annotations.NotNull;
@@ -23,7 +23,7 @@ public class AtgModuleFacetConfiguration implements FacetConfiguration, Persiste
     @NotNull
     private Map<VirtualFile, String> configLayerRoots = new HashMap<>();
     @NotNull
-    private Map<VirtualFile, String> webRoots = new HashMap<>();
+    private List<VirtualFile> webRoots = new ArrayList<>();
 
 
     @Override
@@ -43,7 +43,7 @@ public class AtgModuleFacetConfiguration implements FacetConfiguration, Persiste
         configLayerRoots
                 .forEach((key, value) -> result.configLayerRoots.put(key.getUrl(), value));
         webRoots
-                .forEach((key, value) -> result.webRoots.put(key.getUrl(), value));
+                .forEach(r -> result.webRoots.add(r.getUrl()));
         result.atgModuleName = atgModuleName;
         return result;
     }
@@ -60,7 +60,7 @@ public class AtgModuleFacetConfiguration implements FacetConfiguration, Persiste
 
 
     @NotNull
-    public Map<VirtualFile, String> getWebRoots() {
+    public List<VirtualFile> getWebRoots() {
         return webRoots;
     }
 
@@ -76,26 +76,26 @@ public class AtgModuleFacetConfiguration implements FacetConfiguration, Persiste
     public void loadState(@NotNull State state) {
         configRoots = new ArrayList<>();
         configLayerRoots = new HashMap<>();
-        webRoots = new HashMap<>();
+        webRoots = new ArrayList<>();
         atgModuleName = state.atgModuleName;
         state.configRoots
                 .forEach(s -> configRoots.add(VirtualFileManager.getInstance().findFileByUrl(s)));
         state.configLayerRoots
                 .forEach((key, value) -> configLayerRoots.put(VirtualFileManager.getInstance().findFileByUrl(key), value));
         state.webRoots
-                .forEach((key, value) -> webRoots.put(VirtualFileManager.getInstance().findFileByUrl(key), value));
+                .forEach((key) -> webRoots.add(VirtualFileManager.getInstance().findFileByUrl(key)));
     }
 
     @SuppressWarnings("WeakerAccess")
     static class State {
-        @Tag(value = "atgModuleName")
+        @OptionTag(tag = "atgModule", nameAttribute = "", valueAttribute = "name")
         public String atgModuleName = "";
         @XCollection(elementName = "root", valueAttributeName = "url", propertyElementName = "configRoots")
         public List<String> configRoots = new ArrayList<>();
         @XMap(entryTagName = "root", keyAttributeName = "url", valueAttributeName = "layerName", propertyElementName = "configLayerRoots")
         public Map<String, String> configLayerRoots = new HashMap<>();
-        @XMap(entryTagName = "root", keyAttributeName = "url", valueAttributeName = "context", propertyElementName = "webRoots")
-        public Map<String, String> webRoots = new HashMap<>();
+        @XCollection(elementName = "root", valueAttributeName = "url", propertyElementName = "webRoots")
+        public List<String> webRoots = new ArrayList<>();
     }
 
 }

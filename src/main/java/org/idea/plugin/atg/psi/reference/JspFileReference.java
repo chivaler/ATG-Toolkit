@@ -38,7 +38,7 @@ public class JspFileReference extends PsiPolyVariantReferenceBase<PsiElement> {
             if (module != null) {
                 AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
                 if (atgFacet != null) {
-                    Optional<VirtualFile> webRootForSourceFile = atgFacet.getConfiguration().getWebRoots().keySet().stream()
+                    Optional<VirtualFile> webRootForSourceFile = atgFacet.getConfiguration().getWebRoots().stream()
                             .filter(r -> VfsUtilCore.isAncestor(r, sourceFile.getVirtualFile(), false))
                             .findFirst();
                     if (webRootForSourceFile.isPresent()) {

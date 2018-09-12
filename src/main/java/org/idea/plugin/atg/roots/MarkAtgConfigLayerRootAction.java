@@ -42,7 +42,7 @@ public class MarkAtgConfigLayerRootAction extends MarkRootActionBase {
 
     @Override
     protected void modifyRoots(@NotNull AnActionEvent e, @NotNull Module module, @NotNull VirtualFile[] files) {
-        AtgEnvironmentUtil.addDependantConfigs(module);
+        AtgEnvironmentUtil.addDependenciesToModule(module);
         AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
         if (atgFacet == null) return;
 

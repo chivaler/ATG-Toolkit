@@ -1,13 +1,18 @@
 package org.idea.plugin.atg.util;
 
 import com.intellij.facet.Facet;
+import com.intellij.facet.FacetManager;
 import com.intellij.facet.ProjectFacetManager;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PathMacros;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.*;
+import com.intellij.openapi.roots.LibraryOrderEntry;
+import com.intellij.openapi.roots.ModifiableRootModel;
+import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
@@ -20,6 +25,7 @@ import com.intellij.psi.PsiManager;
 import org.apache.commons.lang.StringUtils;
 import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.config.AtgToolkitConfig;
+import org.idea.plugin.atg.module.AtgModuleFacet;
 import org.idea.plugin.atg.module.AtgModuleFacetConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.lang.manifest.psi.Header;
@@ -46,20 +52,6 @@ public class AtgEnvironmentUtil {
         }
 
         return Optional.empty();
-    }
-
-    @NotNull
-    public static String suggestAtgModuleName(@NotNull Module module) {
-        VirtualFile projectRoot = module.getProject().getBaseDir();
-        String moduleName = projectRoot.getName();
-        ContentEntry[] moduleContentEntries = ModuleRootManager.getInstance(module).getContentEntries();
-        if (moduleContentEntries.length > 0) {
-            VirtualFile contentEntryRoot = moduleContentEntries[0].getFile();
-            if (contentEntryRoot != null && !projectRoot.equals(contentEntryRoot)) {
-                moduleName = VfsUtilCore.getRelativePath(contentEntryRoot, projectRoot);
-            }
-        }
-        return moduleName != null ? moduleName.replace('/', '.').replace('\\', '.') : "";
     }
 
     @NotNull
@@ -118,35 +110,57 @@ public class AtgEnvironmentUtil {
         return Collections.emptyList();
     }
 
-    public static void addDependantConfigs(@NotNull final Module module) {
-        String atgModuleName = suggestAtgModuleName(module);
-        Project project = module.getProject();
-        List<String> requiredModules = getAllRequiredModules(project, atgModuleName);
-        requiredModules.remove(atgModuleName);
+    public static void addDependenciesToModule(@NotNull final Module module) {
+        AtgModuleFacet atgModuleFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
+        if (atgModuleFacet != null) {
+            String atgModuleName = atgModuleFacet.getConfiguration().getAtgModuleName();
+            if (StringUtils.isNotBlank(atgModuleName)) {
+                Project project = module.getProject();
+                List<String> requiredAtgModules = getAllRequiredModules(project, atgModuleName);
+                requiredAtgModules.remove(atgModuleName);
 
-        Set<String> presentModulesInProject = ProjectFacetManager.getInstance(project).getFacets(Constants.FACET_TYPE_ID).stream()
-                .map(Facet::getConfiguration)
-                .map(AtgModuleFacetConfiguration::getAtgModuleName)
-                .filter(StringUtils::isNotBlank)
-                .collect(Collectors.toSet());
+                Set<String> presentModulesInProject = ProjectFacetManager.getInstance(project).getFacets(Constants.FACET_TYPE_ID).stream()
+                        .map(Facet::getConfiguration)
+                        .map(AtgModuleFacetConfiguration::getAtgModuleName)
+                        .filter(StringUtils::isNotBlank)
+                        .collect(Collectors.toSet());
 
-
-        ApplicationManager.getApplication().runWriteAction(() ->
-                requiredModules.forEach(m -> {
-                    if (!presentModulesInProject.contains(m)) {
-                        if (AtgToolkitConfig.getInstance(project).isAttachConfigsOfAtgDependencies()) {
-                            List<VirtualFile> configJars = getJarsForHeader(m, project, Constants.Keywords.Manifest.ATG_CONFIG_PATH);
-                            addDependantClassesToModule(module, m, configJars, Constants.ATG_CONFIG_LIBRARY_PREFIX);
-                        }
-                        if (AtgToolkitConfig.getInstance(project).isAttachClassPathOfAtgDependencies()) {
-                            List<VirtualFile> classPathJars = getJarsForHeader(m, project, Constants.Keywords.Manifest.ATG_CLASS_PATH);
-                            addDependantClassesToModule(module, m, classPathJars, Constants.ATG_CLASSES_LIBRARY_PREFIX);
-                        }
+                ModifiableRootModel modifiableModel = ModuleRootManager.getInstance(module).getModifiableModel();
+                ApplicationManager.getApplication().runWriteAction(() -> {
+                    for (String prefix : new String[]{Constants.ATG_CONFIG_LIBRARY_PREFIX, Constants.ATG_CLASSES_LIBRARY_PREFIX}) {
+                        Arrays.stream(modifiableModel.getOrderEntries())
+                                .filter(LibraryOrderEntry.class::isInstance)
+                                .map(f -> (LibraryOrderEntry)f)
+                                .filter(f -> f.getLibraryName() != null && f.getLibraryName().startsWith(prefix))
+                                .filter(f -> !requiredAtgModules.contains(f.getLibraryName().replace(prefix, "")))
+                                .peek(f -> LOG.debug("Removing " + f.getLibraryName() + " from module " + module.getName() + " as it's not present in ATG-Required in Manifest"))
+                                .forEach(modifiableModel::removeOrderEntry);
                     }
-                }));
+                    modifiableModel.commit();
+                });
+
+                ApplicationManager.getApplication().runWriteAction(() ->
+                        requiredAtgModules.forEach(m -> {
+                            if (!presentModulesInProject.contains(m)) {
+                                if (AtgToolkitConfig.getInstance(project).isAttachConfigsOfAtgDependencies()) {
+                                    List<VirtualFile> configJars = getJarsForHeader(m, project, Constants.Keywords.Manifest.ATG_CONFIG_PATH);
+                                    addDependenciesToModule(module, m, configJars, Constants.ATG_CONFIG_LIBRARY_PREFIX);
+                                }
+                                if (AtgToolkitConfig.getInstance(project).isAttachClassPathOfAtgDependencies()) {
+                                    List<VirtualFile> classPathJars = getJarsForHeader(m, project, Constants.Keywords.Manifest.ATG_CLASS_PATH);
+                                    addDependenciesToModule(module, m, classPathJars, Constants.ATG_CLASSES_LIBRARY_PREFIX);
+                                }
+                            }
+                        }));
+            } else {
+                LOG.info("Module " + module.getName() + " hasn't configured AtgModuleName. Couldn't identify Manifest for module. Skipping addition of dependencies");
+            }
+        } else {
+            LOG.info("Module " + module.getName() + " hasn't configured ATGFacet. Skipping addition of dependencies");
+        }
     }
 
-    public static void addDependantClassesToModule(@NotNull Module module, @NotNull String atgModuleName, @NotNull List<VirtualFile> jarFiles, @NotNull String prefix) {
+    public static void addDependenciesToModule(@NotNull Module module, @NotNull String atgModuleName, @NotNull List<VirtualFile> jarFiles, @NotNull String prefix) {
         LibraryTable projectLibraryTable = ProjectLibraryTable.getInstance(module.getProject());
         ModifiableRootModel moduleModifiableModel = ModuleRootManager.getInstance(module).getModifiableModel();
         LibraryTable.ModifiableModel libraryTableModel = projectLibraryTable.getModifiableModel();
@@ -172,16 +186,62 @@ public class AtgEnvironmentUtil {
 
             libraryModel.commit();
             libraryTableModel.commit();
+        }
 
-            Optional<LibraryOrderEntry> moduleLibraryEntry = Arrays.stream(moduleModifiableModel.getOrderEntries())
-                    .filter(LibraryOrderEntry.class::isInstance)
-                    .map(f -> (LibraryOrderEntry) f)
-                    .filter(l -> libraryName.equals(l.getLibraryName()))
-                    .findAny();
-            if (!moduleLibraryEntry.isPresent()) {
-                moduleModifiableModel.addLibraryEntry(library);
-                moduleModifiableModel.commit();
-            }
+        Optional<LibraryOrderEntry> moduleLibraryEntry = Arrays.stream(moduleModifiableModel.getOrderEntries())
+                .filter(LibraryOrderEntry.class::isInstance)
+                .map(f -> (LibraryOrderEntry) f)
+                .filter(l -> libraryName.equals(l.getLibraryName()))
+                .findAny();
+        if (!moduleLibraryEntry.isPresent()) {
+            moduleModifiableModel.addLibraryEntry(library);
+            moduleModifiableModel.commit();
+        }
+
+    }
+
+    public static void addAtgDependenciesForAllModules(@NotNull Project project) {
+        for (Module module : ModuleManager.getInstance(project).getModules()) {
+            addDependenciesToModule(module);
         }
     }
+
+    public static void removeAtgDependenciesForAllModules(@NotNull Project project) {
+        if (!AtgToolkitConfig.getInstance(project).isAttachConfigsOfAtgDependencies()) {
+            removeAtgDependenciesForAllModules(project, Constants.ATG_CONFIG_LIBRARY_PREFIX);
+        }
+        if (!AtgToolkitConfig.getInstance(project).isAttachClassPathOfAtgDependencies()) {
+            removeAtgDependenciesForAllModules(project, Constants.ATG_CLASSES_LIBRARY_PREFIX);
+        }
+    }
+
+    public static void removeAtgDependenciesForAllModules(@NotNull Project project, @NotNull String libraryPrefix) {
+        for (Module module : ModuleManager.getInstance(project).getModules()) {
+            ModifiableRootModel moduleModifiableModel = ModuleRootManager.getInstance(module).getModifiableModel();
+            Set<LibraryOrderEntry> atgLibraryEntries = Arrays.stream(moduleModifiableModel.getOrderEntries())
+                    .filter(LibraryOrderEntry.class::isInstance)
+                    .map(f -> (LibraryOrderEntry) f)
+                    .filter(l -> l.getLibraryName() != null && l.getLibraryName().startsWith(libraryPrefix))
+                    .collect(Collectors.toSet());
+            if (!atgLibraryEntries.isEmpty()) {
+                ApplicationManager.getApplication().runWriteAction(() -> {
+                    atgLibraryEntries.forEach(moduleModifiableModel::removeOrderEntry);
+                    moduleModifiableModel.commit();
+                });
+            }
+        }
+
+        LibraryTable projectLibraryTable = ProjectLibraryTable.getInstance(project);
+        Set<Library> projectEntries = Arrays.stream(projectLibraryTable.getLibraries())
+                .filter(l -> l.getName() != null && l.getName().startsWith(libraryPrefix))
+                .collect(Collectors.toSet());
+        if (!projectEntries.isEmpty()) {
+            ApplicationManager.getApplication().runWriteAction(() -> {
+                projectEntries.forEach(projectLibraryTable::removeLibrary);
+                projectLibraryTable.getModifiableModel().commit();
+            });
+        }
+    }
+
+
 }

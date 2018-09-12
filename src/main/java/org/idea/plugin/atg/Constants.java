@@ -20,7 +20,7 @@ public class Constants {
     public static final String ATG_TOOLKIT_CONFIGURABLE_ID = PLUGIN_ID;
 
     public static final FacetTypeId<AtgModuleFacet> FACET_TYPE_ID = new FacetTypeId<>("config");
-    public static final String FACET_STRING_ID = "AtgModuleConfigurationV1"; //don't change this in future releases
+    public static final String FACET_STRING_ID = "AtgModuleConfiguration"; //don't change this in future releases
     public static final String FACET_PRESENTABLE_NAME = "ATG Facet Configuration"; //don't change this in future releases
 
     public static final Pattern SUSPECTED_COMPONENT_NAME_REGEX = Pattern.compile("/[^,=]*");
