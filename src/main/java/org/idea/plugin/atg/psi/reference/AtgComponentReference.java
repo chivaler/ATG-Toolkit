@@ -7,6 +7,7 @@ import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
 import com.intellij.psi.xml.XmlAttributeValue;
+import com.intellij.psi.xml.XmlText;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,6 +25,11 @@ public class AtgComponentReference extends PsiPolyVariantReferenceBase<PsiElemen
     public AtgComponentReference(@NotNull XmlAttributeValue element) {
         super(element);
         componentName = element.getValue();
+    }
+
+    public AtgComponentReference(@NotNull XmlText element) {
+        super(element);
+        componentName = element.getValue().trim();
     }
 
     public AtgComponentReference(@NotNull String componentName, @NotNull TextRange textRange, @NotNull PsiFile originalFile) {

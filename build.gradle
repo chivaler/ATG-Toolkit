@@ -21,5 +21,9 @@ intellij {
     updateSinceUntilBuild false
 }
 
+runIde {
+    jvmArgs '-Xmx1024m'
+}
+
 group 'org.idea.plugin.atg'
 version '0.6' // Plugin version

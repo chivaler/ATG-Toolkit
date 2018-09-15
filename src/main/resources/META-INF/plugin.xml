@@ -44,6 +44,8 @@
                                   implementation="org.idea.plugin.atg.psi.AtgPipelinesXmlContributor"/>
         <psi.referenceContributor language="XML"
                                   implementation="org.idea.plugin.atg.psi.RepositoryXmlContributor"/>
+        <psi.referenceContributor language="XML"
+                                  implementation="org.idea.plugin.atg.psi.PatchBayXmlContributor"/>
         <psi.referenceContributor language="Properties"
                                   implementation="org.idea.plugin.atg.psi.AtgReferenceContributor"/>
         <psi.referenceContributor language=""
