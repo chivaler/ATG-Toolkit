@@ -62,6 +62,7 @@ public class Constants {
             public static final String ATG_CLASS_PATH = "ATG-Class-Path";
             public static final String ATG_REQUIRED = "ATG-Required";
             public static final String ATG_VERSION = "ATG-Version";
+            public static final String ATG_INSTALL_UNIT = "ATG-Install-Unit";
         }
 
         public static class Properties {

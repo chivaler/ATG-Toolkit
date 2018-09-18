@@ -25,12 +25,15 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class AtgConfigHelper {
-    private static Cache<VirtualFile, String> webRootsContextCache = CacheBuilder.newBuilder().build();
+    private static Cache<VirtualFile, String> webRootsContextCache = CacheBuilder.newBuilder()
+            .expireAfterWrite(2, TimeUnit.MINUTES)
+            .build();
 
     private AtgConfigHelper() {
 

@@ -161,7 +161,7 @@ public class AtgComponentUtil {
     }
 
     @NotNull
-    public static Collection<XmlFileImpl> getApplicableXmlsByName(@NotNull String xmlRelativePath,
+    public static List<XmlFileImpl> getApplicableXmlsByName(@NotNull String xmlRelativePath,
                                                                   @NotNull Project project) {
         return ProjectFacetManager.getInstance(project).getFacets(Constants.FACET_TYPE_ID).stream().map(f -> f.getConfiguration().getConfigRoots())
                 .flatMap(Collection::stream)
