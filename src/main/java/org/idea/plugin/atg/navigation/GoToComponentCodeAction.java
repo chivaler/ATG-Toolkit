@@ -10,8 +10,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaFile;
+import com.intellij.psi.impl.source.xml.XmlFileImpl;
 import com.intellij.psi.util.PsiUtilBase;
 import org.idea.plugin.atg.AtgToolkitBundle;
+import org.idea.plugin.atg.config.AtgToolkitConfig;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -48,7 +50,15 @@ public class GoToComponentCodeAction extends BaseCodeInsightAction {
         } else if (psiFile instanceof PropertiesFile) {
             presentation.setText(AtgToolkitBundle.message("goto.component.from.component.text"));
             presentation.setDescription(AtgToolkitBundle.message("goto.component.from.component.description"));
-            presentation.setEnabledAndVisible(true);
+            if (AtgToolkitConfig.getInstance(project).showReferencesOnComponentInGoTo || AtgToolkitConfig.getInstance(project).showOverridesOfComponentInGoTo) {
+                presentation.setEnabledAndVisible(true);
+            }
+        } else if (psiFile instanceof XmlFileImpl) {
+            presentation.setText(AtgToolkitBundle.message("goto.component.from.component.text"));
+            presentation.setDescription(AtgToolkitBundle.message("goto.component.from.component.description"));
+            if (AtgToolkitConfig.getInstance(project).showOverridesOfComponentInGoTo) {
+                presentation.setEnabledAndVisible(true);
+            }
         }
     }
 }

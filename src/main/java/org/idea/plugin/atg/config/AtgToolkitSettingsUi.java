@@ -1,5 +1,6 @@
 package org.idea.plugin.atg.config;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.options.ConfigurableUi;
 import com.intellij.openapi.project.Project;
 import org.idea.plugin.atg.util.AtgEnvironmentUtil;
@@ -15,8 +16,13 @@ public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
     private JTextField configPatternsField;
     private JTextField configLayersPatternsField;
     private JTextField ignoredClassesField;
+
     private JCheckBox attachClassPathOfAtgDependencies;
     private JCheckBox attachConfigsOfAtgDependencies;
+
+    private JCheckBox showReferencesOnComponentInGoTo;
+    private JCheckBox showOverridesOfComponentInGoTo;
+
     private JLabel errorLabel;
 
     public AtgToolkitSettingsUi(Project project) {
@@ -30,6 +36,8 @@ public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
         ignoredClassesField.setText(atgToolkitConfig.getIgnoredClassesForSetters());
         attachClassPathOfAtgDependencies.setSelected(atgToolkitConfig.isAttachClassPathOfAtgDependencies());
         attachConfigsOfAtgDependencies.setSelected(atgToolkitConfig.isAttachConfigsOfAtgDependencies());
+        showReferencesOnComponentInGoTo.setSelected(atgToolkitConfig.isShowReferencesOnComponentInGoTo());
+        showOverridesOfComponentInGoTo.setSelected(atgToolkitConfig.isShowOverridesOfComponentInGoTo());
     }
 
     @Override
@@ -43,6 +51,10 @@ public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
         if (attachClassPathOfAtgDependencies.isSelected() != atgToolkitConfig.isAttachClassPathOfAtgDependencies())
             isModified = true;
         if (attachConfigsOfAtgDependencies.isSelected() != atgToolkitConfig.isAttachConfigsOfAtgDependencies())
+            isModified = true;
+        if (showReferencesOnComponentInGoTo.isSelected() != atgToolkitConfig.isShowReferencesOnComponentInGoTo())
+            isModified = true;
+        if (showOverridesOfComponentInGoTo.isSelected() != atgToolkitConfig.isShowOverridesOfComponentInGoTo())
             isModified = true;
 
         return isModified;
@@ -68,10 +80,16 @@ public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
         }
         atgToolkitConfig.setAttachClassPathOfAtgDependencies(attachClassPathOfAtgDependencies.isSelected());
         atgToolkitConfig.setAttachConfigsOfAtgDependencies(attachConfigsOfAtgDependencies.isSelected());
+        atgToolkitConfig.setShowOverridesOfComponentInGoTo(showOverridesOfComponentInGoTo.isSelected());
+        atgToolkitConfig.setShowReferencesOnComponentInGoTo(showReferencesOnComponentInGoTo.isSelected());
 
         if (dependenciesResolvingChanged) {
-            AtgEnvironmentUtil.removeAtgDependenciesForAllModules(project);
-            AtgEnvironmentUtil.addAtgDependenciesForAllModules(project);
+            ApplicationManager.getApplication().invokeLater(() -> {
+                AtgEnvironmentUtil.removeAtgDependenciesForAllModules(project);
+                if (AtgToolkitConfig.getInstance(project).isAttachConfigsOfAtgDependencies() || AtgToolkitConfig.getInstance(project).isAttachClassPathOfAtgDependencies()) {
+                    AtgEnvironmentUtil.addAtgDependenciesForAllModules(project);
+                }
+            }, project.getDisposed());
         }
     }
 

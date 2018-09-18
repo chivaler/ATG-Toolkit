@@ -23,6 +23,9 @@ public class AtgToolkitConfig implements PersistentStateComponent<AtgToolkitConf
     public boolean attachClassPathOfAtgDependencies = true;
     public boolean attachConfigsOfAtgDependencies = true;
 
+    public boolean showOverridesOfComponentInGoTo = true;
+    public boolean showReferencesOnComponentInGoTo = true;
+
     @NotNull
     public static AtgToolkitConfig getInstance() {
         return new AtgToolkitConfig();
@@ -85,5 +88,21 @@ public class AtgToolkitConfig implements PersistentStateComponent<AtgToolkitConf
 
     public void setAttachConfigsOfAtgDependencies(boolean attachConfigsOfAtgDependencies) {
         this.attachConfigsOfAtgDependencies = attachConfigsOfAtgDependencies;
+    }
+
+    public boolean isShowOverridesOfComponentInGoTo() {
+        return showOverridesOfComponentInGoTo;
+    }
+
+    public void setShowOverridesOfComponentInGoTo(boolean showOverridesOfComponentInGoTo) {
+        this.showOverridesOfComponentInGoTo = showOverridesOfComponentInGoTo;
+    }
+
+    public boolean isShowReferencesOnComponentInGoTo() {
+        return showReferencesOnComponentInGoTo;
+    }
+
+    public void setShowReferencesOnComponentInGoTo(boolean showReferencesOnComponentInGoTo) {
+        this.showReferencesOnComponentInGoTo = showReferencesOnComponentInGoTo;
     }
 }
