@@ -31,6 +31,7 @@ public class AtgReferenceContributor extends PsiReferenceContributor {
         registrar.registerReferenceProvider(PlatformPatterns.psiElement(PropertyValueImpl.class),
                 new ComponentByPropertyValueProvider());
 
+        //TODO General
         registrar.registerReferenceProvider(PlatformPatterns.psiElement(PropertyValueImpl.class),
                 new JavaClassByPropertyValueProvider());
 

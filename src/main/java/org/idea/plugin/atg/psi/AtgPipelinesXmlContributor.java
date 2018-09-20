@@ -4,9 +4,8 @@ import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.*;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.util.ProcessingContext;
-import com.jgoodies.common.base.Strings;
 import org.apache.commons.lang.StringUtils;
-import org.idea.plugin.atg.psi.reference.AtgComponentReference;
+import org.idea.plugin.atg.psi.provider.XmlAttributeComponentNamesProvider;
 import org.idea.plugin.atg.psi.reference.PipelineLinkReference;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,7 +19,7 @@ public class AtgPipelinesXmlContributor extends PsiReferenceContributor {
         registrar.registerReferenceProvider(XmlPatterns.xmlAttributeValue()
                 .withParent(XmlPatterns.xmlAttribute().withName("jndi")
                         .withParent(XmlPatterns.xmlTag().withName("processor")
-                                .withParent(XmlPatterns.xmlTag().withName("pipelinelink")))), new ComponentNamesProvider());
+                                .withParent(XmlPatterns.xmlTag().withName("pipelinelink")))), new XmlAttributeComponentNamesProvider());
 
         registrar.registerReferenceProvider(XmlPatterns.xmlAttributeValue()
                 .withParent(XmlPatterns.xmlAttribute().withName("headlink")
@@ -30,21 +29,6 @@ public class AtgPipelinesXmlContributor extends PsiReferenceContributor {
                 .withParent(XmlPatterns.xmlAttribute().withName("link")
                         .withParent(XmlPatterns.xmlTag().withName("transition")
                                 .withParent(XmlPatterns.xmlTag().withName("pipelinelink")))), new PipelineLinksProvider());
-    }
-
-    static class ComponentNamesProvider extends PsiReferenceProvider {
-        @NotNull
-        @Override
-        public PsiReference[] getReferencesByElement(@NotNull PsiElement element,
-                                                     @NotNull ProcessingContext
-                                                             context) {
-            List<PsiReference> results = new ArrayList<>();
-            XmlAttributeValue valueElement = (XmlAttributeValue) element;
-            if (Strings.isNotBlank(valueElement.getValue())) {
-                results.add(new AtgComponentReference(valueElement));
-            }
-            return results.toArray(PsiReference.EMPTY_ARRAY);
-        }
     }
 
     static class PipelineLinksProvider extends PsiReferenceProvider {
