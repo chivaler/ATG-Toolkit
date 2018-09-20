@@ -13,7 +13,10 @@ import com.intellij.lang.properties.psi.impl.PropertyImpl;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.*;
+import com.intellij.openapi.roots.LibraryOrderEntry;
+import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.OrderRootType;
+import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.vfs.JarFileSystem;
@@ -114,8 +117,7 @@ public class AtgComponentUtil {
             libraries = Arrays.stream(ProjectLibraryTable.getInstance(project).getLibraries())
                     .collect(Collectors.toList());
         } else {
-            ModifiableRootModel modifiableModel = ModuleRootManager.getInstance(module).getModifiableModel();
-            libraries = Arrays.stream(modifiableModel.getOrderEntries())
+            libraries = Arrays.stream(ModuleRootManager.getInstance(module).getOrderEntries())
                     .filter(LibraryOrderEntry.class::isInstance)
                     .map(f -> ((LibraryOrderEntry) f).getLibrary())
                     .collect(Collectors.toList());

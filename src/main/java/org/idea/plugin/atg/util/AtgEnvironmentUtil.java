@@ -331,6 +331,8 @@ public class AtgEnvironmentUtil {
                     atgLibraryEntries.forEach(moduleModifiableModel::removeOrderEntry);
                     moduleModifiableModel.commit();
                 });
+            } else {
+                moduleModifiableModel.dispose();
             }
         }
 

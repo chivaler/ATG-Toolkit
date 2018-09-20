@@ -15,6 +15,7 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtilCore;
+import com.intellij.psi.xml.XmlFile;
 import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.PropertiesGenerator;
@@ -107,6 +108,9 @@ public class GoToComponentTargetHandler extends GotoTargetHandler {
         String suffix = finished ? "" : " so far";
         if (sourceElement instanceof PropertiesFile) {
             String componentName = AtgComponentUtil.getComponentCanonicalName((PropertiesFile) sourceElement).orElse(name);
+            return AtgToolkitBundle.message("goto.component.chooserTitle.from.component.subject", componentName, length, suffix);
+        } else if (sourceElement instanceof XmlFile) {
+            String componentName = AtgComponentUtil.getXmlRelativePath((XmlFile) sourceElement).orElse(name);
             return AtgToolkitBundle.message("goto.component.chooserTitle.from.component.subject", componentName, length, suffix);
         }
         return AtgToolkitBundle.message("goto.component.chooserTitle.from.class.subject", name, length, suffix);
