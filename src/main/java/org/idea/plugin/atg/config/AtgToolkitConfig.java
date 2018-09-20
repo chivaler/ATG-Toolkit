@@ -14,14 +14,14 @@ import org.jetbrains.annotations.Nullable;
 public class AtgToolkitConfig implements PersistentStateComponent<AtgToolkitConfig> {
 
     private static final String DEFAULT_RELATIVE_CONFIG_PATH = "src/main/config,src/config";
-    private static final String DEFAULT_RELATIVE_CONFIG_LAYERS_PATH = "layer/config";
+    private static final String DEFAULT_RELATIVE_CONFIG_LAYERS_PATH = "layer/config,configlayers/*/config";
     private static final String DEFAULT_IGNORED_PARENTS = "atg.nucleus.*";
 
     public String ignoredClassesForSetters = DEFAULT_IGNORED_PARENTS;
     public String configRootsPatterns = DEFAULT_RELATIVE_CONFIG_PATH;
     public String configLayerRootsPatterns = DEFAULT_RELATIVE_CONFIG_LAYERS_PATH;
-    public boolean attachClassPathOfAtgDependencies = true;
-    public boolean attachConfigsOfAtgDependencies = true;
+    public boolean attachClassPathOfAtgDependencies = false;
+    public boolean attachConfigsOfAtgDependencies = false;
 
     public boolean showOverridesOfComponentInGoTo = true;
     public boolean showReferencesOnComponentInGoTo = true;

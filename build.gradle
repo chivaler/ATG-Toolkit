@@ -22,7 +22,7 @@ intellij {
 }
 
 runIde {
-    jvmArgs '-Xmx1024m'
+    jvmArgs '-Xmx1024m', '-Didea.cycle.buffer.size=disabled'
 }
 
 group 'org.idea.plugin.atg'

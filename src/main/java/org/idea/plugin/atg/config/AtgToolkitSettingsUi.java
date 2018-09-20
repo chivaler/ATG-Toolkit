@@ -2,6 +2,7 @@ package org.idea.plugin.atg.config;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.options.ConfigurableUi;
+import com.intellij.openapi.project.DumbAwareRunnable;
 import com.intellij.openapi.project.Project;
 import org.idea.plugin.atg.util.AtgEnvironmentUtil;
 import org.jetbrains.annotations.NotNull;
@@ -84,7 +85,7 @@ public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
         atgToolkitConfig.setShowReferencesOnComponentInGoTo(showReferencesOnComponentInGoTo.isSelected());
 
         if (dependenciesResolvingChanged) {
-            ApplicationManager.getApplication().invokeLater(() -> {
+            ApplicationManager.getApplication().invokeLater((DumbAwareRunnable) () -> {
                 AtgEnvironmentUtil.removeAtgDependenciesForAllModules(project);
                 if (AtgToolkitConfig.getInstance(project).isAttachConfigsOfAtgDependencies() || AtgToolkitConfig.getInstance(project).isAttachClassPathOfAtgDependencies()) {
                     AtgEnvironmentUtil.addAtgDependenciesForAllModules(project);
@@ -93,10 +94,10 @@ public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
         }
     }
 
-    @NotNull
-    @Override
-    public JComponent getComponent() {
-        return rootPanel;
-    }
+        @NotNull
+        @Override
+        public JComponent getComponent () {
+            return rootPanel;
+        }
 
-}
+    }

@@ -24,9 +24,7 @@ import org.idea.plugin.atg.module.AtgModuleFacetConfiguration;
 import org.idea.plugin.atg.module.AtgModuleFacetType;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class AtgFrameworkDetector extends FacetBasedFrameworkDetector<AtgModuleFacet, AtgModuleFacetConfiguration> {
@@ -138,48 +136,4 @@ public class AtgFrameworkDetector extends FacetBasedFrameworkDetector<AtgModuleF
         return atgModuleFacetConfiguration;
     }
 
-    protected void setupConfiguration(AtgModuleFacetConfiguration configuration, VirtualFile file) {
-        Pattern patternConfig = Pattern.compile("(ATG-.*Config-Path):\\s*(.+/)?(.*)(.jar)");
-        Pattern patternRequired = Pattern.compile("(ATG-Required):\\s*(.*)$");
-        Pattern patternContextRoot = Pattern.compile("(ATG-Context-Root):\\s*(.*)$");
-
-        try {
-            String manifestContents = new String(file.contentsToByteArray());
-            String[] manifestLines = manifestContents.split("\\r?\\n");
-
-            if (manifestContents.contains("ATG-Context-Root")) {
-                for (String line : manifestLines) {
-                    Matcher matcherContext = patternContextRoot.matcher(line);
-                    if (matcherContext.matches()) {
-                        String contextRoot = matcherContext.group(2);
-                        String path = file.getParent().getParent().getPath() + "/";
-//                        configuration.getWebRoots().put(contextRoot, path);
-                    }
-                }
-            }
-            if (manifestContents.contains("ATG-Config-Path")) {
-                for (String line : manifestLines) {
-                    Matcher matcherConfig = patternConfig.matcher(line);
-                    if (matcherConfig.matches()) {
-                        String layer = matcherConfig.group(1);
-                        String jarName = matcherConfig.group(3);
-                        String path = file.getParent().getParent().getPath() + "/" + jarName + "/";
-//                        configuration.getConfigRoots().put(layer, path);
-                    }
-
-                    Matcher matcherRequired = patternRequired.matcher(line);
-                    if (matcherRequired.matches()) {
-                        for (String module : matcherRequired.group(2).split(" ")) {
-//                            configuration.getAllRequiredModules().put(module, "");
-                        }
-
-                    }
-                }
-
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 }
