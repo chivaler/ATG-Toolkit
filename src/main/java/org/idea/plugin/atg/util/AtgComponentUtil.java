@@ -33,6 +33,7 @@ import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.config.AtgConfigHelper;
 import org.idea.plugin.atg.config.AtgToolkitConfig;
 import org.idea.plugin.atg.module.AtgModuleFacet;
+import org.idea.plugin.atg.module.AtgModuleFacetConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -111,7 +112,8 @@ public class AtgComponentUtil {
 
     @NotNull
     public static Collection<VirtualFile> getApplicableConfigRoots(@Nullable Module module,
-                                                                   @NotNull Project project) {
+                                                                   @NotNull Project project,
+                                                                   boolean includeConfigLayers) {
         List<Library> libraries;
         if (module == null) {
             libraries = Arrays.stream(ProjectLibraryTable.getInstance(project).getLibraries())
@@ -129,12 +131,22 @@ public class AtgComponentUtil {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
+        List<VirtualFile> sourceConfigLayersRoots = new ArrayList<>();
+        if (includeConfigLayers) {
+            sourceConfigLayersRoots = ProjectFacetManager.getInstance(project).getFacets(Constants.FACET_TYPE_ID).stream()
+                    .map(f -> f.getConfiguration().getConfigLayerRoots().keySet())
+                    .flatMap(Collection::stream)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+        }
+
         List<VirtualFile> libraryVirtualFiles = libraries.stream()
                 .filter(l -> l.getName() != null && l.getName().startsWith(Constants.ATG_CONFIG_LIBRARY_PREFIX))
                 .map(l -> l.getFiles(OrderRootType.CLASSES))
                 .flatMap(Arrays::stream)
                 .collect(Collectors.toList());
 
+        sourceConfigRoots.addAll(sourceConfigLayersRoots);
         sourceConfigRoots.addAll(libraryVirtualFiles);
         return sourceConfigRoots;
     }
@@ -143,13 +155,7 @@ public class AtgComponentUtil {
     public static Collection<PropertiesFileImpl> getApplicableComponentsByName(@NotNull String componentName,
                                                                                @Nullable Module module,
                                                                                @NotNull Project project) {
-        List<VirtualFile> applicableRoots = Arrays.stream(ProjectLibraryTable.getInstance(project).getLibraries())
-                .filter(l -> l.getName() != null && l.getName().startsWith(Constants.ATG_CONFIG_LIBRARY_PREFIX))
-                .map(l -> l.getRootProvider().getFiles(OrderRootType.CLASSES))
-                .flatMap(Arrays::stream)
-                .collect(Collectors.toList());
-        applicableRoots.addAll(getApplicableConfigRoots(module, project));
-        return applicableRoots.stream()
+        return getApplicableConfigRoots(module, project, false).stream()
                 .filter(Objects::nonNull)
                 .filter(VirtualFile::isDirectory)
                 .map(root -> VfsUtilCore.findRelativeFile(componentName + ".properties", root))
@@ -164,9 +170,8 @@ public class AtgComponentUtil {
 
     @NotNull
     public static List<XmlFileImpl> getApplicableXmlsByName(@NotNull String xmlRelativePath,
-                                                                  @NotNull Project project) {
-        return ProjectFacetManager.getInstance(project).getFacets(Constants.FACET_TYPE_ID).stream().map(f -> f.getConfiguration().getConfigRoots())
-                .flatMap(Collection::stream)
+                                                            @NotNull Project project) {
+        return getApplicableConfigRoots(null, project, false).stream()
                 .filter(Objects::nonNull)
                 .filter(VirtualFile::isDirectory)
                 .map(root -> VfsUtilCore.findRelativeFile(xmlRelativePath + ".xml", root))
@@ -203,7 +208,10 @@ public class AtgComponentUtil {
         if (module != null) {
             AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
             if (atgFacet != null) {
-                return atgFacet.getConfiguration().getConfigRoots().stream()
+                AtgModuleFacetConfiguration configuration = atgFacet.getConfiguration();
+                Collection<VirtualFile> roots = configuration.getConfigRoots();
+                roots.addAll(configuration.getConfigLayerRoots().keySet());
+                return roots.stream()
                         .filter(Objects::nonNull)
                         .filter(VirtualFile::isDirectory)
                         .filter(r -> VfsUtilCore.isAncestor(r, virtualFile, true))
@@ -217,8 +225,7 @@ public class AtgComponentUtil {
 
     @NotNull
     public static Optional<String> getXmlRelativePath(@NotNull XmlFile file) {
-        return ProjectFacetManager.getInstance(file.getProject()).getFacets(Constants.FACET_TYPE_ID).stream().map(f -> f.getConfiguration().getConfigRoots())
-                .flatMap(Collection::stream)
+        return getApplicableConfigRoots(null, file.getProject(), true).stream()
                 .filter(Objects::nonNull)
                 .filter(VirtualFile::isDirectory)
                 .filter(r -> VfsUtilCore.isAncestor(r, file.getVirtualFile(), true))
