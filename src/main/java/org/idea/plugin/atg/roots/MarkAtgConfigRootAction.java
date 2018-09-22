@@ -4,7 +4,6 @@ import com.intellij.facet.FacetManager;
 import com.intellij.ide.projectView.actions.MarkRootActionBase;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModifiableRootModel;
@@ -17,7 +16,10 @@ import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.module.AtgModuleFacet;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
 import java.util.Locale;
+
+import static org.idea.plugin.atg.util.AtgEnvironmentUtil.runWriteAction;
 
 public class MarkAtgConfigRootAction extends MarkRootActionBase {
     //TODO Create abstract
@@ -37,7 +39,7 @@ public class MarkAtgConfigRootAction extends MarkRootActionBase {
         }
 
         AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
-        return (atgFacet!= null && !selection.mySelectedDirectories.isEmpty());
+        return (atgFacet != null && !selection.mySelectedDirectories.isEmpty());
 
     }
 
@@ -46,6 +48,7 @@ public class MarkAtgConfigRootAction extends MarkRootActionBase {
         AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
         if (atgFacet == null) return;
 
+        boolean rootWasAdded = false;
         final ModifiableRootModel model = ModuleRootManager.getInstance(module).getModifiableModel();
         for (VirtualFile file : files) {
             ContentEntry entry = findContentEntry(model, file);
@@ -57,14 +60,23 @@ public class MarkAtgConfigRootAction extends MarkRootActionBase {
                         break;
                     }
                 }
-                atgFacet.getConfiguration().getConfigRoots().add(file);
+
+                Collection<VirtualFile> configRoots = atgFacet.getConfiguration().getConfigRoots();
+                if (!configRoots.contains(file)) {
+                    configRoots.add(file);
+                    rootWasAdded = true;
+                }
             }
         }
 
-        ApplicationManager.getApplication().runWriteAction(() -> {
-            model.commit();
-            module.getProject().save();
-        });
+        if (rootWasAdded) {
+            runWriteAction(() -> {
+                model.commit();
+                module.getProject().save();
+            });
+        } else {
+            model.dispose();
+        }
 
     }
 

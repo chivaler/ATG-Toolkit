@@ -4,7 +4,6 @@ import com.intellij.facet.FacetManager;
 import com.intellij.ide.projectView.actions.MarkRootActionBase;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModifiableRootModel;
@@ -17,7 +16,10 @@ import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.module.AtgModuleFacet;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.Locale;
+
+import static org.idea.plugin.atg.util.AtgEnvironmentUtil.runWriteAction;
 
 public class MarkAtgWebRootAction extends MarkRootActionBase {
 
@@ -46,6 +48,7 @@ public class MarkAtgWebRootAction extends MarkRootActionBase {
         AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
         if (atgFacet == null) return;
 
+        boolean rootWasAdded = false;
         final ModifiableRootModel model = ModuleRootManager.getInstance(module).getModifiableModel();
         for (VirtualFile file : files) {
             ContentEntry entry = findContentEntry(model, file);
@@ -57,17 +60,23 @@ public class MarkAtgWebRootAction extends MarkRootActionBase {
                         break;
                     }
                 }
-//                Optional<Pair<VirtualFile, String>> webRoot = AtgConfigHelper.suggestWebRootForRoot(file, module.getProject());
-                if (!atgFacet.getConfiguration().getWebRoots().contains(file)) {
-                    atgFacet.getConfiguration().getWebRoots().add(file);
+
+                List<VirtualFile> webRoots = atgFacet.getConfiguration().getWebRoots();
+                if (!webRoots.contains(file)) {
+                    webRoots.add(file);
+                    rootWasAdded = true;
                 }
             }
         }
 
-        ApplicationManager.getApplication().runWriteAction(() -> {
-            model.commit();
-            module.getProject().save();
-        });
+        if (rootWasAdded) {
+            runWriteAction(() -> {
+                model.commit();
+                module.getProject().save();
+            });
+        } else {
+            model.dispose();
+        }
 
     }
 

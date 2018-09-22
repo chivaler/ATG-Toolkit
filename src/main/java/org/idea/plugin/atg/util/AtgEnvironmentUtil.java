@@ -142,6 +142,7 @@ public class AtgEnvironmentUtil {
                     Header requiredHeader = manifestFile.get().getHeader(Constants.Keywords.Manifest.ATG_REQUIRED);
                     if (requiredHeader != null && requiredHeader.getHeaderValue() != null) {
                         return Arrays.stream(requiredHeader.getHeaderValue().getUnwrappedText().split("\\s"))
+                                .filter(StringUtils::isNotBlank)
                                 .collect(Collectors.toList());
                     }
                     return Collections.emptyList();

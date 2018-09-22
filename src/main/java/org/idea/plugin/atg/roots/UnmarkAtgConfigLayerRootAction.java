@@ -4,10 +4,8 @@ import com.intellij.facet.FacetManager;
 import com.intellij.ide.projectView.actions.MarkRootActionBase;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.roots.ContentEntry;
-import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.idea.plugin.atg.AtgToolkitBundle;
@@ -17,6 +15,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
+import static org.idea.plugin.atg.util.AtgEnvironmentUtil.runWriteAction;
 
 public class UnmarkAtgConfigLayerRootAction extends MarkRootActionBase {
 
@@ -60,27 +61,31 @@ public class UnmarkAtgConfigLayerRootAction extends MarkRootActionBase {
 
         for (VirtualFile selectedFile : files) {
             atgFacet.getConfiguration().getConfigRoots().stream()
+                    .filter(Objects::nonNull)
                     .filter(c -> c.equals(selectedFile))
                     .forEach(configRootsToRemove::add);
             atgFacet.getConfiguration().getConfigLayerRoots().keySet().stream()
+                    .filter(Objects::nonNull)
                     .filter(c -> c.equals(selectedFile))
                     .forEach(configLayerRootsToRemove::add);
             atgFacet.getConfiguration().getWebRoots().stream()
+                    .filter(Objects::nonNull)
                     .filter(c -> c.equals(selectedFile))
                     .forEach(webRootsToRemove::add);
         }
 
-        atgFacet.getConfiguration().getConfigRoots().removeAll(configRootsToRemove);
-        atgFacet.getConfiguration().getConfigLayerRoots().keySet().removeAll(configLayerRootsToRemove);
-        atgFacet.getConfiguration().getWebRoots().removeAll(webRootsToRemove);
+        if (!configRootsToRemove.isEmpty() || !configLayerRootsToRemove.isEmpty() || !webRootsToRemove.isEmpty()) {
+            atgFacet.getConfiguration().getConfigRoots().removeAll(configRootsToRemove);
+            atgFacet.getConfiguration().getConfigLayerRoots().keySet().removeAll(configLayerRootsToRemove);
+            atgFacet.getConfiguration().getWebRoots().removeAll(webRootsToRemove);
+
+            runWriteAction(() -> {
+                ModuleRootManager.getInstance(module).getModifiableModel().commit();
+                module.getProject().save();
+            });
+        }
 
 
-        final ModifiableRootModel model = ModuleRootManager.getInstance(module).getModifiableModel();
-
-        ApplicationManager.getApplication().runWriteAction(() -> {
-            model.commit();
-            module.getProject().save();
-        });
 
     }
 

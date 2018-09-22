@@ -18,6 +18,7 @@ import org.idea.plugin.atg.module.AtgModuleFacet;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
+import java.util.Map;
 
 public class MarkAtgConfigLayerRootAction extends MarkRootActionBase {
     public MarkAtgConfigLayerRootAction() {
@@ -44,6 +45,7 @@ public class MarkAtgConfigLayerRootAction extends MarkRootActionBase {
         AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
         if (atgFacet == null) return;
 
+        boolean rootWasAdded = false;
         final ModifiableRootModel model = ModuleRootManager.getInstance(module).getModifiableModel();
         for (VirtualFile file : files) {
             ContentEntry entry = findContentEntry(model, file);
@@ -55,14 +57,23 @@ public class MarkAtgConfigLayerRootAction extends MarkRootActionBase {
                         break;
                     }
                 }
-                atgFacet.getConfiguration().getConfigLayerRoots().put(file, "");
+
+                Map<VirtualFile, String> configLayerRoots = atgFacet.getConfiguration().getConfigLayerRoots();
+                if (!configLayerRoots.keySet().contains(file)) {
+                    configLayerRoots.put(file, "");
+                    rootWasAdded = true;
+                }
             }
         }
 
-        ApplicationManager.getApplication().runWriteAction(() -> {
-            model.commit();
-            module.getProject().save();
-        });
+        if (rootWasAdded) {
+            ApplicationManager.getApplication().runWriteAction(() -> {
+                model.commit();
+                module.getProject().save();
+            });
+        } else {
+            model.dispose();
+        }
 
     }
 
