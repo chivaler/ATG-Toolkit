@@ -45,7 +45,9 @@
                 <preferred-size width="150" height="-1"/>
               </grid>
             </constraints>
-            <properties/>
+            <properties>
+              <toolTipText resource-bundle="org/idea/plugin/atg/AtgToolkitBundle" key="gui.config.detection.configRoots.hint"/>
+            </properties>
           </component>
           <component id="a1a67" class="javax.swing.JTextField" binding="configLayersPatternsField">
             <constraints>
@@ -53,7 +55,9 @@
                 <preferred-size width="150" height="-1"/>
               </grid>
             </constraints>
-            <properties/>
+            <properties>
+              <toolTipText resource-bundle="org/idea/plugin/atg/AtgToolkitBundle" key="gui.config.detection.configLayersRoots.hint"/>
+            </properties>
           </component>
         </children>
       </grid>
@@ -71,7 +75,7 @@
           <text value=""/>
         </properties>
       </component>
-      <grid id="f00d0" layout-manager="GridLayoutManager" row-count="3" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="f00d0" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
           <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -90,15 +94,6 @@
             </constraints>
             <properties>
               <text resource-bundle="org/idea/plugin/atg/AtgToolkitBundle" key="gui.config.dependencies.attachConfigsOfAtgDependencies.text"/>
-            </properties>
-          </component>
-          <component id="807c" class="javax.swing.JLabel">
-            <constraints>
-              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <font size="10" style="1"/>
-              <text resource-bundle="org/idea/plugin/atg/AtgToolkitBundle" key="gui.config.dependencies.attachClassPathOfAtgDependencies.hint"/>
             </properties>
           </component>
           <component id="50219" class="javax.swing.JCheckBox" binding="attachClassPathOfAtgDependencies" default-binding="true">
@@ -126,7 +121,7 @@
           </hspacer>
         </children>
       </grid>
-      <grid id="669a2" layout-manager="GridLayoutManager" row-count="3" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="669a2" layout-manager="GridLayoutManager" row-count="2" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
           <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -156,20 +151,12 @@
             </constraints>
             <properties>
               <text resource-bundle="org/idea/plugin/atg/AtgToolkitBundle" key="gui.config.goto.showReferencesOnComponentInGoTo.text"/>
-            </properties>
-          </component>
-          <component id="d1875" class="javax.swing.JLabel">
-            <constraints>
-              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <font size="10" style="1"/>
-              <text resource-bundle="org/idea/plugin/atg/AtgToolkitBundle" key="gui.config.goto.showReferencesOnComponentInGoTo.hint"/>
+              <toolTipText resource-bundle="org/idea/plugin/atg/AtgToolkitBundle" key="gui.config.goto.showReferencesOnComponentInGoTo.hint"/>
             </properties>
           </component>
         </children>
       </grid>
-      <grid id="d634f" layout-manager="GridLayoutManager" row-count="2" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="d634f" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
           <grid row="1" column="0" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -182,14 +169,6 @@
           <font/>
         </border>
         <children>
-          <component id="731f8" class="javax.swing.JLabel">
-            <constraints>
-              <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text resource-bundle="org/idea/plugin/atg/AtgToolkitBundle" key="gui.config.completion.ignoredClasses.example"/>
-            </properties>
-          </component>
           <component id="7ad92" class="javax.swing.JLabel">
             <constraints>
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
@@ -204,7 +183,9 @@
                 <preferred-size width="150" height="-1"/>
               </grid>
             </constraints>
-            <properties/>
+            <properties>
+              <toolTipText resource-bundle="org/idea/plugin/atg/AtgToolkitBundle" key="gui.config.completion.ignoredClasses.example"/>
+            </properties>
           </component>
         </children>
       </grid>
