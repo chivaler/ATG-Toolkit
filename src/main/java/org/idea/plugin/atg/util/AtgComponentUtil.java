@@ -144,6 +144,7 @@ public class AtgComponentUtil {
                 .filter(l -> l.getName() != null && l.getName().startsWith(Constants.ATG_CONFIG_LIBRARY_PREFIX))
                 .map(l -> l.getFiles(OrderRootType.CLASSES))
                 .flatMap(Arrays::stream)
+                .distinct()
                 .collect(Collectors.toList());
 
         sourceConfigRoots.addAll(sourceConfigLayersRoots);

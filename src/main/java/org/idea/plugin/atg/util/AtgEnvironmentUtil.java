@@ -263,7 +263,16 @@ public class AtgEnvironmentUtil {
                                                @NotNull String prefix) {
         LOG.info("Adding dependencies to " + module.getName());
         Library atgDependencyLibrary = getOrCreateLibrary(atgModuleName, jarFiles, projectLibraryModifiableModel, prefix);
-        if (atgDependencyLibrary != null) runWriteAction(() -> modifiableModel.addLibraryEntry(atgDependencyLibrary));
+
+        if (atgDependencyLibrary != null) {
+            boolean dependencyAlredyInModule = Arrays.stream(modifiableModel.getOrderEntries())
+                    .filter(LibraryOrderEntry.class::isInstance)
+                    .map(f -> ((LibraryOrderEntry) f).getLibrary())
+                    .anyMatch(atgDependencyLibrary::equals);
+            if (!dependencyAlredyInModule) {
+                runWriteAction(() -> modifiableModel.addLibraryEntry(atgDependencyLibrary));
+            }
+        }
     }
 
     public static Library getOrCreateLibrary(@NotNull String atgModuleName, @NotNull List<VirtualFile> jarFiles, @NotNull LibraryTable.ModifiableModel projectLibraryModifiableModel, @NotNull String prefix) {

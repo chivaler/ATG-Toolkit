@@ -40,9 +40,11 @@ public class AtgModuleFacetConfiguration implements FacetConfiguration, Persiste
         configRoots.stream()
                 .filter(Objects::nonNull)
                 .forEach(r -> result.configRoots.add(r.getUrl()));
-        configLayerRoots
-                .forEach((key, value) -> result.configLayerRoots.put(key.getUrl(), value));
-        webRoots
+        configLayerRoots.entrySet().stream()
+                .filter(Objects::nonNull)
+                .forEach(entry -> result.configLayerRoots.put(entry.getKey().getUrl(), entry.getValue()));
+        webRoots.stream()
+                .filter(Objects::nonNull)
                 .forEach(r -> result.webRoots.add(r.getUrl()));
         result.atgModuleName = atgModuleName;
         return result;
@@ -78,12 +80,18 @@ public class AtgModuleFacetConfiguration implements FacetConfiguration, Persiste
         configLayerRoots = new HashMap<>();
         webRoots = new ArrayList<>();
         atgModuleName = state.atgModuleName;
-        state.configRoots
+        state.configRoots.stream()
+                .filter(Objects::nonNull)
+                .distinct()
                 .forEach(s -> configRoots.add(VirtualFileManager.getInstance().findFileByUrl(s)));
-        state.configLayerRoots
-                .forEach((key, value) -> configLayerRoots.put(VirtualFileManager.getInstance().findFileByUrl(key), value));
-        state.webRoots
-                .forEach((key) -> webRoots.add(VirtualFileManager.getInstance().findFileByUrl(key)));
+        state.configLayerRoots.entrySet().stream()
+                .filter(entry -> entry.getKey() != null)
+                .distinct()
+                .forEach((entry) -> configLayerRoots.put(VirtualFileManager.getInstance().findFileByUrl(entry.getKey()), entry.getValue()));
+        state.webRoots.stream()
+                .filter(Objects::nonNull)
+                .distinct()
+                .forEach(s -> webRoots.add(VirtualFileManager.getInstance().findFileByUrl(s)));
     }
 
     @SuppressWarnings("WeakerAccess")
