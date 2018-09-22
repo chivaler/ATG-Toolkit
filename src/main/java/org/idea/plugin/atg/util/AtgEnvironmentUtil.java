@@ -1,8 +1,5 @@
 package org.idea.plugin.atg.util;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.intellij.facet.Facet;
 import com.intellij.facet.FacetManager;
 import com.intellij.facet.ProjectFacetManager;
@@ -41,25 +38,15 @@ import org.jetbrains.lang.manifest.psi.Header;
 import org.jetbrains.lang.manifest.psi.ManifestFile;
 
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class AtgEnvironmentUtil {
     private static final Logger LOG = Logger.getInstance(AtgEnvironmentUtil.class);
-    private static Cache<String, List<String>> dependenciesForAtgModule = CacheBuilder.newBuilder()
-            .expireAfterWrite(10, TimeUnit.MINUTES)
-            .build();
-    private static Cache<String, Optional<ManifestFile>> manifestForModule = CacheBuilder.newBuilder()
-            .expireAfterWrite(10, TimeUnit.MINUTES)
-            .build();
     private static Map<String, String> moduleAliases = new HashMap<>();
-
 
     private AtgEnvironmentUtil() {
     }
 
-    @NotNull
     public static void parseAtgHome(@NotNull final Project project) {
         moduleAliases = new HashMap<>();
         String macroAtgHome = PathMacros.getInstance().getValue(Constants.ATG_HOME);
@@ -80,7 +67,6 @@ public class AtgEnvironmentUtil {
                             if (relativeModulePath != null) {
                                 String moduleName = relativeModulePath.replace("/", ".");
                                 ManifestFile manifestPsiFileImpl = (ManifestFile) manifestPsiFile;
-                                manifestForModule.put(moduleName, Optional.of(manifestPsiFileImpl));
                                 Header atgInstallUnit = manifestPsiFileImpl.getHeader(Constants.Keywords.Manifest.ATG_INSTALL_UNIT);
                                 if (atgInstallUnit != null && atgInstallUnit.getHeaderValue() != null) {
                                     String atgInstallUnitStr = atgInstallUnit.getHeaderValue().getUnwrappedText();
@@ -100,63 +86,53 @@ public class AtgEnvironmentUtil {
 
     @NotNull
     public static Optional<ManifestFile> suggestManifestFileForModule(@NotNull final String atgModuleName, @NotNull final Project project) {
-        try {
-            return manifestForModule.get(atgModuleName, () -> {
-                String macroAtgHome = PathMacros.getInstance().getValue(Constants.ATG_HOME);
-                String atgHome = macroAtgHome != null ? macroAtgHome : System.getenv(Constants.ATG_HOME);
+        String macroAtgHome = PathMacros.getInstance().getValue(Constants.ATG_HOME);
+        String atgHome = macroAtgHome != null ? macroAtgHome : System.getenv(Constants.ATG_HOME);
 
-                String atgModuleRelativePath = atgModuleName.replace('.', '/');
-                String atgModuleMostParent = atgModuleName.contains(".") ? atgModuleName.substring(0, atgModuleName.indexOf(".")) : atgModuleName;
-                Optional<String> first = moduleAliases.entrySet().stream()
-                        .filter(a -> atgModuleMostParent.equals(a.getKey()))
-                        .map(Map.Entry::getValue)
-                        .findFirst();
-                atgModuleRelativePath = first.isPresent() ? first.get() + '/' + atgModuleRelativePath : atgModuleRelativePath;
+        String atgModuleRelativePath = atgModuleName.replace('.', '/');
+        String atgModuleMostParent = atgModuleName.contains(".") ? atgModuleName.substring(0, atgModuleName.indexOf(".")) : atgModuleName;
+        Optional<String> first = moduleAliases.entrySet().stream()
+                .filter(a -> atgModuleMostParent.equals(a.getKey()))
+                .map(Map.Entry::getValue)
+                .findFirst();
+        atgModuleRelativePath = first.isPresent() ? first.get() + '/' + atgModuleRelativePath : atgModuleRelativePath;
 
-                VirtualFile atgHomeVirtualDir = StandardFileSystems.local().findFileByPath(atgHome);
-                if (atgHomeVirtualDir != null && atgHomeVirtualDir.isDirectory()) {
-                    VirtualFile manifestFile = VfsUtilCore.findRelativeFile(atgModuleRelativePath + "/META-INF/MANIFEST.MF", atgHomeVirtualDir);
-                    PsiFile manifestPsiFile = null;
-                    if (manifestFile != null) {
-                        manifestPsiFile = PsiManager.getInstance(project).findFile(manifestFile);
-                        LOG.info("Parsing Manifest of " + atgModuleRelativePath);
-                    }
-                    if (manifestPsiFile instanceof ManifestFile) return Optional.of((ManifestFile) manifestPsiFile);
-                }
-                return Optional.empty();
-            });
-        } catch (ExecutionException | UncheckedExecutionException e) {
-            LOG.debug("Execution stopped");
+        VirtualFile atgHomeVirtualDir = StandardFileSystems.local().findFileByPath(atgHome);
+        if (atgHomeVirtualDir != null && atgHomeVirtualDir.isDirectory()) {
+            VirtualFile manifestFile = VfsUtilCore.findRelativeFile(atgModuleRelativePath + "/META-INF/MANIFEST.MF", atgHomeVirtualDir);
+            PsiFile manifestPsiFile = null;
+            if (manifestFile != null) {
+                manifestPsiFile = PsiManager.getInstance(project).findFile(manifestFile);
+                LOG.info("Parsing Manifest of " + atgModuleRelativePath);
+            }
+            if (manifestPsiFile instanceof ManifestFile) return Optional.of((ManifestFile) manifestPsiFile);
         }
+
         return Optional.empty();
     }
 
     @NotNull
     public static List<String> getRequiredModules(@NotNull final String atgModuleName, @NotNull final Project project) {
-        try {
-            return dependenciesForAtgModule.get(atgModuleName, () -> {
-                Optional<ManifestFile> manifestFile = suggestManifestFileForModule(atgModuleName, project);
-                if (manifestFile.isPresent()) {
-                    LOG.info("Reading Manifest for " + atgModuleName);
-                    //TODO Require-if-present
-                    Header requiredHeader = manifestFile.get().getHeader(Constants.Keywords.Manifest.ATG_REQUIRED);
-                    if (requiredHeader != null && requiredHeader.getHeaderValue() != null) {
-                        return Arrays.stream(requiredHeader.getHeaderValue().getUnwrappedText().split("\\s"))
-                                .filter(StringUtils::isNotBlank)
-                                .collect(Collectors.toList());
-                    }
-                    return Collections.emptyList();
-                } else {
-                    LOG.warn("Manifest for module " + atgModuleName + " wasn't found");
-                }
-
-                return Collections.emptyList();
-            });
-        } catch (ExecutionException | UncheckedExecutionException e) {
+        Optional<ManifestFile> manifestFile = suggestManifestFileForModule(atgModuleName, project);
+        if (manifestFile.isPresent()) {
+            LOG.info("Reading Manifest for " + atgModuleName);
+            //TODO Require-if-present
+            Header requiredHeader = manifestFile.get().getHeader(Constants.Keywords.Manifest.ATG_REQUIRED);
+            if (requiredHeader != null && requiredHeader.getHeaderValue() != null) {
+                return Arrays.stream(requiredHeader.getHeaderValue().getUnwrappedText().split("\\s"))
+                        .filter(StringUtils::isNotBlank)
+                        .collect(Collectors.toList());
+            }
             return Collections.emptyList();
+        } else {
+            LOG.warn("Manifest for module " + atgModuleName + " wasn't found");
         }
+
+        return Collections.emptyList();
+
     }
 
+    @NotNull
     public static List<String> getAllRequiredModules(@NotNull final Project project, @NotNull String...
             loadingModules) {
         List<String> requiredList = new ArrayList<>();
@@ -275,6 +251,7 @@ public class AtgEnvironmentUtil {
         }
     }
 
+    @Nullable
     public static Library getOrCreateLibrary(@NotNull String atgModuleName, @NotNull List<VirtualFile> jarFiles, @NotNull LibraryTable.ModifiableModel projectLibraryModifiableModel, @NotNull String prefix) {
         String libraryName = prefix + atgModuleName;
         Library existingLibrary = projectLibraryModifiableModel.getLibraryByName(libraryName);
