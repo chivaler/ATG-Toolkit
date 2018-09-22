@@ -102,6 +102,7 @@
             </constraints>
             <properties>
               <text resource-bundle="org/idea/plugin/atg/AtgToolkitBundle" key="gui.config.dependencies.attachClassPathOfAtgDependencies.text"/>
+              <toolTipText resource-bundle="org/idea/plugin/atg/AtgToolkitBundle" key="gui.config.dependencies.attachClassPathOfAtgDependencies.hint"/>
             </properties>
           </component>
         </children>
