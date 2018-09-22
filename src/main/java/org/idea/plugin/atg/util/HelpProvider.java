@@ -9,7 +9,7 @@ public class HelpProvider extends WebHelpProvider {
     @Nullable
     @Override
     public String getHelpPageUrl(@NotNull String helpTopicId) {
-        String suffix = helpTopicId.substring(Constants.PLUGIN_ID.length()).replace('.', '/');
+        String suffix = helpTopicId.substring(Constants.PLUGIN_ID.length() + 1).replace('.', '/');
         return Constants.WEB_HELP_URL + suffix;
     }
 }

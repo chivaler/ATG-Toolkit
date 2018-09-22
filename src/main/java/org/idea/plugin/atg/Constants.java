@@ -86,8 +86,8 @@ public class Constants {
     }
 
     public static class HelpTopics {
-        public static final String MODULE_FACET_EDITOR = PLUGIN_ID + ".facet";
-        public static final String PLUGIN_CONFIGURABLE_EDITOR = PLUGIN_ID + ".settings";
+        public static final String MODULE_FACET_EDITOR = PLUGIN_ID + ".Facet-Settings";
+        public static final String PLUGIN_CONFIGURABLE_EDITOR = PLUGIN_ID + ".Project-Settings";
     }
 
 
