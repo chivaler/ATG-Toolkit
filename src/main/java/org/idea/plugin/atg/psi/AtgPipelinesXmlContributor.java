@@ -29,6 +29,10 @@ public class AtgPipelinesXmlContributor extends PsiReferenceContributor {
                 .withParent(XmlPatterns.xmlAttribute().withName("link")
                         .withParent(XmlPatterns.xmlTag().withName("transition")
                                 .withParent(XmlPatterns.xmlTag().withName("pipelinelink")))), new PipelineLinksProvider());
+
+        registrar.registerReferenceProvider(XmlPatterns.xmlAttributeValue()
+                .withParent(XmlPatterns.xmlAttribute().withName("name")
+                                .withParent(XmlPatterns.xmlTag().withName("pipelinelink"))), new PipelineLinksProvider());
     }
 
     static class PipelineLinksProvider extends PsiReferenceProvider {
