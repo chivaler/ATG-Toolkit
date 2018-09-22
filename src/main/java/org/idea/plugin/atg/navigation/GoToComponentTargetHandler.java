@@ -88,6 +88,7 @@ public class GoToComponentTargetHandler extends GotoTargetHandler {
                 }
                 if (AtgToolkitConfig.getInstance(file.getProject()).showOverridesOfComponentInGoTo) {
                     candidates.addAll(AtgComponentUtil.getApplicableXmlsByName(xmlName.get(), file.getProject()));
+                    candidates.remove(file);
                 }
                 return new GotoData(file, PsiUtilCore.toPsiElementArray(candidates), Collections.emptyList());
             }
