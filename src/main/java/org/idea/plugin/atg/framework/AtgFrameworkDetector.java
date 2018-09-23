@@ -8,6 +8,9 @@ import com.intellij.lang.properties.PropertiesFileType;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.fileTypes.LanguageFileType;
+import com.intellij.openapi.module.ModuleUtilCore;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ui.configuration.ContentEntryEditor;
 import com.intellij.openapi.vfs.VfsUtilCore;
@@ -50,23 +53,13 @@ public class AtgFrameworkDetector extends FacetBasedFrameworkDetector<AtgModuleF
     @NotNull
     @Override
     public ElementPattern<FileContent> createSuitableFilePattern() {
-        return FileContentPattern.fileContent()
-                .and(FileContentPattern.fileContent().
-                        with(new PatternCondition<FileContent>("withContent") {
-                            @Override
-                            public boolean accepts(@NotNull FileContent fileContent, ProcessingContext context) {
-                                return (new String(fileContent.getContent()).startsWith(Constants.Keywords.Properties.CLASS_PROPERTY + "="));
-                            }
-                        }))
-                .and(FileContentPattern.fileContent().
-                        with(new PatternCondition<FileContent>("withContent") {
-                            @Override
-                            public boolean accepts(@NotNull FileContent fileContent, ProcessingContext context) {
-                                String canonicalPath = fileContent.getFile().getCanonicalPath();
-                                return (canonicalPath != null && canonicalPath.contains("/config/"));
-                            }
-                        })
-                );
+        return FileContentPattern.fileContent().
+                with(new PatternCondition<FileContent>("withContent") {
+                    @Override
+                    public boolean accepts(@NotNull FileContent fileContent, ProcessingContext context) {
+                        return (new String(fileContent.getContent()).startsWith(Constants.Keywords.Properties.CLASS_PROPERTY + "="));
+                    }
+                });
     }
 
 
@@ -77,26 +70,27 @@ public class AtgFrameworkDetector extends FacetBasedFrameworkDetector<AtgModuleF
 
     @Override
     public void setupFacet(@NotNull AtgModuleFacet facet, ModifiableRootModel model) {
-        facet.getConfiguration().getWebRoots().addAll(AtgConfigHelper.detectWebRootsForModule(model).keySet());
+        AtgModuleFacetConfiguration configuration = facet.getConfiguration();
+        configuration.getWebRoots().addAll(AtgConfigHelper.detectWebRootsForModule(model).keySet());
 
         Set<VirtualFile> excludeConfigRoots = new HashSet<>();
         Set<VirtualFile> excludeConfigLayerRoots = new HashSet<>();
         Set<VirtualFile> excludeWebRoots = new HashSet<>();
 
-        facet.getConfiguration().getConfigRoots().forEach(root -> Arrays.stream(model.getContentEntries())
+        configuration.getConfigRoots().forEach(root -> Arrays.stream(model.getContentEntries())
                 .filter(contentEntry -> ContentEntryEditor.isExcludedOrUnderExcludedDirectory(model.getProject(), contentEntry, root))
                 .forEach(c -> excludeConfigRoots.add(root)));
-        facet.getConfiguration().getConfigLayerRoots().keySet().forEach(root -> Arrays.stream(model.getContentEntries())
+        configuration.getConfigLayerRoots().keySet().forEach(root -> Arrays.stream(model.getContentEntries())
                 .filter(contentEntry -> ContentEntryEditor.isExcludedOrUnderExcludedDirectory(model.getProject(), contentEntry, root))
                 .forEach(c -> excludeConfigLayerRoots.add(root)));
-        facet.getConfiguration().getWebRoots().forEach(root -> Arrays.stream(model.getContentEntries())
+        configuration.getWebRoots().forEach(root -> Arrays.stream(model.getContentEntries())
                 .filter(contentEntry -> ContentEntryEditor.isExcludedOrUnderExcludedDirectory(model.getProject(), contentEntry, root))
                 .forEach(c -> excludeWebRoots.add(root)));
 
 
-        facet.getConfiguration().getConfigRoots().removeAll(excludeConfigRoots);
-        facet.getConfiguration().getConfigLayerRoots().keySet().removeAll(excludeConfigLayerRoots);
-        facet.getConfiguration().getWebRoots().removeAll(excludeWebRoots);
+        configuration.getConfigRoots().removeAll(excludeConfigRoots);
+        configuration.getConfigLayerRoots().keySet().removeAll(excludeConfigLayerRoots);
+        configuration.getWebRoots().removeAll(excludeWebRoots);
 
 
     }
@@ -105,14 +99,24 @@ public class AtgFrameworkDetector extends FacetBasedFrameworkDetector<AtgModuleF
     @Override
     public AtgModuleFacetConfiguration createConfiguration(@NotNull Collection<VirtualFile> files) {
         AtgModuleFacetConfiguration atgModuleFacetConfiguration = AtgModuleFacetType.getInstance().createDefaultConfiguration();
+
+        Optional<Project> supposedCurrentProject = Optional.empty();
+        if (!files.isEmpty()) {
+            VirtualFile firstFile = files.iterator().next();
+            supposedCurrentProject = Arrays.stream(ProjectManager.getInstance().getOpenProjects())
+                    .filter(p -> ModuleUtilCore.findModuleForFile(firstFile, p) != null)
+                    .findAny();
+        }
+        AtgToolkitConfig atgToolkitConfig = supposedCurrentProject.map(AtgToolkitConfig::getInstance).orElseGet(AtgToolkitConfig::getInstance);
+
+        String configRootsPatternsStr = atgToolkitConfig.getConfigRootsPatterns();
+        List<Pattern> configRootsPatterns = AtgConfigHelper.convertToPatternList(configRootsPatternsStr);
+
+        String configLayerRootsPatternsStr = atgToolkitConfig.getConfigLayerRootsPatterns();
+        List<Pattern> configLayerRootsPatterns = AtgConfigHelper.convertToPatternList(configLayerRootsPatternsStr);
+
+
         for (VirtualFile file : files) {
-            String configRootsPatternsStr = AtgToolkitConfig.getInstance().getConfigRootsPatterns();
-            List<Pattern> configRootsPatterns = AtgConfigHelper.convertToPatternList(configRootsPatternsStr);
-
-            String configLayerRootsPatternsStr = AtgToolkitConfig.getInstance().getConfigLayerRootsPatterns();
-            List<Pattern> configLayerRootsPatterns = AtgConfigHelper.convertToPatternList(configLayerRootsPatternsStr);
-
-
             if (VfsUtilCore.isUnder(file, Sets.newHashSet(atgModuleFacetConfiguration.getConfigRoots()))) continue;
             if (VfsUtilCore.isUnder(file, atgModuleFacetConfiguration.getConfigLayerRoots().keySet())) continue;
 
