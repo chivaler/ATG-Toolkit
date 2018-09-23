@@ -21,7 +21,7 @@ public class Constants {
 
     public static final FacetTypeId<AtgModuleFacet> FACET_TYPE_ID = new FacetTypeId<>("config");
     public static final String FACET_STRING_ID = "AtgModuleConfiguration"; //don't change this in future releases
-    public static final String FACET_PRESENTABLE_NAME = "ATG Facet Configuration"; //don't change this in future releases
+    public static final String FACET_PRESENTABLE_NAME = "ATG Facet"; //don't change this in future releases
 
     public static final Pattern SUSPECTED_COMPONENT_NAME_REGEX = Pattern.compile("/[^,=]*");
     public static final String DEFAULT_ITEM_DESCRIPTOR_CLASS = "atg.adapter.gsa.GSAPropertyDescriptor";
