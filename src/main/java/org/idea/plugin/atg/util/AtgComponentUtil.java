@@ -210,9 +210,9 @@ public class AtgComponentUtil {
             AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
             if (atgFacet != null) {
                 AtgModuleFacetConfiguration configuration = atgFacet.getConfiguration();
-                Collection<VirtualFile> roots = configuration.getConfigRoots();
-                roots.addAll(configuration.getConfigLayerRoots().keySet());
-                return roots.stream()
+                Collection<VirtualFile> configRoots = configuration.getConfigRoots();
+                Set<VirtualFile> configLayersRoots = configuration.getConfigLayerRoots().keySet();
+                return Stream.concat(configRoots.stream(), configLayersRoots.stream())
                         .filter(Objects::nonNull)
                         .filter(VirtualFile::isDirectory)
                         .filter(r -> VfsUtilCore.isAncestor(r, virtualFile, true))
