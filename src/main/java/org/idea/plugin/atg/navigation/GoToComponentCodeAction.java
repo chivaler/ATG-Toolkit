@@ -12,6 +12,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.impl.source.xml.XmlFileImpl;
 import com.intellij.psi.util.PsiUtilBase;
+import com.intellij.psi.xml.XmlFile;
 import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.config.AtgToolkitConfig;
 import org.idea.plugin.atg.util.AtgComponentUtil;
@@ -30,7 +31,8 @@ public class GoToComponentCodeAction extends BaseCodeInsightAction {
     @Override
     public void update(AnActionEvent e) {
         final Presentation presentation = e.getPresentation();
-        presentation.setEnabledAndVisible(false);
+        presentation.setEnabled(false);
+        presentation.setVisible(true);
 
         Project project = e.getProject();
         Editor editor = e.getData(CommonDataKeys.EDITOR);
@@ -45,20 +47,24 @@ public class GoToComponentCodeAction extends BaseCodeInsightAction {
             if (srcClass.isPresent()) {
                 presentation.setText(AtgToolkitBundle.message("goto.component.from.class.text"));
                 presentation.setDescription(AtgToolkitBundle.message("goto.component.from.class.description"));
-                presentation.setEnabledAndVisible(true);
+                presentation.setEnabled(true);
             }
         } else if (psiFile instanceof PropertiesFile) {
             presentation.setText(AtgToolkitBundle.message("goto.component.from.component.text"));
             presentation.setDescription(AtgToolkitBundle.message("goto.component.from.component.description"));
-            if (AtgToolkitConfig.getInstance(project).showReferencesOnComponentInGoTo || AtgToolkitConfig.getInstance(project).showOverridesOfComponentInGoTo) {
-                presentation.setEnabledAndVisible(true);
+            Optional<String> componentName = AtgComponentUtil.getComponentCanonicalName((PropertiesFile) psiFile);
+            if (componentName.isPresent() && (AtgToolkitConfig.getInstance(project).showReferencesOnComponentInGoTo || AtgToolkitConfig.getInstance(project).showOverridesOfComponentInGoTo)) {
+                presentation.setEnabled(true);
             }
         } else if (psiFile instanceof XmlFileImpl) {
             presentation.setText(AtgToolkitBundle.message("goto.component.from.component.text"));
             presentation.setDescription(AtgToolkitBundle.message("goto.component.from.component.description"));
-            if (AtgToolkitConfig.getInstance(project).showOverridesOfComponentInGoTo) {
-                presentation.setEnabledAndVisible(true);
+            Optional<String> xmlRelativePath = AtgComponentUtil.getXmlRelativePath((XmlFile) psiFile);
+            if (xmlRelativePath.isPresent() && (AtgToolkitConfig.getInstance(project).showReferencesOnComponentInGoTo || AtgToolkitConfig.getInstance(project).showOverridesOfComponentInGoTo)) {
+                presentation.setEnabled(true);
             }
+        } else {
+            presentation.setVisible(false);
         }
     }
 }
