@@ -105,7 +105,9 @@ public class AtgReferenceContributor extends PsiReferenceContributor {
                         int start = matcher.start(0);
                         int length = beanName.length();
                         TextRange beanTextRange = new TextRange(start, start + length);
-                        if (beanName.contains(".")) {
+                        if (beanName.endsWith(".xml")) {
+                            results.add(new AtgComponentReference(propertyValue, beanTextRange));
+                        } else if (beanName.contains(".")) {
                             String firstField = beanName.substring(beanName.indexOf('.') + 1);
                             beanName = beanName.substring(0, beanName.indexOf('.'));
                             length = beanName.length();

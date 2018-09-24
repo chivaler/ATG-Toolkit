@@ -11,6 +11,7 @@ import com.intellij.psi.xml.XmlText;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -41,7 +42,12 @@ public class AtgComponentReference extends PsiPolyVariantReferenceBase<PsiElemen
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
         Module module = ModuleUtilCore.findModuleForPsiElement(myElement);
-        Collection<PropertiesFileImpl> applicableComponents = AtgComponentUtil.getApplicableComponentsByName(componentName, module, myElement.getProject());
+        Collection<PsiFile> applicableComponents = new ArrayList<>();
+        if (componentName.endsWith(".xml")) {
+            applicableComponents.addAll(AtgComponentUtil.getApplicableXmlsByName(componentName.replace(".xml", ""), myElement.getProject()));
+        } else {
+            applicableComponents.addAll(AtgComponentUtil.getApplicableComponentsByName(componentName, module, myElement.getProject()));
+        }
         return applicableComponents.stream()
                 .map(element -> new PsiElementResolveResult(element, true))
                 .toArray(ResolveResult[]::new);
