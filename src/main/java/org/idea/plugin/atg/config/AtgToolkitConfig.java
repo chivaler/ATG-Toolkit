@@ -9,16 +9,33 @@ import com.intellij.util.xmlb.XmlSerializerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@SuppressWarnings({"WeakerAccess", "squid:ClassVariableVisibilityCheck"})
 @State(name = "AtgToolkitConfig", storages = {@Storage("atg-toolkit.xml")})
 public class AtgToolkitConfig implements PersistentStateComponent<AtgToolkitConfig> {
-    public static final String ATG_TOOLKIT_ID = "atg-toolkit";
-    private static final String DEFAULT_RELATIVE_CONFIG_PATH = "/src/main/config/";
+
+    private static final String DEFAULT_RELATIVE_CONFIG_PATH = "src/main/config,src/config";
+    private static final String DEFAULT_RELATIVE_CONFIG_LAYERS_PATH = "layer/config,configlayers/*/config";
     private static final String DEFAULT_IGNORED_PARENTS = "atg.nucleus.*";
 
-    @SuppressWarnings("WeakerAccess")
     public String ignoredClassesForSetters = DEFAULT_IGNORED_PARENTS;
-    @SuppressWarnings("WeakerAccess")
-    public String relativeConfigPath = DEFAULT_RELATIVE_CONFIG_PATH;
+    public String configRootsPatterns = DEFAULT_RELATIVE_CONFIG_PATH;
+    public String configLayerRootsPatterns = DEFAULT_RELATIVE_CONFIG_LAYERS_PATH;
+    public boolean attachClassPathOfAtgDependencies = false;
+    public boolean attachConfigsOfAtgDependencies = false;
+
+    public boolean showOverridesOfComponentInGoTo = true;
+    public boolean showReferencesOnComponentInGoTo = true;
+
+    @NotNull
+    public static AtgToolkitConfig getInstance() {
+        return new AtgToolkitConfig();
+    }
+
+    @NotNull
+    public static AtgToolkitConfig getInstance(@NotNull Project project) {
+        AtgToolkitConfig service = ServiceManager.getService(project, AtgToolkitConfig.class);
+        return service != null ? service : new AtgToolkitConfig();
+    }
 
     @Nullable
     @Override
@@ -33,11 +50,6 @@ public class AtgToolkitConfig implements PersistentStateComponent<AtgToolkitConf
         XmlSerializerUtil.copyBean(state, this);
     }
 
-    @Nullable
-    public static AtgToolkitConfig getInstance(Project project) {
-        return ServiceManager.getService(project, AtgToolkitConfig.class);
-    }
-
     public String getIgnoredClassesForSetters() {
         return ignoredClassesForSetters;
     }
@@ -46,11 +58,51 @@ public class AtgToolkitConfig implements PersistentStateComponent<AtgToolkitConf
         this.ignoredClassesForSetters = ignoredClassesForSetters;
     }
 
-    public String getRelativeConfigPath() {
-        return relativeConfigPath;
+    public String getConfigRootsPatterns() {
+        return configRootsPatterns;
     }
 
-    public void setRelativeConfigPath(String relativeConfigPath) {
-        this.relativeConfigPath = relativeConfigPath;
+    public void setConfigRootsPatterns(String configRootsPatterns) {
+        this.configRootsPatterns = configRootsPatterns;
+    }
+
+    public String getConfigLayerRootsPatterns() {
+        return configLayerRootsPatterns;
+    }
+
+    public void setConfigLayerRootsPatterns(String configLayerRootsPatterns) {
+        this.configLayerRootsPatterns = configLayerRootsPatterns;
+    }
+
+    public boolean isAttachClassPathOfAtgDependencies() {
+        return attachClassPathOfAtgDependencies;
+    }
+
+    public void setAttachClassPathOfAtgDependencies(boolean attachClassPathOfAtgDependencies) {
+        this.attachClassPathOfAtgDependencies = attachClassPathOfAtgDependencies;
+    }
+
+    public boolean isAttachConfigsOfAtgDependencies() {
+        return attachConfigsOfAtgDependencies;
+    }
+
+    public void setAttachConfigsOfAtgDependencies(boolean attachConfigsOfAtgDependencies) {
+        this.attachConfigsOfAtgDependencies = attachConfigsOfAtgDependencies;
+    }
+
+    public boolean isShowOverridesOfComponentInGoTo() {
+        return showOverridesOfComponentInGoTo;
+    }
+
+    public void setShowOverridesOfComponentInGoTo(boolean showOverridesOfComponentInGoTo) {
+        this.showOverridesOfComponentInGoTo = showOverridesOfComponentInGoTo;
+    }
+
+    public boolean isShowReferencesOnComponentInGoTo() {
+        return showReferencesOnComponentInGoTo;
+    }
+
+    public void setShowReferencesOnComponentInGoTo(boolean showReferencesOnComponentInGoTo) {
+        this.showReferencesOnComponentInGoTo = showReferencesOnComponentInGoTo;
     }
 }

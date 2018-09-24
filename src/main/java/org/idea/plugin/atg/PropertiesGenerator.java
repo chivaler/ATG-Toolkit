@@ -1,19 +1,6 @@
-/*
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package org.idea.plugin.atg;
 
+import com.intellij.facet.FacetManager;
 import com.intellij.ide.fileTemplates.FileTemplate;
 import com.intellij.ide.fileTemplates.FileTemplateDescriptor;
 import com.intellij.ide.fileTemplates.FileTemplateManager;
@@ -22,7 +9,6 @@ import com.intellij.ide.util.EditorHelper;
 import com.intellij.lang.jvm.types.JvmType;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.fileEditor.ex.IdeDocumentHistory;
@@ -31,12 +17,17 @@ import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.source.PostprocessReformattingAspect;
 import com.intellij.util.IncorrectOperationException;
+import org.fest.util.Collections;
+import org.idea.plugin.atg.config.AtgConfigHelper;
+import org.idea.plugin.atg.module.AtgModuleFacet;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.function.Function;
@@ -54,21 +45,24 @@ public class PropertiesGenerator {
         Module module = ModuleUtilCore.findModuleForFile(srcClass.getContainingFile());
         if (module == null || srcPackage == null) return;
 
+        AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
+        if (atgFacet == null || Collections.isNullOrEmpty(atgFacet.getConfiguration().getConfigRoots())) return;
+
         CommandProcessor.getInstance().executeCommand(project, () -> DumbService.getInstance(project).withAlternativeResolveEnabled(() ->
-                PropertiesGenerator.generatePropertiesFile(project, module, srcClass, srcPackage)), AtgToolkitBundle.message("intentions.create.component"), null);
+                PropertiesGenerator.generatePropertiesFile(project, atgFacet, srcClass, srcPackage)), AtgToolkitBundle.message("intentions.create.component"), null);
 
     }
 
     @Nullable
     public static PsiElement generatePropertiesFile(final Project project,
-                                                    final Module module,
+                                                    final AtgModuleFacet moduleFacet,
                                                     final PsiClass srcClass,
                                                     final PsiPackage srcPackage) {
         return PostprocessReformattingAspect.getInstance(project).postponeFormattingInside(
                 () -> ApplicationManager.getApplication().runWriteAction((Computable<PsiElement>) () -> {
                     PsiFile targetClass = null;
                     try {
-                        PsiDirectory targetDirectory = AtgConfigHelper.getComponentConfigPsiDirectory(module, srcPackage);
+                        PsiDirectory targetDirectory = AtgConfigHelper.getComponentConfigPsiDirectory(moduleFacet, srcPackage);
 
                         FileTemplateDescriptor fileTemplateDescriptor = new FileTemplateDescriptor("ATG Properties.properties");
                         targetClass = createPropertyFileFromTemplate(fileTemplateDescriptor, targetDirectory, project, srcClass);
@@ -77,17 +71,9 @@ public class PropertiesGenerator {
                             IdeDocumentHistory.getInstance(project).includeCurrentPlaceAsChangePlace();
                             EditorHelper.openInEditor(targetClass, false);
                         }
-
-                    } catch (IncorrectOperationException e) {
-                        Notification notification = new Notification(AtgToolkitBundle.message("notifications.groupId"),
-                                AtgToolkitBundle.message("intentions.create.component.error"),
-                                e.getMessage(), NotificationType.INFORMATION);
-                        Notifications.Bus.notify(notification, project);
                     } catch (Exception e) {
-                        Notification notification = new Notification(AtgToolkitBundle.message("notifications.groupId"),
-                                AtgToolkitBundle.message("intentions.create.component.error"),
-                                e.getMessage(), NotificationType.ERROR);
-                        Notifications.Bus.notify(notification, project);
+                        new Notification(Constants.NOTIFICATION_GROUP_ID, AtgToolkitBundle.message("intentions.create.component.error"),
+                                e.getMessage(), NotificationType.ERROR).notify(project);
                     }
                     return targetClass;
                 }));
@@ -114,10 +100,10 @@ public class PropertiesGenerator {
 
         Function<PsiMethod, String> populatePropertiesWithSuggestedComponents = psiMethod -> {
             String variableName = AtgComponentUtil.convertSetterToVariableName(psiMethod);
-            PsiClass dependencyClass = AtgComponentUtil.getClassForSetterMethod(psiMethod);
-            List<String> possibleComponents = AtgComponentUtil.suggestComponentsNamesByClass(dependencyClass);
+            PsiClass dependencyClass = AtgComponentUtil.getPsiClassForSetterMethod(psiMethod);
+            Collection<String> possibleComponents = AtgComponentUtil.suggestComponentsNamesByClass(dependencyClass);
             if (possibleComponents.size() == 1) {
-                return variableName + "=" + possibleComponents.get(0);
+                return variableName + "=" + possibleComponents.iterator().next();
             }
             return variableName + "=";
         };
@@ -142,7 +128,17 @@ public class PropertiesGenerator {
         properties.setProperty("DEPENDENCIES", "".equals(dependencies) ? "" : "\n" + dependencies + "\n");
         properties.setProperty("VARS", variables);
 
-        PsiElement psiElement = FileTemplateUtil.createFromTemplate(fileTemplate, srcClass.getName(), properties, targetDirectory);
+        PsiElement psiElement;
+        try {
+            psiElement = FileTemplateUtil.createFromTemplate(fileTemplate, srcClass.getName(), properties, targetDirectory);
+        } catch (IncorrectOperationException e) {
+            new Notification(Constants.NOTIFICATION_GROUP_ID, AtgToolkitBundle.message("intentions.create.component.exist"),
+                    e.getMessage(), NotificationType.INFORMATION).notify(project);
+
+            VirtualFile existVirtualFile = srcClass.getName() != null ? targetDirectory.getVirtualFile().findFileByRelativePath(srcClass.getName() + ".properties") : null;
+            psiElement = existVirtualFile != null ? PsiManager.getInstance(project).findFile(existVirtualFile) : null;
+        }
+
         if (psiElement instanceof PsiFile) {
             return (PsiFile) psiElement;
         }

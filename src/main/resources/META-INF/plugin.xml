@@ -2,23 +2,25 @@
     <id>org.idea.plugin.atg</id>
     <name>ATG Toolkit (Beta)</name>
     <id>atg-toolkit</id>
-    <version>0.5</version>
+    <version>0.6</version>
     <vendor email="chivaler@gmail.com">Igor Pidgurskyi</vendor>
 
     <description><![CDATA[
       Plugin simplifies development of Oracle Commerce modules (former ATG)<br>
+      Available navigation and  suggestions for Nucleus IoC components
     ]]></description>
 
     <change-notes><![CDATA[
-        0.1 Created intention on a non-abstract java class "Create ATG component"
-        0.2 Created plugin settings page.
-            Configurable excluded classes for collecting setters
-        0.3 Rework of guessing components based on classes
-        0.4 Go to components action "Alt+P"
-            Guess of missing properties in files
-            Guess of dependencies values based on dependencies classes
-            Added references for components and properties
-        0.5 Renaming/moving of components affects all links to them
+        0.1 Created intention on a non-abstract java class "Create ATG component"<br>
+        0.2 Created plugin settings page.<br>
+            Configurable excluded classes for collecting setters<br>
+        0.3 Rework of guessing components based on classes<br>
+        0.4 Go to components action "Alt+P"<br>
+            Guess of missing properties in files<br>
+            Guess of dependencies values based on dependencies classes<br>
+            Added references for components and properties<br>
+        0.5 Renaming/moving of components affects all links to them<br>
+            Classes of components/properties are shown in suggestions lookup<br>
     ]]>
 
     </change-notes>
@@ -33,25 +35,53 @@
             <category>Java/Declaration</category>
         </intentionAction>
         <projectConfigurable parentId="language" instance="org.idea.plugin.atg.config.AtgToolkitConfigurable"
-                             id="atg-toolkit" displayName="ATG Toolkit"/>
+                                 displayName="ATG Toolkit"/>
         <projectService serviceImplementation="org.idea.plugin.atg.config.AtgToolkitConfig"/>
         <completion.contributor language="Properties"
                                 implementationClass="org.idea.plugin.atg.completion.ComponentPropertiesCompletionContributor"
                                 id="atgPropertiesCompletion" order="first"/>
+        <psi.referenceContributor language="XML"
+                                  implementation="org.idea.plugin.atg.psi.AtgPipelinesXmlContributor"/>
+        <psi.referenceContributor language="XML"
+                                  implementation="org.idea.plugin.atg.psi.RepositoryXmlContributor"/>
+        <psi.referenceContributor language="XML"
+                                  implementation="org.idea.plugin.atg.psi.PatchBayXmlContributor"/>
         <psi.referenceContributor language="Properties"
                                   implementation="org.idea.plugin.atg.psi.AtgReferenceContributor"/>
+        <psi.referenceContributor language=""
+                                  implementation="org.idea.plugin.atg.psi.JspReferenceContributor"/>
         <gotoRelatedProvider implementation="org.idea.plugin.atg.navigation.GoToComponentRelatedProvider"/>
+        <webHelpProvider implementation="org.idea.plugin.atg.util.HelpProvider"/>
+
+        <facetType implementation="org.idea.plugin.atg.module.AtgModuleFacetType"/>
+        <framework.detector implementation="org.idea.plugin.atg.framework.AtgFrameworkDetector"/>
+        <iconProvider implementation="org.idea.plugin.atg.module.AtgIconProvider" id="atgFolders" order="first"/>
+
     </extensions>
 
     <actions>
-        <action id="GoToComponents" class="org.idea.plugin.atg.navigation.GoToComponentCodeAction"
-                text="Go to Components..."
+
+        <action id="GoToAtgComponents" class="org.idea.plugin.atg.navigation.GoToComponentCodeAction"
                 description="Go to all components based on the class">
             <add-to-group group-id="GoToCodeGroup" anchor="after" relative-to-action="GotoTest"/>
-            <add-to-group group-id="EditorLangPopupMenu" anchor="after" relative-to-action="GotoTest"/>
+            <add-to-group group-id="EditorPopupMenu.GoTo" anchor="after" relative-to-action="GotoTest"/>
             <keyboard-shortcut first-keystroke="alt P" keymap="$default"/>
         </action>
+
+        <group id="MarkAtgRootGroup">
+            <action id="MarkAtgConfigRoot" class="org.idea.plugin.atg.roots.MarkAtgConfigRootAction"/>
+            <action id="MarkAtgConfigLayerRoot" class="org.idea.plugin.atg.roots.MarkAtgConfigLayerRootAction"/>
+            <action id="MarkAtgWebRoot" class="org.idea.plugin.atg.roots.MarkAtgWebRootAction"/>
+            <action id="UnmarkAtgRoot" class="org.idea.plugin.atg.roots.UnmarkAtgConfigLayerRootAction"/>
+            <add-to-group group-id="MarkRootGroup" anchor="after" relative-to-action="MarkSourceRootGroup"/>
+        </group>
+
     </actions>
 
+    <project-components>
+        <component>
+            <implementation-class>org.idea.plugin.atg.roots.AtgEnvironmentRegistrar</implementation-class>
+        </component>
+    </project-components>
 
 </idea-plugin>

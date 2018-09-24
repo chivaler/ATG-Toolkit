@@ -1,86 +1,103 @@
 package org.idea.plugin.atg.config;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.options.ConfigurableUi;
-import com.intellij.ui.components.panels.VerticalLayout;
-import com.intellij.util.ui.UIUtil;
-import org.idea.plugin.atg.AtgToolkitBundle;
+import com.intellij.openapi.project.DumbAwareRunnable;
+import com.intellij.openapi.project.Project;
+import org.idea.plugin.atg.util.AtgEnvironmentUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.awt.*;
 
 public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
-    private final JPanel rootPanel;
-    private final JPanel controlsPanel;
-    private final JLabel configRelativePathLabel;
-    private final JLabel ignoredClassesLabel;
-    private final JTextField configRelativePathField;
-    private final JTextField ignoredClassesField;
 
-    public AtgToolkitSettingsUi() {
-        rootPanel = new JPanel(new VerticalLayout(0));
-        controlsPanel = new JPanel(new GridBagLayout());
+    private Project project;
 
-        configRelativePathLabel = new JLabel(AtgToolkitBundle.message("gui.config.config.dir"));
-        ignoredClassesLabel = new JLabel(AtgToolkitBundle.message("gui.config.config.ignoredClasses"));
-        configRelativePathField = new JTextField();
-        ignoredClassesField = new JTextField();
+    private JPanel rootPanel;
+    private JTextField configPatternsField;
+    private JTextField configLayersPatternsField;
+    private JTextField ignoredClassesField;
 
-        GridBagConstraints constraints = new GridBagConstraints();
-        constraints.insets.right = UIUtil.DEFAULT_HGAP;
-        constraints.fill = GridBagConstraints.HORIZONTAL;
-        constraints.anchor = GridBagConstraints.BASELINE_LEADING;
+    private JCheckBox attachClassPathOfAtgDependencies;
+    private JCheckBox attachConfigsOfAtgDependencies;
 
-        constraints.gridx = 0;
-        constraints.gridy = 0;
-        constraints.weightx = 0.0;
-        controlsPanel.add(configRelativePathLabel, constraints);
+    private JCheckBox showReferencesOnComponentInGoTo;
+    private JCheckBox showOverridesOfComponentInGoTo;
 
-        constraints.gridx = 1;
-        constraints.gridy = 0;
-        constraints.weightx = 1.0;
-        controlsPanel.add(configRelativePathField, constraints);
+    private JLabel errorLabel;
 
-        constraints.gridx = 0;
-        constraints.gridy = 1;
-        constraints.weightx = 0.0;
-        controlsPanel.add(ignoredClassesLabel, constraints);
-
-        constraints.gridx = 1;
-        constraints.gridy = 1;
-        constraints.weightx = 1;
-        controlsPanel.add(ignoredClassesField, constraints);
-
-        rootPanel.add(controlsPanel, VerticalLayout.TOP);
+    public AtgToolkitSettingsUi(Project project) {
+        this.project = project;
     }
 
     @Override
     public void reset(@NotNull AtgToolkitConfig atgToolkitConfig) {
-        configRelativePathField.setText(atgToolkitConfig.getRelativeConfigPath());
+        configPatternsField.setText(atgToolkitConfig.getConfigRootsPatterns());
+        configLayersPatternsField.setText(atgToolkitConfig.getConfigLayerRootsPatterns());
         ignoredClassesField.setText(atgToolkitConfig.getIgnoredClassesForSetters());
+        attachClassPathOfAtgDependencies.setSelected(atgToolkitConfig.isAttachClassPathOfAtgDependencies());
+        attachConfigsOfAtgDependencies.setSelected(atgToolkitConfig.isAttachConfigsOfAtgDependencies());
+        showReferencesOnComponentInGoTo.setSelected(atgToolkitConfig.isShowReferencesOnComponentInGoTo());
+        showOverridesOfComponentInGoTo.setSelected(atgToolkitConfig.isShowOverridesOfComponentInGoTo());
     }
 
     @Override
     public boolean isModified(@NotNull AtgToolkitConfig atgToolkitConfig) {
-        return !(configRelativePathField.getText().equals(atgToolkitConfig.getRelativeConfigPath()) &&
-                ignoredClassesField.getText().equals(atgToolkitConfig.getIgnoredClassesForSetters()));
+        boolean isModified = false;
+
+        if (!configPatternsField.getText().equals(atgToolkitConfig.getConfigRootsPatterns())) isModified = true;
+        if (!configLayersPatternsField.getText().equals(atgToolkitConfig.getConfigLayerRootsPatterns()))
+            isModified = true;
+        if (!ignoredClassesField.getText().equals(atgToolkitConfig.getIgnoredClassesForSetters())) isModified = true;
+        if (attachClassPathOfAtgDependencies.isSelected() != atgToolkitConfig.isAttachClassPathOfAtgDependencies())
+            isModified = true;
+        if (attachConfigsOfAtgDependencies.isSelected() != atgToolkitConfig.isAttachConfigsOfAtgDependencies())
+            isModified = true;
+        if (showReferencesOnComponentInGoTo.isSelected() != atgToolkitConfig.isShowReferencesOnComponentInGoTo())
+            isModified = true;
+        if (showOverridesOfComponentInGoTo.isSelected() != atgToolkitConfig.isShowOverridesOfComponentInGoTo())
+            isModified = true;
+
+        return isModified;
     }
 
     @Override
     public void apply(@NotNull AtgToolkitConfig atgToolkitConfig) {
-        String relativeConfigPath = configRelativePathField.getText().replaceAll("\\s", "");
-        if (!relativeConfigPath.startsWith("/")) relativeConfigPath = "/" + relativeConfigPath;
-        if (!relativeConfigPath.endsWith("/")) relativeConfigPath = relativeConfigPath + "/";
+        String configRootPatters = configPatternsField.getText().replaceAll("\\s", "");
+        configPatternsField.setText(configRootPatters);
+        String configLayerRootPatters = configLayersPatternsField.getText().replaceAll("\\s", "");
+        configPatternsField.setText(configLayerRootPatters);
 
-        configRelativePathField.setText(relativeConfigPath);
-
-        atgToolkitConfig.setRelativeConfigPath(relativeConfigPath);
+        atgToolkitConfig.setConfigRootsPatterns(configRootPatters);
+        atgToolkitConfig.setConfigLayerRootsPatterns(configLayerRootPatters);
         atgToolkitConfig.setIgnoredClassesForSetters(ignoredClassesField.getText());
+
+        boolean dependenciesResolvingChanged = false;
+        if (attachClassPathOfAtgDependencies.isSelected() != atgToolkitConfig.isAttachClassPathOfAtgDependencies()) {
+            dependenciesResolvingChanged = true;
+        }
+        if (attachConfigsOfAtgDependencies.isSelected() != atgToolkitConfig.isAttachConfigsOfAtgDependencies()) {
+            dependenciesResolvingChanged = true;
+        }
+        atgToolkitConfig.setAttachClassPathOfAtgDependencies(attachClassPathOfAtgDependencies.isSelected());
+        atgToolkitConfig.setAttachConfigsOfAtgDependencies(attachConfigsOfAtgDependencies.isSelected());
+        atgToolkitConfig.setShowOverridesOfComponentInGoTo(showOverridesOfComponentInGoTo.isSelected());
+        atgToolkitConfig.setShowReferencesOnComponentInGoTo(showReferencesOnComponentInGoTo.isSelected());
+
+        if (dependenciesResolvingChanged) {
+            ApplicationManager.getApplication().invokeLater((DumbAwareRunnable) () -> {
+                AtgEnvironmentUtil.removeAtgDependenciesForAllModules(project);
+                if (AtgToolkitConfig.getInstance(project).isAttachConfigsOfAtgDependencies() || AtgToolkitConfig.getInstance(project).isAttachClassPathOfAtgDependencies()) {
+                    AtgEnvironmentUtil.addAtgDependenciesForAllModules(project);
+                }
+            }, project.getDisposed());
+        }
     }
 
-    @NotNull
-    @Override
-    public JComponent getComponent() {
-        return rootPanel;
+        @NotNull
+        @Override
+        public JComponent getComponent () {
+            return rootPanel;
+        }
+
     }
-}
