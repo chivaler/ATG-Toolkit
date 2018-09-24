@@ -21,6 +21,14 @@
             Added references for components and properties<br>
         0.5 Renaming/moving of components affects all links to them<br>
             Classes of components/properties are shown in suggestions lookup<br>
+        0.6 Configuration roots changed from implicitly guessed to explicitly chosen<br>
+            Module configurations are stored in AtgFacet<br>
+            Framework detection of AtgFacets<br>
+            MarkAs actions for configuration roots, web roots and configuration layers root<br>
+            Added navigation in XML configurations of repositories, pipelines and JMS<br>
+            Added navigation in DSP/JSP for IdeaCommunity: bean, beanvalue, page, src attributes<br>
+            Help linked to GitHub WIKI<br>
+            Added MVP of ATG dependency injection. OOTB configs and classes could be attached to the project. See <a href="https://github.com/chivaler/ATG-Toolkit/wiki/Dependency-management">WIKI</a> for details<br>
     ]]>
 
     </change-notes>
@@ -35,7 +43,7 @@
             <category>Java/Declaration</category>
         </intentionAction>
         <projectConfigurable parentId="language" instance="org.idea.plugin.atg.config.AtgToolkitConfigurable"
-                                 displayName="ATG Toolkit"/>
+                             displayName="ATG Toolkit"/>
         <projectService serviceImplementation="org.idea.plugin.atg.config.AtgToolkitConfig"/>
         <completion.contributor language="Properties"
                                 implementationClass="org.idea.plugin.atg.completion.ComponentPropertiesCompletionContributor"
