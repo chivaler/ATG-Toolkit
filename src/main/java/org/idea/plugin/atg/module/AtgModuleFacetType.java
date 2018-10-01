@@ -2,7 +2,6 @@ package org.idea.plugin.atg.module;
 
 import com.intellij.facet.Facet;
 import com.intellij.facet.FacetType;
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.module.JavaModuleType;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleType;
@@ -43,7 +42,7 @@ public class AtgModuleFacetType extends FacetType<AtgModuleFacet, AtgModuleFacet
     }
 
     public Icon getIcon() {
-        return AllIcons.General.Gear;
+        return Constants.Icons.FACET_ICON;
     }
 
     @Override
