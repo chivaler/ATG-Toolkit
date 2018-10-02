@@ -2,11 +2,13 @@ package org.idea.plugin.atg.psi.reference;
 
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.lang.properties.psi.impl.PropertyImpl;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.util.TextRange;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiElementResolveResult;
+import com.intellij.psi.PsiPolyVariantReferenceBase;
+import com.intellij.psi.ResolveResult;
 import com.intellij.util.IncorrectOperationException;
+import org.fest.util.Lists;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -17,8 +19,8 @@ public class AtgComponentFieldReference extends PsiPolyVariantReferenceBase<PsiE
     private final String beanName;
     private final String propertyKey;
 
-    public AtgComponentFieldReference(@NotNull String beanName, @NotNull String propertyKey, @NotNull TextRange textRange, @NotNull PsiFile originalFile) {
-        super(originalFile, textRange);
+    public AtgComponentFieldReference(@NotNull PsiElement element, @NotNull TextRange textRange, @NotNull String beanName, @NotNull String propertyKey) {
+        super(element, textRange);
         this.beanName = beanName;
         this.propertyKey = propertyKey;
     }
@@ -26,13 +28,12 @@ public class AtgComponentFieldReference extends PsiPolyVariantReferenceBase<PsiE
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
-        Module module = ModuleUtilCore.findModuleForPsiElement(myElement);
-        Collection<PropertiesFileImpl> applicableComponents = AtgComponentUtil.getApplicableComponentsByName(beanName, module, myElement.getProject());
+        Collection<PropertiesFileImpl> applicableComponents = AtgComponentUtil.getApplicableComponentsByName(beanName, null, myElement.getProject());
         return applicableComponents.stream()
-                .map(psiFile -> psiFile.findPropertyByKey(propertyKey))
+                .map(psiFile -> Lists.newArrayList(psiFile.findPropertyByKey(propertyKey), psiFile.findPropertyByKey(propertyKey + "^")))
+                .flatMap(Collection::stream)
                 .filter(PropertyImpl.class::isInstance)
-                .map(p -> (PropertyImpl) p)
-                .map(element -> new PsiElementResolveResult(element, true))
+                .map(element -> new PsiElementResolveResult((PropertyImpl)element, true))
                 .toArray(ResolveResult[]::new);
     }
 

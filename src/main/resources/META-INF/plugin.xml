@@ -2,7 +2,7 @@
     <id>org.idea.plugin.atg</id>
     <name>ATG Toolkit (Beta)</name>
     <id>atg-toolkit</id>
-    <version>0.6</version>
+    <version>0.7</version>
     <vendor email="chivaler@gmail.com">Igor Pidgurskyi</vendor>
 
     <description><![CDATA[
@@ -29,6 +29,7 @@
             Added navigation in DSP/JSP for IdeaCommunity: bean, beanvalue, page, src attributes<br>
             Help linked to GitHub WIKI<br>
             Added MVP of ATG dependency injection. OOTB configs and classes could be attached to the project. See <a href="https://github.com/chivaler/ATG-Toolkit/wiki/Dependency-management">WIKI</a> for details<br>
+        0.7 Fix for reference to property of a component
     ]]>
 
     </change-notes>

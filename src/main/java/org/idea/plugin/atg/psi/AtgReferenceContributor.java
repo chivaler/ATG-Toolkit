@@ -114,7 +114,7 @@ public class AtgReferenceContributor extends PsiReferenceContributor {
                             beanTextRange = new TextRange(start, start + length);
                             TextRange fieldTextRange = new TextRange(start + length + 1, start + length + firstField.length() + 1);
                             results.add(new AtgComponentReference(propertyValue, beanTextRange));
-                            results.add(new AtgComponentFieldReference(beanName, firstField, fieldTextRange, element.getContainingFile()));
+                            results.add(new AtgComponentFieldReference(element, fieldTextRange, beanName, firstField));
                         } else {
                             results.add(new AtgComponentReference(propertyValue, beanTextRange));
                         }

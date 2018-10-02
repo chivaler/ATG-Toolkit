@@ -126,16 +126,18 @@ public class ComponentPropertiesCompletionContributor extends CompletionContribu
                                     .forEach(result::addElement);
                         } else {
                             JvmType variableType = AtgComponentUtil.getJvmTypeForComponentDependency((PropertyImpl) position);
-                            applicableComponents.stream()
-                                    .map(AtgComponentUtil::getComponentClass)
-                                    .filter(Optional::isPresent)
-                                    .map(Optional::get)
-                                    .map(AtgComponentUtil::getSettersOfClass)
-                                    .flatMap(Collection::stream)
-                                    .filter(m -> Objects.equals(AtgComponentUtil.getJvmTypeForSetterMethod(m), variableType))
-                                    .distinct()
-                                    .map(m -> new AtgPropertyLookupElement(m, componentName + "." + AtgComponentUtil.convertSetterToVariableName(m)))
-                                    .forEach(result::addElement);
+                            if (variableType != null) {
+                                applicableComponents.stream()
+                                        .map(AtgComponentUtil::getComponentClass)
+                                        .filter(Optional::isPresent)
+                                        .map(Optional::get)
+                                        .map(AtgComponentUtil::getSettersOfClass)
+                                        .flatMap(Collection::stream)
+                                        .filter(m -> variableType.equals(AtgComponentUtil.getJvmTypeForSetterMethod(m)))
+                                        .distinct()
+                                        .map(m -> new AtgPropertyLookupElement(m, componentName + "." + AtgComponentUtil.convertSetterToVariableName(m)))
+                                        .forEach(result::addElement);
+                            }
                         }
                     } else {
                         AtgComponentUtil.getAllComponents(position.getProject()).stream()

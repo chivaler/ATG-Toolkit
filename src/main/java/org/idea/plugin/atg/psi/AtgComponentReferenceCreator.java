@@ -40,7 +40,7 @@ public class AtgComponentReferenceCreator {
         if (firstField.length() > 0) {
             TextRange fieldTextRange = new TextRange(fullAttributeRange.getStartOffset() + shortBeanName.length() + 1, fullAttributeRange.getStartOffset() + shortBeanName.length() + firstField.length() + 1);
 
-            result.add(new AtgComponentFieldReference(beanName, firstField, fieldTextRange, originalFile));
+            result.add(new AtgComponentFieldReference(originalFile, fieldTextRange, beanName, firstField));
         }
 
         return result;
