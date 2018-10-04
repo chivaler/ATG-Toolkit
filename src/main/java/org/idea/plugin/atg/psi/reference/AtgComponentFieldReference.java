@@ -1,5 +1,6 @@
 package org.idea.plugin.atg.psi.reference;
 
+import com.google.common.collect.Lists;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.lang.properties.psi.impl.PropertyImpl;
 import com.intellij.openapi.util.TextRange;
@@ -8,7 +9,6 @@ import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
 import com.intellij.util.IncorrectOperationException;
-import org.fest.util.Lists;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 

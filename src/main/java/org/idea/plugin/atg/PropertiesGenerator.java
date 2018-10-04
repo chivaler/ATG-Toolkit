@@ -21,7 +21,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.source.PostprocessReformattingAspect;
 import com.intellij.util.IncorrectOperationException;
-import org.fest.util.Collections;
 import org.idea.plugin.atg.config.AtgConfigHelper;
 import org.idea.plugin.atg.module.AtgModuleFacet;
 import org.idea.plugin.atg.util.AtgComponentUtil;
@@ -46,7 +45,7 @@ public class PropertiesGenerator {
         if (module == null || srcPackage == null) return;
 
         AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
-        if (atgFacet == null || Collections.isNullOrEmpty(atgFacet.getConfiguration().getConfigRoots())) return;
+        if (atgFacet == null || atgFacet.getConfiguration().getConfigRoots().isEmpty()) return;
 
         CommandProcessor.getInstance().executeCommand(project, () -> DumbService.getInstance(project).withAlternativeResolveEnabled(() ->
                 PropertiesGenerator.generatePropertiesFile(project, atgFacet, srcClass, srcPackage)), AtgToolkitBundle.message("intentions.create.component"), null);
