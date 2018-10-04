@@ -12,7 +12,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.IncorrectOperationException;
-import org.fest.util.Collections;
 import org.idea.plugin.atg.module.AtgModuleFacet;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
@@ -46,7 +45,7 @@ public class CreateATGComponentIntentionAction extends PsiElementBaseIntentionAc
         Module module = ModuleUtilCore.findModuleForFile(file);
         if (module == null) return false;
         AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
-        if (atgFacet == null || Collections.isNullOrEmpty(atgFacet.getConfiguration().getConfigRoots())) return false;
+        if (atgFacet == null || atgFacet.getConfiguration().getConfigRoots().isEmpty()) return false;
 
         return true;
     }

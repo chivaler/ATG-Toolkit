@@ -1,12 +1,12 @@
 package org.idea.plugin.atg.psi.reference;
 
+import com.google.common.collect.Lists;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlText;
 import org.apache.commons.lang.StringUtils;
-import org.fest.util.Lists;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
