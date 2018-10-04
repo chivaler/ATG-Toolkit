@@ -25,5 +25,10 @@ runIde {
     jvmArgs '-Xmx1024m', '-Didea.cycle.buffer.size=disabled'
 }
 
+publishPlugin {
+    username intellijPublishUsername
+    password intellijPublishPassword
+}
+
 group 'org.idea.plugin.atg'
 version '0.7' // Plugin version
