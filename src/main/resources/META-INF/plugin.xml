@@ -2,7 +2,7 @@
     <id>org.idea.plugin.atg</id>
     <name>ATG Toolkit (Beta)</name>
     <id>atg-toolkit</id>
-    <version>0.7</version>
+    <version>0.8</version>
     <vendor email="chivaler@gmail.com">Igor Pidgurskyi</vendor>
 
     <description><![CDATA[
@@ -30,6 +30,7 @@
             Help linked to GitHub WIKI<br>
             Added MVP of ATG dependency injection. OOTB configs and classes could be attached to the project. See <a href="https://github.com/chivaler/ATG-Toolkit/wiki/Dependency-management">WIKI</a> for details<br>
         0.7 Fix for reference to property of a component
+        0.8 Breadcrumbs to show name attribute for XML tags
     ]]>
 
     </change-notes>
@@ -62,6 +63,8 @@
                                   implementation="org.idea.plugin.atg.psi.JspReferenceContributor"/>
         <gotoRelatedProvider implementation="org.idea.plugin.atg.navigation.GoToComponentRelatedProvider"/>
         <webHelpProvider implementation="org.idea.plugin.atg.util.HelpProvider"/>
+
+        <breadcrumbsInfoProvider implementation="org.idea.plugin.atg.breadcrumbs.AtgXmlLanguageBreadcrumbsInfoProvider" order="first"/>
 
         <facetType implementation="org.idea.plugin.atg.module.AtgModuleFacetType"/>
         <framework.detector implementation="org.idea.plugin.atg.framework.AtgFrameworkDetector"/>
