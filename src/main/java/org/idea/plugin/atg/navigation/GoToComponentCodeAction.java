@@ -46,7 +46,7 @@ public class GoToComponentCodeAction extends BaseCodeInsightAction {
                     .findAny();
             if (srcClass.isPresent()) {
                 presentation.setText(AtgToolkitBundle.message("goto.component.from.class.text"));
-                presentation.setDescription(AtgToolkitBundle.message("goto.component.from.class.description"));
+                presentation.setDescription(AtgToolkitBundle.message("goto.component.from.class.description", srcClass.get().getQualifiedName()));
                 presentation.setEnabled(true);
             }
         } else if (psiFile instanceof PropertiesFile) {
