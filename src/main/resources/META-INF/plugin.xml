@@ -32,6 +32,7 @@
         0.7 Fix for reference to property of a component
         0.8 Breadcrumbs to show name attribute for XML tags
             Icon on the gutter for Java class to navigate to components based on the class
+            Icon on the gutter for Properties and XMLs when another layers available
     ]]>
 
     </change-notes>
@@ -63,7 +64,9 @@
         <psi.referenceContributor language=""
                                   implementation="org.idea.plugin.atg.psi.JspReferenceContributor"/>
 
-        <codeInsight.lineMarkerProvider language="JAVA" implementationClass="org.idea.plugin.atg.gutter.AtgComponentLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="JAVA" implementationClass="org.idea.plugin.atg.gutter.AtgComponentJavaLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="Properties" implementationClass="org.idea.plugin.atg.gutter.AtgPropertiesLayersLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="XML" implementationClass="org.idea.plugin.atg.gutter.AtgXmlLayersLineMarkerProvider"/>
 
         <gotoRelatedProvider implementation="org.idea.plugin.atg.navigation.GoToComponentRelatedProvider"/>
         <webHelpProvider implementation="org.idea.plugin.atg.util.HelpProvider"/>
