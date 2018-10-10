@@ -30,16 +30,18 @@ public class AtgEnvironmentRegistrar implements ProjectComponent {
             if (StringUtils.isNotBlank(systemAtgHome)) {
                 macros.setMacro(Constants.ATG_HOME, systemAtgHome);
             } else {
-                //TODO proper warning
-                new Notification(Constants.NOTIFICATION_GROUP_ID, AtgToolkitBundle.message("intentions.create.component.error"),
-                        "bla", NotificationType.WARNING).notify(project);
+                new Notification(Constants.NOTIFICATION_GROUP_ID,
+                        AtgToolkitBundle.message("inspection.atgHome.title"),
+                        AtgToolkitBundle.message("inspection.atgHome.notPresent.text"),
+                        NotificationType.INFORMATION).notify(project);
             }
 
         } else {
             if (!FileUtil.pathsEqual(systemAtgHome, atgHomeMacroValue)) {
-                //TODO proper warning
-                new Notification(Constants.NOTIFICATION_GROUP_ID, AtgToolkitBundle.message("intentions.create.component.error"),
-                        "bla", NotificationType.WARNING).notify(project);
+                new Notification(Constants.NOTIFICATION_GROUP_ID,
+                        AtgToolkitBundle.message("inspection.atgHome.title"),
+                        AtgToolkitBundle.message("inspection.atgHome.differs.text"),
+                        NotificationType.INFORMATION).notify(project);
             }
         }
 
