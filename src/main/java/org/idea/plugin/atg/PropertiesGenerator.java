@@ -6,7 +6,6 @@ import com.intellij.ide.fileTemplates.FileTemplateDescriptor;
 import com.intellij.ide.fileTemplates.FileTemplateManager;
 import com.intellij.ide.fileTemplates.FileTemplateUtil;
 import com.intellij.ide.util.EditorHelper;
-import com.intellij.lang.jvm.types.JvmType;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.application.ApplicationManager;
@@ -30,7 +29,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 public class PropertiesGenerator {
 
@@ -86,16 +84,6 @@ public class PropertiesGenerator {
         FileTemplate fileTemplate = FileTemplateManager.getInstance(project).getCodeTemplate(templateName);
         fileTemplate.setReformatCode(false);
 
-        Predicate<PsiMethod> treatAsDependencySetter = m -> {
-            JvmType parameterType = m.getParameters()[0].getType();
-            if (!(parameterType instanceof PsiClassType)) return false;
-            String parameterClassName = ((PsiClassType) parameterType).getCanonicalText();
-            if (parameterClassName.startsWith("java")) return false;
-            if (parameterClassName.equals("atg.xml.XMLFile")) return false;
-            if (parameterClassName.equals("atg.repository.rql.RqlStatement")) return false;
-            if (parameterClassName.equals("atg.nucleus.ResolvingMap")) return false;
-            return !parameterClassName.equals("atg.nucleus.ServiceMap");
-        };
 
         Function<PsiMethod, String> populatePropertiesWithSuggestedComponents = psiMethod -> {
             String variableName = AtgComponentUtil.convertSetterToVariableName(psiMethod);
@@ -110,13 +98,13 @@ public class PropertiesGenerator {
         List<PsiMethod> allSetters = AtgComponentUtil.getSettersOfClass(srcClass);
 
         String dependencies = allSetters.stream()
-                .filter(treatAsDependencySetter)
+                .filter(AtgComponentUtil::treatAsDependencySetter)
                 .map(populatePropertiesWithSuggestedComponents)
                 .sorted()
                 .reduce((a, b) -> a + "\n" + b).orElse("");
 
         String variables = allSetters.stream()
-                .filter(treatAsDependencySetter.negate())
+                .filter(p -> !AtgComponentUtil.treatAsDependencySetter(p))
                 .map(populatePropertiesWithSuggestedComponents)
                 .sorted()
                 .reduce((a, b) -> a + "\n" + b).orElse("");

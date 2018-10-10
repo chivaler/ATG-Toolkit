@@ -23,7 +23,7 @@ public class Constants {
     public static final String FACET_STRING_ID = "AtgModuleConfiguration"; //don't change this in future releases
     public static final String FACET_PRESENTABLE_NAME = "ATG Facet"; //don't change this in future releases
 
-    public static final Pattern SUSPECTED_COMPONENT_NAME_REGEX = Pattern.compile("/[^,=]*");
+    public static final Pattern SUSPECTED_COMPONENT_NAME_REGEX = Pattern.compile("(?<=(^|\\s))/[^,=\\\\\\s]+");
     public static final String DEFAULT_ITEM_DESCRIPTOR_CLASS = "atg.adapter.gsa.GSAPropertyDescriptor";
     public static final List<String> IGNORED_ATTRIBUTES_NAMES_FOR_DESCRIPTOR = ImmutableList.of("uiwritable", "uiqueryable", "resourceBundle", "deployable", "propertySortPriority", "references");
     public static final String WEB_HELP_URL = "https://github.com/chivaler/ATG-Toolkit/wiki/";
@@ -34,6 +34,7 @@ public class Constants {
 
     public static class Icons {
         public static final Icon FACET_ICON = AllIcons.General.GearPlain;
+        public static final Icon COMPONENT_ICON = AllIcons.General.GearPlain;
         public static final LayeredIcon CONFIG_ROOT_ICON;
         public static final LayeredIcon CONFIG_LAYER_ROOT_ICON;
         public static final LayeredIcon WEB_ROOT_ICON;
@@ -67,7 +68,8 @@ public class Constants {
         }
 
         public static class Properties {
-            public static final List<String> AVAILABLE_SCOPES = ImmutableList.of("global", "session", "request", "window", "prototype");
+            public static final List<String> AVAILABLE_SCOPES = ImmutableList.of(
+                    Scope.GLOBAL, Scope.SESSION, Scope.REQUEST, Scope.WINDOW, Scope.PROTOTYPE);
             public static final String BASED_ON_PROPERTY = "$basedOn";
             public static final String CLASS_PROPERTY = "$class";
             public static final String SCOPE_PROPERTY = "$scope";
@@ -91,5 +93,12 @@ public class Constants {
         public static final String PLUGIN_CONFIGURABLE_EDITOR = PLUGIN_ID + ".Project-Settings";
     }
 
+    public static class Scope {
+        public static final String GLOBAL = "global";
+        public static final String SESSION = "session";
+        public static final String WINDOW = "window";
+        public static final String REQUEST = "request";
+        public static final String PROTOTYPE = "prototype";
+    }
 
 }

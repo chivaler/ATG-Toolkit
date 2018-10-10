@@ -33,6 +33,7 @@
         0.8 Breadcrumbs to show name attribute for XML tags
             Icon on the gutter for Java class to navigate to components based on the class
             Icon on the gutter for Properties and XMLs when another layers available
+            Inspections to verify presence of used classes, components, setters, getters and their types cast
     ]]>
 
     </change-notes>
@@ -50,6 +51,7 @@
         <projectConfigurable parentId="language" instance="org.idea.plugin.atg.config.AtgToolkitConfigurable"
                              displayName="ATG Toolkit"/>
         <projectService serviceImplementation="org.idea.plugin.atg.config.AtgToolkitConfig"/>
+
         <completion.contributor language="Properties"
                                 implementationClass="org.idea.plugin.atg.completion.ComponentPropertiesCompletionContributor"
                                 id="atgPropertiesCompletion" order="first"/>
@@ -64,14 +66,50 @@
         <psi.referenceContributor language=""
                                   implementation="org.idea.plugin.atg.psi.JspReferenceContributor"/>
 
-        <codeInsight.lineMarkerProvider language="JAVA" implementationClass="org.idea.plugin.atg.gutter.AtgComponentJavaLineMarkerProvider"/>
-        <codeInsight.lineMarkerProvider language="Properties" implementationClass="org.idea.plugin.atg.gutter.AtgPropertiesLayersLineMarkerProvider"/>
-        <codeInsight.lineMarkerProvider language="XML" implementationClass="org.idea.plugin.atg.gutter.AtgXmlLayersLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="JAVA"
+                                        implementationClass="org.idea.plugin.atg.gutter.AtgComponentJavaLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="Properties"
+                                        implementationClass="org.idea.plugin.atg.gutter.AtgPropertiesLayersLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="XML"
+                                        implementationClass="org.idea.plugin.atg.gutter.AtgXmlLayersLineMarkerProvider"/>
 
         <gotoRelatedProvider implementation="org.idea.plugin.atg.navigation.GoToComponentRelatedProvider"/>
+
+        <localInspection language="Properties" shortName="DependenciesScope"
+                         key="inspection.dependenciesScope.title"
+                         groupKey="inspection.group.display.name" enabledByDefault="true"
+                         level="ERROR"
+                         implementationClass="org.idea.plugin.atg.inspection.DependenciesScopeInspection"/>
+        <localInspection language="Properties" shortName="ComponentClass"
+                         key="inspection.classNotFound.title"
+                         groupKey="inspection.group.display.name" enabledByDefault="true"
+                         level="ERROR"
+                         implementationClass="org.idea.plugin.atg.inspection.ComponentClassInspection"/>
+        <localInspection language="Properties" shortName="AvailableSetter"
+                         key="inspection.availableSetter.title"
+                         groupKey="inspection.group.display.name" enabledByDefault="true"
+                         level="WARNING"
+                         implementationClass="org.idea.plugin.atg.inspection.AvailableSetterInspection"/>
+        <localInspection language="Properties" shortName="AvailableGetter"
+                         key="inspection.availableGetter.title"
+                         groupKey="inspection.group.display.name" enabledByDefault="true"
+                         level="WARNING"
+                         implementationClass="org.idea.plugin.atg.inspection.AvailableGetterInspection"/>
+        <localInspection language="Properties" shortName="AvailableDependencies"
+                         key="inspection.dependenciesAbsent.title"
+                         groupKey="inspection.group.display.name" enabledByDefault="true"
+                         level="WARNING"
+                         implementationClass="org.idea.plugin.atg.inspection.AvailableDependenciesInspection"/>
+        <localInspection language="Properties" shortName="DependenciesTypes"
+                         key="inspection.dependenciesTypes.title"
+                         groupKey="inspection.group.display.name" enabledByDefault="true"
+                         level="WARNING"
+                         implementationClass="org.idea.plugin.atg.inspection.DependenciesTypesInspection"/>
+
         <webHelpProvider implementation="org.idea.plugin.atg.util.HelpProvider"/>
 
-        <breadcrumbsInfoProvider implementation="org.idea.plugin.atg.breadcrumbs.AtgXmlLanguageBreadcrumbsInfoProvider" order="first"/>
+        <breadcrumbsInfoProvider implementation="org.idea.plugin.atg.breadcrumbs.AtgXmlLanguageBreadcrumbsInfoProvider"
+                                 order="first"/>
 
         <facetType implementation="org.idea.plugin.atg.module.AtgModuleFacetType"/>
         <framework.detector implementation="org.idea.plugin.atg.framework.AtgFrameworkDetector"/>

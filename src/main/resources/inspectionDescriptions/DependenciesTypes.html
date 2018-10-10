@@ -1,0 +1,23 @@
+<html>
+<body>
+<p>
+    Reports when type of either dependency or its field cannot be cast to type of the field which is set to <br>
+    <i>Report could be false positive if the finals classes of the component or its dependencies weren't detected
+        properly considering layers priority</i>
+</p>
+<p>
+    For example such error occurs if component's class has field:
+    <code><pre>
+        private Repository repository;
+        public setRepository(Repository repository) {...}
+    </pre>
+    </code>
+
+    But totally different component is injected to this field via its .properties file
+    <code><pre>
+        repository=/atg/commerce/order/OrderTools
+    </pre>
+    </code>
+</p>
+</body>
+</html>

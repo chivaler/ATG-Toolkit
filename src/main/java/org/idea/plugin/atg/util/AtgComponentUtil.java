@@ -27,7 +27,6 @@ import com.intellij.psi.impl.source.xml.XmlFileImpl;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.ClassInheritorsSearch;
 import com.intellij.psi.xml.XmlFile;
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.config.AtgConfigHelper;
@@ -48,60 +47,76 @@ public class AtgComponentUtil {
     private AtgComponentUtil() {
     }
 
-    public static boolean isInsideConfigRoots(@Nullable PsiFile propertyFile) {
-        Module module = ModuleUtilCore.findModuleForPsiElement(propertyFile);
-        if (module != null) {
-            AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
-            if (atgFacet != null) {
-                atgFacet.getConfiguration().getConfigRoots();
-            }
-        } else {
-
-
-        }
-
-        return false;
+    @NotNull
+    public static Optional<String> getDerivedProperty(@NotNull PropertiesFileImpl propertyFile,
+                                                      @NotNull String propertyName) {
+        return getDerivedProperty(propertyFile, propertyName, true, new ArrayList<>());
     }
 
-
     @NotNull
-    public static Optional<String> getComponentClassStr(@Nullable PsiFile propertyFile, PropertiesFile... ignoredFiles) {
-        if (propertyFile instanceof PropertiesFile) {
-            PropertiesFile componentFile = (PropertiesFile) propertyFile;
-            IProperty propertyClassName = componentFile.findPropertyByKey(Constants.Keywords.Properties.CLASS_PROPERTY);
+    public static Optional<String> getDerivedProperty(@NotNull PropertiesFileImpl propertyFile,
+                                                      @NotNull String propertyName,
+                                                      boolean searchInAllLayers,
+                                                      @NotNull List<PropertiesFile> resolvedFiles) {
+        //TODO after layer sequence is done choose appropriate component, or combined
+        resolvedFiles.add(propertyFile);
+        Optional<String> componentName = getComponentCanonicalName(propertyFile);
+        if (componentName.isPresent()) {
+            IProperty propertyClassName = propertyFile.findPropertyByKey(propertyName);
             if (propertyClassName != null && StringUtils.isNotBlank(propertyClassName.getValue())) {
                 return Optional.of(propertyClassName.getValue());
             } else {
-                String componentToFind = getComponentCanonicalName((PropertiesFile) propertyFile).orElse(null);
-                IProperty basedOnComponent = componentFile.findPropertyByKey(Constants.Keywords.Properties.BASED_ON_PROPERTY);
-                if (basedOnComponent != null && StringUtils.isNotBlank(basedOnComponent.getValue())) {
-                    componentToFind = basedOnComponent.getValue();
+                Collection<PropertiesFileImpl> applicableLayers = searchInAllLayers
+                        ? getApplicableComponentsByName(componentName.get(), null, propertyFile.getProject())
+                        : Collections.emptyList();
+
+                Optional<String> otherLayerDefined = applicableLayers.stream()
+                        .filter(p -> !resolvedFiles.contains(p))
+                        .map(p -> p.findPropertyByKey(propertyName))
+                        .filter(Objects::nonNull)
+                        .map(IProperty::getValue)
+                        .filter(StringUtils::isNotBlank)
+                        .findFirst();
+                if (otherLayerDefined.isPresent()) {
+                    return otherLayerDefined;
                 }
-                if (componentToFind != null) {
-                    Module module = ModuleUtilCore.findModuleForPsiElement(propertyFile);
-                    Collection<PropertiesFileImpl> applicableParents = getApplicableComponentsByName(componentToFind, module, propertyFile.getProject());
-                    PropertiesFile[] incrementedIgnoredFiles = new PropertiesFile[ignoredFiles.length + 1];
-                    System.arraycopy(ignoredFiles, 0, incrementedIgnoredFiles, 0, ignoredFiles.length);
-                    incrementedIgnoredFiles[ignoredFiles.length] = componentFile;
-                    for (PropertiesFileImpl parent : applicableParents) {
-                        //TODO after layer sequence is done choose appropriate component, or combined
-                        if (!ArrayUtils.contains(ignoredFiles, parent)) {
-                            Optional<String> parentComponentClass = getComponentClassStr(parent, incrementedIgnoredFiles);
-                            if (parentComponentClass.isPresent()) return parentComponentClass;
-                        }
-                    }
-                }
+
+                Stream<PropertiesFileImpl> streamForBasedOnResolve = searchInAllLayers ? Stream.of(propertyFile) : applicableLayers.stream();
+
+                return streamForBasedOnResolve.map(p -> p.findPropertyByKey(Constants.Keywords.Properties.BASED_ON_PROPERTY))
+                        .filter(Objects::nonNull)
+                        .map(IProperty::getValue)
+                        .filter(StringUtils::isNotBlank)
+                        .map(p -> getApplicableComponentsByName(p, null, propertyFile.getProject()))
+                        .flatMap(Collection::stream)
+                        .filter(p -> !resolvedFiles.contains(p))
+                        .map(p -> getDerivedProperty(p, propertyName, false, resolvedFiles))
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .filter(StringUtils::isNotBlank)
+                        .findFirst();
             }
         }
+
         return Optional.empty();
     }
 
     @NotNull
+    public static String getComponentScope(@NotNull PropertiesFileImpl propertyFile) {
+        return getDerivedProperty(propertyFile, Constants.Keywords.Properties.SCOPE_PROPERTY).orElse("global");
+    }
+
+    @NotNull
+    public static Optional<String> getComponentClassStr(@NotNull PropertiesFileImpl propertyFile) {
+        return getDerivedProperty(propertyFile, Constants.Keywords.Properties.CLASS_PROPERTY);
+    }
+
+    @NotNull
     public static Optional<PsiClass> getComponentClass(@Nullable PsiFile propertyFile) {
-        if (!(propertyFile instanceof PropertiesFile)) {
+        if (!(propertyFile instanceof PropertiesFileImpl)) {
             return Optional.empty();
         }
-        Optional<String> className = getComponentClassStr(propertyFile);
+        Optional<String> className = getComponentClassStr((PropertiesFileImpl) propertyFile);
         if (!className.isPresent()) return Optional.empty();
 
         Project project = propertyFile.getProject();
@@ -247,29 +262,34 @@ public class AtgComponentUtil {
     }
 
     @NotNull
-    private static Optional<PsiMethod> getSetterForProperty(@NotNull PropertyImpl property) {
+    public static Optional<PsiMethod> getSetterForProperty(@NotNull PropertyImpl property) {
         PsiFile propertyFile = property.getContainingFile();
         String key = property.getKey();
         if (StringUtils.isBlank(key) || key.startsWith("$")) {
             return Optional.empty();
         }
-        if (key.endsWith("^")) {
-            key = key.substring(0, key.length() - 1);
-        }
-        final String searchProperty = key;
         Optional<PsiClass> srcClass = getComponentClass(propertyFile);
         if (!srcClass.isPresent()) {
             return Optional.empty();
         }
         return Arrays.stream(srcClass.get().getAllMethods())
                 .filter(m -> m.getName()
-                        .equals(AtgComponentUtil.convertVariableToSetter(searchProperty)))
+                        .equals(AtgComponentUtil.convertPropertyNameToSetter(key)))
                 .findAny();
     }
 
     @Nullable
     public static PsiClass getPsiClassForSetterMethod(@NotNull PsiMethod setter) {
         JvmType keyType = getJvmTypeForSetterMethod(setter);
+        if (keyType instanceof PsiClassType) {
+            return ((PsiClassType) keyType).resolve();
+        }
+        return null;
+    }
+
+    @Nullable
+    public static PsiClass getPsiClassForGetterMethod(@NotNull PsiMethod getter) {
+        JvmType keyType = getter.getReturnType();
         if (keyType instanceof PsiClassType) {
             return ((PsiClassType) keyType).resolve();
         }
@@ -377,9 +397,30 @@ public class AtgComponentUtil {
     }
 
     @NotNull
-    public static String convertVariableToSetter(@NotNull String var) {
-        return "set" + var.substring(0, 1)
+    public static Optional<PsiMethod> getGetter(@NotNull PsiClass psiClass, @NotNull String key) {
+        return Arrays.stream(psiClass.getAllMethods())
+                .filter(m -> convertVariableToGetters(key).contains(m.getName()))
+                .filter(m -> m.hasModifier(JvmModifier.PUBLIC))
+                .filter(m -> !m.hasModifier(JvmModifier.ABSTRACT))
+                .filter(m -> m.getParameters().length == 0)
+                .findAny();
+    }
+
+    @NotNull
+    public static String convertPropertyNameToSetter(@NotNull String var) {
+        String propertyName = var;
+        if (propertyName.endsWith("^") || propertyName.endsWith("+") || propertyName.endsWith("-")) {
+            propertyName = propertyName.substring(0, propertyName.length() - 1);
+        }
+        return "set" + propertyName.substring(0, 1)
+                .toUpperCase() + propertyName.substring(1);
+    }
+
+    @NotNull
+    public static List<String> convertVariableToGetters(@NotNull String var) {
+        String suffix = var.substring(0, 1)
                 .toUpperCase() + var.substring(1);
+        return Arrays.asList("get" + suffix, "is" + suffix);
     }
 
     @NotNull
@@ -401,11 +442,22 @@ public class AtgComponentUtil {
         return modifierList != null && !modifierList.hasModifierProperty(PsiModifier.ABSTRACT) && modifierList.hasModifierProperty(PsiModifier.PUBLIC);
     }
 
+    public static boolean treatAsDependencySetter(@NotNull PsiMethod m) {
+        JvmType parameterType = m.getParameters()[0].getType();
+        if (!(parameterType instanceof PsiClassType)) return false;
+        String parameterClassName = ((PsiClassType) parameterType).getCanonicalText();
+        if (parameterClassName.startsWith("java")) return false;
+        if (parameterClassName.equals("atg.xml.XMLFile")) return false;
+        if (parameterClassName.equals("atg.repository.rql.RqlStatement")) return false;
+        if (parameterClassName.equals("atg.nucleus.ResolvingMap")) return false;
+        return !parameterClassName.equals("atg.nucleus.ServiceMap");
+    }
+
     static class IsMethodIgnored implements Predicate<PsiMethod> {
         private final List<Pattern> ignoredClassPatterns;
 
         IsMethodIgnored(@NotNull Project project) {
-            AtgToolkitConfig atgToolkitConfig = org.idea.plugin.atg.config.AtgToolkitConfig.getInstance(project);
+            AtgToolkitConfig atgToolkitConfig = AtgToolkitConfig.getInstance(project);
             String ignoredClassesForSetters = atgToolkitConfig.getIgnoredClassesForSetters();
             ignoredClassPatterns = AtgConfigHelper.convertToPatternList(ignoredClassesForSetters);
         }

@@ -86,11 +86,10 @@ public class UnmarkAtgConfigLayerRootAction extends MarkRootActionBase {
         }
 
 
-
     }
 
     @Override
     protected void modifyRoots(@NotNull VirtualFile vFile, @NotNull ContentEntry entry) {
-
+        //no op
     }
 }
