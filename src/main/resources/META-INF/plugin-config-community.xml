@@ -1,0 +1,8 @@
+<idea-plugin >
+
+    <extensions defaultExtensionNs="com.intellij">
+        <psi.referenceContributor language=""
+                                  implementation="org.idea.plugin.atg.psi.reference.contribution.JspReferenceContributor"/>
+    </extensions>
+
+</idea-plugin>

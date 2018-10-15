@@ -18,7 +18,7 @@ import java.util.Optional;
 public class AtgComponentReference extends PsiPolyVariantReferenceBase<PsiElement> {
     private final String componentName;
 
-    public AtgComponentReference(@NotNull PropertyValueImpl element, TextRange textRange) {
+    public AtgComponentReference(@NotNull PropertyValueImpl element, @NotNull TextRange textRange) {
         super(element, textRange);
         componentName = element.getText().substring(textRange.getStartOffset(), textRange.getEndOffset());
     }
@@ -33,8 +33,8 @@ public class AtgComponentReference extends PsiPolyVariantReferenceBase<PsiElemen
         componentName = element.getValue().trim();
     }
 
-    public AtgComponentReference(@NotNull String componentName, @NotNull TextRange textRange, @NotNull PsiFile originalFile) {
-        super(originalFile, textRange);
+    public AtgComponentReference(@NotNull String componentName, @NotNull TextRange textRange, @NotNull PsiElement element) {
+        super(element, textRange);
         this.componentName = componentName;
     }
 

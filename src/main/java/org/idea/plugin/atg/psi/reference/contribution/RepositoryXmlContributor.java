@@ -1,4 +1,4 @@
-package org.idea.plugin.atg.psi;
+package org.idea.plugin.atg.psi.reference.contribution;
 
 import com.intellij.patterns.StandardPatterns;
 import com.intellij.patterns.XmlPatterns;

@@ -7,6 +7,7 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
+import com.intellij.psi.xml.XmlAttributeValue;
 import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.config.AtgConfigHelper;
 import org.jetbrains.annotations.NotNull;
@@ -17,9 +18,14 @@ import java.util.Set;
 public class WebContextResourceReference extends PsiPolyVariantReferenceBase<PsiElement> {
     private String filePath;
 
-    public WebContextResourceReference(@NotNull String filePath, @NotNull PsiElement element, @NotNull TextRange range) {
-        super(element, range);
-        this.filePath = filePath;
+    public WebContextResourceReference(@NotNull XmlAttributeValue jspRefAttribute, @NotNull PsiPlainTextFile jspContainingFile, @NotNull TextRange range) {
+        super(jspContainingFile, range);
+        this.filePath = jspRefAttribute.getValue();
+    }
+
+    public WebContextResourceReference(@NotNull XmlAttributeValue jspRefAttribute) {
+        super(jspRefAttribute);
+        this.filePath = jspRefAttribute.getValue();
     }
 
     @NotNull

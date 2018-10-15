@@ -2,7 +2,7 @@
     <id>org.idea.plugin.atg</id>
     <name>ATG Toolkit (Beta)</name>
     <id>atg-toolkit</id>
-    <version>0.8</version>
+    <version>0.9</version>
     <vendor email="chivaler@gmail.com">Igor Pidgurskyi</vendor>
 
     <description><![CDATA[
@@ -29,16 +29,19 @@
             Added navigation in DSP/JSP for IdeaCommunity: bean, beanvalue, page, src attributes<br>
             Help linked to GitHub WIKI<br>
             Added MVP of ATG dependency injection. OOTB configs and classes could be attached to the project. See <a href="https://github.com/chivaler/ATG-Toolkit/wiki/Dependency-management">WIKI</a> for details<br>
-        0.7 Fix for reference to property of a component
-        0.8 Breadcrumbs to show name attribute for XML tags
-            Icon on the gutter for Java class to navigate to components based on the class
-            Icon on the gutter for Properties and XMLs when another layers available
-            Inspections to verify presence of used classes, components, setters, getters and their types cast
+        0.7 Fix for reference to property of a component<br>
+        0.8 Breadcrumbs to show name attribute for XML tags<br>
+            Icon on the gutter for Java class to navigate to components based on the class<br>
+            Icon on the gutter for Properties and XMLs when another layers available<br>
+            Inspections to verify presence of used classes, components, setters, getters and their types cast<br>
+        0.9 JSP References works in IDEA Ultimate<br>
     ]]>
 
     </change-notes>
     <depends>com.intellij.modules.java</depends>
     <depends>com.intellij.properties</depends>
+    <depends optional="true" config-file="plugin-config-ultimate.xml">com.intellij.jsp</depends>
+    <depends optional="true" config-file="plugin-config-community.xml">com.intellij.modules.idea.community</depends>
 
     <idea-version since-build="181.0"/>
     <resource-bundle>org.idea.plugin.atg.AtgToolkitBundle</resource-bundle>
@@ -56,15 +59,13 @@
                                 implementationClass="org.idea.plugin.atg.completion.ComponentPropertiesCompletionContributor"
                                 id="atgPropertiesCompletion" order="first"/>
         <psi.referenceContributor language="XML"
-                                  implementation="org.idea.plugin.atg.psi.AtgPipelinesXmlContributor"/>
+                                  implementation="org.idea.plugin.atg.psi.reference.contribution.AtgPipelinesXmlContributor"/>
         <psi.referenceContributor language="XML"
-                                  implementation="org.idea.plugin.atg.psi.RepositoryXmlContributor"/>
+                                  implementation="org.idea.plugin.atg.psi.reference.contribution.RepositoryXmlContributor"/>
         <psi.referenceContributor language="XML"
-                                  implementation="org.idea.plugin.atg.psi.PatchBayXmlContributor"/>
+                                  implementation="org.idea.plugin.atg.psi.reference.contribution.PatchBayXmlContributor"/>
         <psi.referenceContributor language="Properties"
-                                  implementation="org.idea.plugin.atg.psi.AtgReferenceContributor"/>
-        <psi.referenceContributor language=""
-                                  implementation="org.idea.plugin.atg.psi.JspReferenceContributor"/>
+                                  implementation="org.idea.plugin.atg.psi.reference.contribution.AtgReferenceContributor"/>
 
         <codeInsight.lineMarkerProvider language="JAVA"
                                         implementationClass="org.idea.plugin.atg.gutter.AtgComponentJavaLineMarkerProvider"/>

@@ -1,0 +1,11 @@
+<idea-plugin>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <psi.referenceContributor language="JSP"
+                                  implementation="org.idea.plugin.atg.psi.reference.contribution.JspUltimateReferenceContributor"/>
+        <psi.referenceContributor language="JSPX"
+                                  implementation="org.idea.plugin.atg.psi.reference.contribution.JspUltimateReferenceContributor"/>
+
+    </extensions>
+
+</idea-plugin>
