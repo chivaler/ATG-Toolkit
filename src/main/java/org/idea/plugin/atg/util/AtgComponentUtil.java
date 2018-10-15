@@ -408,19 +408,23 @@ public class AtgComponentUtil {
 
     @NotNull
     public static String convertPropertyNameToSetter(@NotNull String var) {
-        String propertyName = var;
-        if (propertyName.endsWith("^") || propertyName.endsWith("+") || propertyName.endsWith("-")) {
-            propertyName = propertyName.substring(0, propertyName.length() - 1);
-        }
-        return "set" + propertyName.substring(0, 1)
-                .toUpperCase() + propertyName.substring(1);
+        if (!"".equals(var)) {
+            String propertyName = var;
+            if (propertyName.endsWith("^") || propertyName.endsWith("+") || propertyName.endsWith("-")) {
+                propertyName = propertyName.substring(0, propertyName.length() - 1);
+            }
+            return "set" + propertyName.substring(0, 1)
+                    .toUpperCase() + propertyName.substring(1);
+        } else return "set";
     }
 
     @NotNull
     public static List<String> convertVariableToGetters(@NotNull String var) {
-        String suffix = var.substring(0, 1)
-                .toUpperCase() + var.substring(1);
-        return Arrays.asList("get" + suffix, "is" + suffix);
+        if (!"".equals(var)) {
+            String suffix = var.substring(0, 1)
+                    .toUpperCase() + var.substring(1);
+            return Arrays.asList("get" + suffix, "is" + suffix);
+        } else return Collections.emptyList();
     }
 
     @NotNull
