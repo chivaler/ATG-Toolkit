@@ -1,22 +1,13 @@
 <html>
 <body>
 <p>
-    Reports when components with lower <i>scope</i> are injected into component with a wider <i>scope</i>.<br>
+    Reports when <i>setter method</i> for given property cannot be resolved against components' class.<br>
     <i>Report could be false positive if the final class of the component wasn't detected properly considering layers
         priority</i>
 </p>
 <p>
-    For example component with:
-    <code><pre>
-    $scope=request
-    </pre>
-    </code>
-
-    should <b>not</b> be injected into component with:
-    <code><pre>
-    $scope=global
-    </pre>
-    </code>
+    For example, if property <i>loggingDebug</i> is listed in properties file<br>
+    then class should have public <i>setLoggingDebug</i> method or extends from GenericService to have inherited one
 </p>
 </body>
 </html>

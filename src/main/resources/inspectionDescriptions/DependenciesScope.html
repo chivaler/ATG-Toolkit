@@ -2,14 +2,15 @@
 <body>
 <p>
     Reports when components with lower <i>scope</i> are injected into component with a wider <i>scope</i>.<br>
-    Scope of the current component should be decreased, or dependency's scope - increased
+    <i>Report could be false positive if the final class of the component wasn't detected properly considering layers
+        priority</i>
 </p>
 <p>
     For example component with:
     <code><pre>
     $scope=request
     </pre></code>
-    should <b>not</b> be injected into component with:
+    should <i>not</i> be injected into component with:
     <code><pre>
     $scope=global
     </pre></code>
