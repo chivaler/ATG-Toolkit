@@ -23,7 +23,7 @@ public class Constants {
     public static final String FACET_STRING_ID = "AtgModuleConfiguration"; //don't change this in future releases
     public static final String FACET_PRESENTABLE_NAME = "ATG Facet"; //don't change this in future releases
 
-    public static final Pattern SUSPECTED_COMPONENT_NAME_REGEX = Pattern.compile("(?<=(^|\\s))/[^,=\\\\\\s]+");
+    public static final Pattern SUSPECTED_COMPONENT_NAME_REGEX = Pattern.compile("(?<=(^|\\s|=|,))/[^,=\\\\\\s]+");
     public static final String DEFAULT_ITEM_DESCRIPTOR_CLASS = "atg.adapter.gsa.GSAPropertyDescriptor";
     public static final List<String> IGNORED_ATTRIBUTES_NAMES_FOR_DESCRIPTOR = ImmutableList.of("uiwritable", "uiqueryable", "resourceBundle", "deployable", "propertySortPriority", "references");
     public static final String WEB_HELP_URL = "https://github.com/chivaler/ATG-Toolkit/wiki/";
