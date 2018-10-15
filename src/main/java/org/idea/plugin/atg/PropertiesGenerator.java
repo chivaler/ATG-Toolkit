@@ -29,6 +29,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PropertiesGenerator {
 
@@ -88,7 +90,11 @@ public class PropertiesGenerator {
         Function<PsiMethod, String> populatePropertiesWithSuggestedComponents = psiMethod -> {
             String variableName = AtgComponentUtil.convertSetterToVariableName(psiMethod);
             PsiClass dependencyClass = AtgComponentUtil.getPsiClassForSetterMethod(psiMethod);
-            Collection<String> possibleComponents = AtgComponentUtil.suggestComponentsNamesByClass(dependencyClass);
+            Collection<String> possibleComponents = AtgComponentUtil.suggestComponentsByClassWithInheritors(dependencyClass).stream()
+                    .map(AtgComponentUtil::getComponentCanonicalName)
+                    .flatMap(o -> o.map(Stream::of).orElseGet(Stream::empty))
+                    .distinct()
+                    .collect(Collectors.toList());
             if (possibleComponents.size() == 1) {
                 return variableName + "=" + possibleComponents.iterator().next();
             }
