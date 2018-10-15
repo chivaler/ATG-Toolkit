@@ -66,7 +66,7 @@ public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
         String configRootPatters = configPatternsField.getText().replaceAll("\\s", "");
         configPatternsField.setText(configRootPatters);
         String configLayerRootPatters = configLayersPatternsField.getText().replaceAll("\\s", "");
-        configPatternsField.setText(configLayerRootPatters);
+        configLayersPatternsField.setText(configLayerRootPatters);
 
         atgToolkitConfig.setConfigRootsPatterns(configRootPatters);
         atgToolkitConfig.setConfigLayerRootsPatterns(configLayerRootPatters);
