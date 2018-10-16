@@ -66,9 +66,10 @@ public class AtgConfigHelper {
     }
 
     @NotNull
-    public static Map<VirtualFile, String> detectWebRootsForModule(ModifiableRootModel model) {
+    public static Map<VirtualFile, String> detectWebRootsForModule(@NotNull ModifiableRootModel model) {
         return Arrays.stream(model.getContentEntries())
                 .map(ContentEntry::getFile)
+                .filter(Objects::nonNull)
                 .map(f -> AtgConfigHelper.collectWebRoots(f, model.getProject()).entrySet())
                 .flatMap(Set::stream)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -76,7 +77,7 @@ public class AtgConfigHelper {
     }
 
 
-    private static Map<VirtualFile, String> collectWebRoots(final VirtualFile contentEntryRoot, final Project project) {
+    private static Map<VirtualFile, String> collectWebRoots(@NotNull final VirtualFile contentEntryRoot,@NotNull final Project project) {
         Map<VirtualFile, String> result = new HashMap<>();
         VfsUtilCore.visitChildrenRecursively(contentEntryRoot, new VirtualFileVisitor() {
             @Override
