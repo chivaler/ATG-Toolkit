@@ -22,11 +22,13 @@ public class AtgComponentJavaLineMarkerProvider extends RelatedItemLineMarkerPro
                 AtgComponentUtil.isApplicableToHaveComponents((PsiClass) element.getParent())) {
             String className = ((PsiClass) element.getParent()).getQualifiedName();
             Collection<PropertiesFileImpl> applicableComponents = AtgComponentUtil.suggestComponentsByClass((PsiClass) element.getParent());
-            NavigationGutterIconBuilder<PsiElement> builder =
-                    NavigationGutterIconBuilder.create(Constants.Icons.COMPONENT_ICON).
-                            setTargets(applicableComponents).
-                            setTooltipText(AtgToolkitBundle.message("goto.component.from.class.description", className));
-            result.add(builder.createLineMarkerInfo(element));
+            if (!applicableComponents.isEmpty()) {
+                NavigationGutterIconBuilder<PsiElement> builder =
+                        NavigationGutterIconBuilder.create(Constants.Icons.COMPONENT_ICON).
+                                setTargets(applicableComponents).
+                                setTooltipText(AtgToolkitBundle.message("goto.component.from.class.description", className));
+                result.add(builder.createLineMarkerInfo(element));
+            }
         }
     }
 }
