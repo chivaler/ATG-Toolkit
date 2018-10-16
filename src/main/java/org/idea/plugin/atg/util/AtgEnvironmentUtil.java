@@ -3,6 +3,8 @@ package org.idea.plugin.atg.util;
 import com.intellij.facet.Facet;
 import com.intellij.facet.FacetManager;
 import com.intellij.facet.ProjectFacetManager;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PathMacros;
@@ -51,36 +53,48 @@ public class AtgEnvironmentUtil {
         moduleAliases = new HashMap<>();
         String macroAtgHome = PathMacros.getInstance().getValue(Constants.ATG_HOME);
         String atgHome = macroAtgHome != null ? macroAtgHome : System.getenv(Constants.ATG_HOME);
-        VirtualFile atgHomeVirtualDir = StandardFileSystems.local().findFileByPath(atgHome);
-        if (atgHomeVirtualDir != null) {
-            for (VirtualFile rootChild : atgHomeVirtualDir.getChildren()) {
-                if (rootChild.isDirectory()) {
-                    VirtualFile metaInfFolder = rootChild.findChild("META-INF");
-                    if (metaInfFolder != null) {
-                        VirtualFile manifestFile = metaInfFolder.findChild("MANIFEST.MF");
-                        PsiFile manifestPsiFile = null;
-                        if (manifestFile != null) {
-                            manifestPsiFile = PsiManager.getInstance(project).findFile(manifestFile);
-                        }
-                        if (manifestPsiFile instanceof ManifestFile) {
-                            String relativeModulePath = VfsUtilCore.getRelativeLocation(rootChild, atgHomeVirtualDir);
-                            if (relativeModulePath != null) {
-                                String moduleName = relativeModulePath.replace("/", ".");
-                                ManifestFile manifestPsiFileImpl = (ManifestFile) manifestPsiFile;
-                                Header atgInstallUnit = manifestPsiFileImpl.getHeader(Constants.Keywords.Manifest.ATG_INSTALL_UNIT);
-                                if (atgInstallUnit != null && atgInstallUnit.getHeaderValue() != null) {
-                                    String atgInstallUnitStr = atgInstallUnit.getHeaderValue().getUnwrappedText();
-                                    if (StringUtils.isNotBlank(atgInstallUnitStr)) {
-                                        moduleAliases.put(atgInstallUnitStr, moduleName);
+        if (StringUtils.isNotBlank(atgHome)) {
+            VirtualFile atgHomeVirtualDir = StandardFileSystems.local().findFileByPath(atgHome);
+            if (atgHomeVirtualDir != null) {
+                for (VirtualFile rootChild : atgHomeVirtualDir.getChildren()) {
+                    if (rootChild.isDirectory()) {
+                        VirtualFile metaInfFolder = rootChild.findChild("META-INF");
+                        if (metaInfFolder != null) {
+                            VirtualFile manifestFile = metaInfFolder.findChild("MANIFEST.MF");
+                            PsiFile manifestPsiFile = null;
+                            if (manifestFile != null) {
+                                manifestPsiFile = PsiManager.getInstance(project).findFile(manifestFile);
+                            }
+                            if (manifestPsiFile instanceof ManifestFile) {
+                                String relativeModulePath = VfsUtilCore.getRelativeLocation(rootChild, atgHomeVirtualDir);
+                                if (relativeModulePath != null) {
+                                    String moduleName = relativeModulePath.replace("/", ".");
+                                    ManifestFile manifestPsiFileImpl = (ManifestFile) manifestPsiFile;
+                                    Header atgInstallUnit = manifestPsiFileImpl.getHeader(Constants.Keywords.Manifest.ATG_INSTALL_UNIT);
+                                    if (atgInstallUnit != null && atgInstallUnit.getHeaderValue() != null) {
+                                        String atgInstallUnitStr = atgInstallUnit.getHeaderValue().getUnwrappedText();
+                                        if (StringUtils.isNotBlank(atgInstallUnitStr)) {
+                                            moduleAliases.put(atgInstallUnitStr, moduleName);
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
+            } else {
+                LOG.warn("ATG_HOME folder wasn't found");
+                new Notification(Constants.NOTIFICATION_GROUP_ID,
+                        AtgToolkitBundle.message("inspection.atgHome.title"),
+                        AtgToolkitBundle.message("inspection.atgHome.wrong.text", atgHome),
+                        NotificationType.ERROR).notify(project);
             }
         } else {
-            LOG.warn("ATG_HOME folder wasn't found");
+            LOG.warn("ATG_HOME path variable isn't set");
+            new Notification(Constants.NOTIFICATION_GROUP_ID,
+                    AtgToolkitBundle.message("inspection.atgHome.title"),
+                    AtgToolkitBundle.message("inspection.atgHome.notSet.text"),
+                    NotificationType.ERROR).notify(project);
         }
     }
 
@@ -90,7 +104,7 @@ public class AtgEnvironmentUtil {
         String atgHome = macroAtgHome != null ? macroAtgHome : System.getenv(Constants.ATG_HOME);
 
         String atgModuleRelativePath = atgModuleName.replace('.', '/');
-        String atgModuleMostParent = atgModuleName.contains(".") ? atgModuleName.substring(0, atgModuleName.indexOf(".")) : atgModuleName;
+        String atgModuleMostParent = atgModuleName.contains(".") ? atgModuleName.substring(0, atgModuleName.indexOf('.')) : atgModuleName;
         Optional<String> first = moduleAliases.entrySet().stream()
                 .filter(a -> atgModuleMostParent.equals(a.getKey()))
                 .map(Map.Entry::getValue)
@@ -251,7 +265,7 @@ public class AtgEnvironmentUtil {
         }
     }
 
-    @Nullable
+    @NotNull
     public static Library getOrCreateLibrary(@NotNull String atgModuleName, @NotNull List<VirtualFile> jarFiles, @NotNull LibraryTable.ModifiableModel projectLibraryModifiableModel, @NotNull String prefix) {
         String libraryName = prefix + atgModuleName;
         Library existingLibrary = projectLibraryModifiableModel.getLibraryByName(libraryName);

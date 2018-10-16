@@ -120,7 +120,6 @@ public class ComponentPropertiesCompletionContributor extends CompletionContribu
                                     .flatMap(Collection::stream)
                                     .filter(m -> AtgComponentUtil.getPsiClassForSetterMethod(m) != null)
                                     .filter(m -> variableClass.isEquivalentTo(AtgComponentUtil.getPsiClassForSetterMethod(m)) || AtgComponentUtil.getPsiClassForSetterMethod(m).isInheritorDeep(variableClass, null))
-
                                     .distinct()
                                     .map(m -> new AtgPropertyLookupElement(m, componentName + "." + AtgComponentUtil.convertSetterToVariableName(m)))
                                     .forEach(result::addElement);
