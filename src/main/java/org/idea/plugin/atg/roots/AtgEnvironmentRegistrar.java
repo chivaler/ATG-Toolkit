@@ -5,7 +5,6 @@ import com.intellij.notification.NotificationType;
 import com.intellij.openapi.application.PathMacros;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.io.FileUtil;
 import org.apache.commons.lang.StringUtils;
 import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.Constants;
@@ -36,14 +35,6 @@ public class AtgEnvironmentRegistrar implements ProjectComponent {
                         NotificationType.INFORMATION).notify(project);
             }
 
-        } else {
-            if (!FileUtil.pathsEqual(systemAtgHome, atgHomeMacroValue)) {
-                new Notification(Constants.NOTIFICATION_GROUP_ID,
-                        AtgToolkitBundle.message("inspection.atgHome.title"),
-                        AtgToolkitBundle.message("inspection.atgHome.differs.text"),
-                        NotificationType.INFORMATION).notify(project);
-            }
         }
-
     }
 }
