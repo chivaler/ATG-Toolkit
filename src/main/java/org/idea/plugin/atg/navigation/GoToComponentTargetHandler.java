@@ -43,7 +43,7 @@ public class GoToComponentTargetHandler extends GotoTargetHandler {
                     .filter(AtgComponentUtil::isApplicableToHaveComponents)
                     .findFirst();
             if (srcClass.isPresent()) {
-                List<PsiElement> candidates = new ArrayList<>(AtgComponentUtil.suggestComponentsByClass(srcClass.get()));
+                List<PsiElement> candidates = new ArrayList<>(AtgComponentUtil.suggestComponentsByClasses(Collections.singleton(srcClass.get()), srcClass.get().getProject()));
                 List<AdditionalAction> actions = Collections.singletonList(new AdditionalAction() {
                     @NotNull
                     @Override
@@ -64,7 +64,7 @@ public class GoToComponentTargetHandler extends GotoTargetHandler {
                 return new GotoData(srcClass.get(), PsiUtilCore.toPsiElementArray(candidates), actions);
             }
         } else if (file instanceof PropertiesFileImpl) {
-            Optional<String> componentName = AtgComponentUtil.getComponentCanonicalName((PropertiesFile) file);
+            Optional<String> componentName = AtgComponentUtil.getComponentCanonicalName((PropertiesFileImpl) file);
             if (componentName.isPresent()) {
                 List<PsiElement> candidates = new ArrayList<>();
                 if (AtgToolkitConfig.getInstance(file.getProject()).showReferencesOnComponentInGoTo) {
@@ -72,7 +72,7 @@ public class GoToComponentTargetHandler extends GotoTargetHandler {
                     candidates.addAll(ReferencesSearch.search(file, scope, true).findAll().stream().map(PsiReference::getElement).collect(Collectors.toList()));
                 }
                 if (AtgToolkitConfig.getInstance(file.getProject()).showOverridesOfComponentInGoTo) {
-                    Collection<PropertiesFileImpl> componentsWithSameName = AtgComponentUtil.getApplicableComponentsByName(componentName.get(), null, file.getProject());
+                    Collection<PropertiesFileImpl> componentsWithSameName = AtgComponentUtil.getApplicableComponentsByName(componentName.get(), file.getProject());
                     componentsWithSameName.remove(file);
                     candidates.addAll(componentsWithSameName);
                 }
@@ -107,8 +107,8 @@ public class GoToComponentTargetHandler extends GotoTargetHandler {
     @Override
     protected String getChooserTitle(@NotNull PsiElement sourceElement, String name, int length, boolean finished) {
         String suffix = finished ? "" : " so far";
-        if (sourceElement instanceof PropertiesFile) {
-            String componentName = AtgComponentUtil.getComponentCanonicalName((PropertiesFile) sourceElement).orElse(name);
+        if (sourceElement instanceof PropertiesFileImpl) {
+            String componentName = AtgComponentUtil.getComponentCanonicalName((PropertiesFileImpl) sourceElement).orElse(name);
             return AtgToolkitBundle.message("goto.component.chooserTitle.from.component.subject", componentName, length, suffix);
         } else if (sourceElement instanceof XmlFile) {
             String componentName = AtgComponentUtil.getXmlRelativePath((XmlFile) sourceElement).orElse(name);
@@ -148,12 +148,12 @@ public class GoToComponentTargetHandler extends GotoTargetHandler {
     @Override
     protected Comparator<PsiElement> createComparator(@NotNull GotoData gotoData) {
         return new Comparator<PsiElement>() {
-            private final String sourceComponentName = (gotoData.source instanceof PropertiesFile) ? AtgComponentUtil.getComponentCanonicalName((PropertiesFile) gotoData.source).orElse(null) : null;
+            private final String sourceComponentName = (gotoData.source instanceof PropertiesFile) ? AtgComponentUtil.getComponentCanonicalName((PropertiesFileImpl) gotoData.source).orElse(null) : null;
 
             @Override
             public int compare(PsiElement firstElement, PsiElement secondElement) {
-                PropertiesFile first = PsiTreeUtil.getParentOfType(firstElement, PropertiesFileImpl.class, false);
-                PropertiesFile second = PsiTreeUtil.getParentOfType(secondElement, PropertiesFileImpl.class, false);
+                PropertiesFileImpl first = PsiTreeUtil.getParentOfType(firstElement, PropertiesFileImpl.class, false);
+                PropertiesFileImpl second = PsiTreeUtil.getParentOfType(secondElement, PropertiesFileImpl.class, false);
 
                 if (first == null && second == null) return 0;
                 if (first == null && second != null) return 1;

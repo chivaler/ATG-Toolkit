@@ -57,7 +57,7 @@ public class DependenciesTypesInspection extends PropertiesInspectionBase {
                                     : dependencyStr;
                             String dependencyField = dependencyStr.contains(".") ? dependencyStr.substring(dependencyStr.indexOf('.') + 1) : "";
 
-                            Collection<PropertiesFileImpl> dependencyLayers = AtgComponentUtil.getApplicableComponentsByName(dependencyComponentName, null, holder.getProject());
+                            Collection<PropertiesFileImpl> dependencyLayers = AtgComponentUtil.getApplicableComponentsByName(dependencyComponentName, holder.getProject());
                             if (!dependencyLayers.isEmpty()) {
                                 PropertiesFileImpl dependency = dependencyLayers.iterator().next();
                                 JvmType jvmTypeSetterMethod = AtgComponentUtil.getJvmTypeForSetterMethod(setterForProperty.get());

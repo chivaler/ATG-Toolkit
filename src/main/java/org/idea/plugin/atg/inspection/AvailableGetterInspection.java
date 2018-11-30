@@ -38,7 +38,7 @@ public class AvailableGetterInspection extends PropertiesInspectionBase {
                             int start = matcher.start(0) + indexOfDot + 1;
                             String linkedPropertyName = beanName.substring(indexOfDot + 1);
                             beanName = beanName.contains(".") ? beanName.substring(0, indexOfDot) : value;
-                            Collection<PropertiesFileImpl> dependencyLayers = AtgComponentUtil.getApplicableComponentsByName(beanName, null, holder.getProject());
+                            Collection<PropertiesFileImpl> dependencyLayers = AtgComponentUtil.getApplicableComponentsByName(beanName, holder.getProject());
                             if (!dependencyLayers.isEmpty()) {
                                 PropertiesFileImpl dependency = dependencyLayers.iterator().next();
                                 Optional<PsiClass> dependencyClass = AtgComponentUtil.getComponentClass(dependency);

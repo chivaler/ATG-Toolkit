@@ -115,7 +115,7 @@ public class PropertiesGenerator {
         Function<PsiMethod, String> populatePropertiesWithSuggestedComponents = psiMethod -> {
             String variableName = AtgComponentUtil.convertSetterToVariableName(psiMethod);
             PsiClass dependencyClass = AtgComponentUtil.getPsiClassForSetterMethod(psiMethod);
-            Collection<String> possibleComponents = AtgComponentUtil.suggestComponentsByClassWithInheritors(dependencyClass).stream()
+            Collection<String> possibleComponents = AtgComponentUtil.   suggestComponentsByClassWithInheritors(dependencyClass).stream()
                     .map(AtgComponentUtil::getComponentCanonicalName)
                     .flatMap(o -> o.map(Stream::of).orElseGet(Stream::empty))
                     .distinct()

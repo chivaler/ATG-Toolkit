@@ -3,7 +3,6 @@ package org.idea.plugin.atg.gutter;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
-import com.intellij.lang.properties.psi.PropertiesFile;
 import com.intellij.lang.properties.psi.PropertiesList;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.psi.PsiElement;
@@ -23,9 +22,9 @@ public class AtgPropertiesLayersLineMarkerProvider extends RelatedItemLineMarker
         if (element instanceof PropertiesList) {
             PsiFile psiFile = element.getContainingFile();
             if (psiFile instanceof PropertiesFileImpl) {
-                Optional<String> componentName = AtgComponentUtil.getComponentCanonicalName((PropertiesFile) psiFile);
+                Optional<String> componentName = AtgComponentUtil.getComponentCanonicalName((PropertiesFileImpl) psiFile);
                 if (componentName.isPresent()) {
-                    Collection<PropertiesFileImpl> componentsWithSameName = AtgComponentUtil.getApplicableComponentsByName(componentName.get(), null, element.getProject());
+                    Collection<PropertiesFileImpl> componentsWithSameName = AtgComponentUtil.getApplicableComponentsByName(componentName.get(), element.getProject());
                     componentsWithSameName.remove(psiFile);
                     if (!componentsWithSameName.isEmpty()) {
                         NavigationGutterIconBuilder<PsiElement> builder =

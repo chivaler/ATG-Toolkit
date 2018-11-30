@@ -7,7 +7,6 @@ import com.intellij.lang.jvm.JvmParameter;
 import com.intellij.lang.jvm.types.JvmType;
 import com.intellij.lang.properties.IProperty;
 import com.intellij.lang.properties.PropertiesImplUtil;
-import com.intellij.lang.properties.psi.PropertiesFile;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.lang.properties.psi.impl.PropertyImpl;
 import com.intellij.openapi.module.Module;
@@ -27,10 +26,14 @@ import com.intellij.psi.impl.source.xml.XmlFileImpl;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.ClassInheritorsSearch;
 import com.intellij.psi.xml.XmlFile;
+import com.intellij.testFramework.LightVirtualFile;
+import com.intellij.util.indexing.FileBasedIndex;
 import org.apache.commons.lang.StringUtils;
+import org.fest.util.Sets;
 import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.config.AtgConfigHelper;
 import org.idea.plugin.atg.config.AtgToolkitConfig;
+import org.idea.plugin.atg.index.AtgComponentsIndexExtension;
 import org.idea.plugin.atg.module.AtgModuleFacet;
 import org.idea.plugin.atg.module.AtgModuleFacetConfiguration;
 import org.jetbrains.annotations.NotNull;
@@ -57,8 +60,9 @@ public class AtgComponentUtil {
     public static Optional<String> getDerivedProperty(@NotNull PropertiesFileImpl propertyFile,
                                                       @NotNull String propertyName,
                                                       boolean searchInAllLayers,
-                                                      @NotNull List<PropertiesFile> resolvedFiles) {
+                                                      @NotNull List<PropertiesFileImpl> resolvedFiles) {
         //TODO after layer sequence is done choose appropriate component, or combined
+        //TODO use RecursionManager.doPreventingRecursion(method, true, () -> {});
         resolvedFiles.add(propertyFile);
         Optional<String> componentName = getComponentCanonicalName(propertyFile);
         if (componentName.isPresent()) {
@@ -67,7 +71,7 @@ public class AtgComponentUtil {
                 return Optional.of(propertyClassName.getValue());
             } else {
                 Collection<PropertiesFileImpl> applicableLayers = searchInAllLayers
-                        ? getApplicableComponentsByName(componentName.get(), null, propertyFile.getProject())
+                        ? getApplicableComponentsByName(componentName.get(), propertyFile.getProject())
                         : Collections.emptyList();
 
                 Optional<String> otherLayerDefined = applicableLayers.stream()
@@ -87,7 +91,7 @@ public class AtgComponentUtil {
                         .filter(Objects::nonNull)
                         .map(IProperty::getValue)
                         .filter(StringUtils::isNotBlank)
-                        .map(p -> getApplicableComponentsByName(p, null, propertyFile.getProject()))
+                        .map(p -> getApplicableComponentsByName(p, propertyFile.getProject()))
                         .flatMap(Collection::stream)
                         .filter(p -> !resolvedFiles.contains(p))
                         .map(p -> getDerivedProperty(p, propertyName, false, resolvedFiles))
@@ -126,6 +130,7 @@ public class AtgComponentUtil {
     }
 
     @NotNull
+    @Deprecated
     public static Collection<VirtualFile> getApplicableConfigRoots(@Nullable Module module,
                                                                    @NotNull Project project,
                                                                    boolean includeConfigLayers) {
@@ -169,13 +174,9 @@ public class AtgComponentUtil {
 
     @NotNull
     public static Collection<PropertiesFileImpl> getApplicableComponentsByName(@NotNull String componentName,
-                                                                               @Nullable Module module,
                                                                                @NotNull Project project) {
-        return getApplicableConfigRoots(module, project, false).stream()
-                .filter(Objects::nonNull)
-                .filter(VirtualFile::isDirectory)
-                .map(root -> VfsUtilCore.findRelativeFile(componentName + ".properties", root))
-                .filter(Objects::nonNull)
+        return FileBasedIndex.getInstance().getContainingFiles(AtgComponentsIndexExtension.NAME,
+                componentName, GlobalSearchScope.allScope(project)).stream()
                 .filter(VirtualFile::exists)
                 .map(virtualFile -> PsiManager.getInstance(project)
                         .findFile(virtualFile))
@@ -201,12 +202,19 @@ public class AtgComponentUtil {
     }
 
     @NotNull
-    public static Optional<String> getComponentCanonicalName(@NotNull PropertiesFile file) {
-        VirtualFile virtualFile = file.getContainingFile().getOriginalFile().getVirtualFile();
-        if (virtualFile == null) return Optional.empty();
+    public static Optional<String> getComponentCanonicalName(@NotNull PropertiesFileImpl file) {
+        VirtualFile virtualFile = file.getViewProvider().getVirtualFile();
+        return getComponentCanonicalName(virtualFile, file.getProject());
+    }
+
+    @NotNull
+    public static Optional<String> getComponentCanonicalName(@NotNull VirtualFile supposedVirtualFile, @NotNull Project project) {
+        VirtualFile virtualFile = supposedVirtualFile instanceof LightVirtualFile ?
+                ((LightVirtualFile)supposedVirtualFile).getOriginalFile() :
+                supposedVirtualFile;
 
         if (virtualFile.getFileSystem() instanceof JarFileSystem) {
-            Optional<Library> libraryForFile = ProjectFileIndex.getInstance(file.getProject()).getOrderEntriesForFile(virtualFile).stream()
+            Optional<Library> libraryForFile = ProjectFileIndex.getInstance(project).getOrderEntriesForFile(virtualFile).stream()
                     .filter(LibraryOrderEntry.class::isInstance)
                     .map(f -> ((LibraryOrderEntry) f).getLibrary())
                     .filter(Objects::nonNull)
@@ -219,7 +227,6 @@ public class AtgComponentUtil {
             }
         }
 
-        Project project = file.getProject();
         Module module = ModuleUtilCore.findModuleForFile(virtualFile, project);
         if (module != null) {
             AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
@@ -302,21 +309,8 @@ public class AtgComponentUtil {
         return parametersList.length > 0 ? parametersList[0].getType() : null;
     }
 
-
     @NotNull
-    public static Collection<String> suggestComponentsNamesByClass(@Nullable PsiClass psiClass) {
-        if (psiClass == null) {
-            return Collections.emptyList();
-        }
-        return suggestComponentsByClass(psiClass).stream()
-                .map(AtgComponentUtil::getComponentCanonicalName)
-                .flatMap(o -> o.map(Stream::of).orElseGet(Stream::empty))
-                .distinct()
-                .collect(Collectors.toList());
-    }
-
-    @NotNull
-    public static List<PropertiesFileImpl> suggestComponentsByClassWithInheritors(@Nullable PsiClass srcClass) {
+    public static Collection<String> suggestComponentNamesByClassWithInheritors(@Nullable PsiClass srcClass) {
         if (srcClass == null) {
             return Collections.emptyList();
         }
@@ -324,62 +318,65 @@ public class AtgComponentUtil {
         Collection<PsiClass> classAndInheritors = ClassInheritorsSearch.search(srcClass, scope, true, true, false)
                 .findAll();
         classAndInheritors.add(srcClass);
-        return classAndInheritors
+        return suggestComponentNamesByClass(classAndInheritors, srcClass.getProject());
+    }
+
+    @NotNull
+    public static List<PropertiesFileImpl> suggestComponentsByClassWithInheritors(@Nullable PsiClass srcClass) {
+        if (srcClass == null) {
+            return Collections.emptyList();
+        }
+        return suggestComponentNamesByClassWithInheritors(srcClass)
                 .stream()
-                .map(AtgComponentUtil::suggestComponentsByClass)
+                .map(s-> getApplicableComponentsByName(s, srcClass.getProject()))
                 .flatMap(Collection::stream)
-                .distinct()
                 .collect(Collectors.toList());
     }
 
     @NotNull
-    public static Collection<PropertiesFileImpl> suggestComponentsByClass(@Nullable PsiClass srcClass) {
-        if (srcClass == null) {
-            return Collections.emptyList();
-        }
-        Project project = srcClass.getProject();
-        String className = srcClass.getQualifiedName();
-        if (className == null || StringUtils.isBlank(className)) {
-            return Collections.emptyList();
-        }
-
-        Set<PropertiesFileImpl> originalPropertiesFiles = PropertiesImplUtil.findPropertiesByKey(project, Constants.Keywords.Properties.CLASS_PROPERTY)
-                .stream()
-                .filter(Objects::nonNull)
-                .filter(p -> className.equals(p.getValue()))
-                .map(IProperty::getPropertiesFile)
-                .filter(PropertiesFileImpl.class::isInstance)
-                .map(p -> (PropertiesFileImpl) p)
-                .collect(Collectors.toSet());
-
-        Set<PropertiesFileImpl> result = originalPropertiesFiles.stream()
-                .map(AtgComponentUtil::getComponentCanonicalName)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .map(name -> getApplicableComponentsByName(name, null, project))
+    public static Collection<PropertiesFileImpl> suggestComponentsByClasses(@NotNull Collection<PsiClass> srcClasses, @NotNull Project project) {
+        return suggestComponentNamesByClass(srcClasses, project).stream()
+                .map(s-> getApplicableComponentsByName(s, project))
                 .flatMap(Collection::stream)
-                .collect(Collectors.toSet());
-        result.addAll(originalPropertiesFiles);
+                .collect(Collectors.toList());
+    }
 
-        PropertiesImplUtil.findPropertiesByKey(project, Constants.Keywords.Properties.BASED_ON_PROPERTY).stream()
-                .filter(Objects::nonNull)
-                .map(IProperty::getPropertiesFile)
-                .filter(f -> f.findPropertyByKey(Constants.Keywords.Properties.CLASS_PROPERTY) == null)
-                .filter(PropertiesFileImpl.class::isInstance)
-                .map(p -> (PropertiesFileImpl) p)
-                .filter(f -> className.equals(getComponentClassStr(f).orElse(null)))
-                .forEach(result::add);
+    @NotNull
+    public static Collection<String> suggestComponentNamesByClass(@NotNull Collection<PsiClass> srcClasses, @NotNull Project project) {
+        if (srcClasses.isEmpty()) {
+            return Collections.emptyList();
+        }
+        Collection<String> srcClassesStr = srcClasses.stream().map(PsiClass::getQualifiedName).collect(Collectors.toList());
+        FileBasedIndex fileBasedIndex = FileBasedIndex.getInstance();
+        GlobalSearchScope scope = GlobalSearchScope.allScope(project);
 
+        Set<String> result = Sets.newHashSet();
+        for (String componentName : fileBasedIndex.getAllKeys(AtgComponentsIndexExtension.NAME, project)) {
+//            fileBasedIndex.getValues(AtgComponentsIndexExtension.NAME, componentName, GlobalSearchScope.allScope(project)).stream()
+//                    .filter(componentWrapper -> srcClassesStr.contains(componentWrapper.getJavaClass()))
+//                    .findAny()
+//                    .ifPresent(c -> result.add(componentName));
+
+            fileBasedIndex.processValues(AtgComponentsIndexExtension.NAME, componentName, null, (file, componentWrapper) -> {
+                if (srcClassesStr.contains(componentWrapper.getJavaClass())) {
+                    result.add(componentName);
+                }
+                return true;
+            }, scope);
+        }
 
         return result;
     }
 
+    @Deprecated
     @NotNull
-    public static List<PropertiesFile> getAllComponents(@NotNull Project project) {
+    public static List<PropertiesFileImpl> getAllComponents(@NotNull Project project) {
         return PropertiesImplUtil.findPropertiesByKey(project, Constants.Keywords.Properties.CLASS_PROPERTY)
                 .stream()
                 .filter(Objects::nonNull)
                 .map(IProperty::getPropertiesFile)
+                .filter(PropertiesFileImpl.class::isInstance)
+                .map(p -> (PropertiesFileImpl)p)
                 .distinct()
                 .collect(Collectors.toList());
     }

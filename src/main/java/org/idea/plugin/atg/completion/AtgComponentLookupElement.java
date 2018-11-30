@@ -2,7 +2,7 @@ package org.idea.plugin.atg.completion;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
-import com.intellij.lang.properties.psi.PropertiesFile;
+import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.psi.PsiClass;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
@@ -10,10 +10,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Optional;
 
 public class AtgComponentLookupElement extends LookupElement {
-    private final PropertiesFile targetComponent;
+    private final PropertiesFileImpl targetComponent;
     private final String presentableName;
 
-    public AtgComponentLookupElement(@NotNull final PropertiesFile propertiesFile) {
+    public AtgComponentLookupElement(@NotNull final PropertiesFileImpl propertiesFile) {
         this.targetComponent = propertiesFile;
         this.presentableName = AtgComponentUtil.getComponentCanonicalName(targetComponent).orElse(targetComponent.getVirtualFile().getNameWithoutExtension());
     }

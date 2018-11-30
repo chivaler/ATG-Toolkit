@@ -33,10 +33,11 @@
             Icon on the gutter for Java class to navigate to components based on the class<br>
             Icon on the gutter for Properties and XMLs when another layers available<br>
             Inspections to verify presence of used classes, components, setters, getters and their types cast<br>
-        0.9 JSP References works in IDEA Ultimate
+        0.9 JSP References works in IDEA Ultimate<br>
         0.10 Removed the warning if ATG_HOME value differs from system one's
             Improved navigation in repository Xmls. Click on item-descriptor's name or property-name suggest all its overrides<br>
             Added warnings for ATG component create action if invoked in non-ATG module, or without configRoot set<br>
+        0.11 Increased performance by using of indexes
     ]]>
 
     </change-notes>
@@ -113,6 +114,8 @@
 
         <breadcrumbsInfoProvider implementation="org.idea.plugin.atg.breadcrumbs.AtgXmlLanguageBreadcrumbsInfoProvider"
                                  order="first"/>
+
+        <fileBasedIndex implementation="org.idea.plugin.atg.index.AtgComponentsIndexExtension"/>
 
         <facetType implementation="org.idea.plugin.atg.module.AtgModuleFacetType"/>
         <framework.detector implementation="org.idea.plugin.atg.framework.AtgFrameworkDetector"/>

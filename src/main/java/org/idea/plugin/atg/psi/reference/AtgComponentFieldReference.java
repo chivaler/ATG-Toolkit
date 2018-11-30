@@ -28,7 +28,7 @@ public class AtgComponentFieldReference extends PsiPolyVariantReferenceBase<PsiE
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
-        Collection<PropertiesFileImpl> applicableComponents = AtgComponentUtil.getApplicableComponentsByName(beanName, null, myElement.getProject());
+        Collection<PropertiesFileImpl> applicableComponents = AtgComponentUtil.getApplicableComponentsByName(beanName, myElement.getProject());
         return applicableComponents.stream()
                 .map(psiFile -> Lists.newArrayList(psiFile.findPropertyByKey(propertyKey), psiFile.findPropertyByKey(propertyKey + "^")))
                 .flatMap(Collection::stream)

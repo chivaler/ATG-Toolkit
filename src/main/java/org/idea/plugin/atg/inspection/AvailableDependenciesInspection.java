@@ -36,7 +36,7 @@ public class AvailableDependenciesInspection extends PropertiesInspectionBase {
                         String beanName = matcher.group(0);
                         int start = matcher.start(0);
                         beanName = beanName.contains(".") ? beanName.substring(0, beanName.indexOf('.')) : beanName;
-                        Collection<PropertiesFileImpl> dependencyLayers = AtgComponentUtil.getApplicableComponentsByName(beanName, null, holder.getProject());
+                        Collection<PropertiesFileImpl> dependencyLayers = AtgComponentUtil.getApplicableComponentsByName(beanName, holder.getProject());
                         if (dependencyLayers.isEmpty()) {
                             holder.registerProblem(element,
                                     new TextRange(start, start + beanName.length()),

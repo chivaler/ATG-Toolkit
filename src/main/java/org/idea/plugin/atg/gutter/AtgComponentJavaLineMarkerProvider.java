@@ -13,21 +13,24 @@ import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
+import java.util.Collections;
 
 public class AtgComponentJavaLineMarkerProvider extends RelatedItemLineMarkerProvider {
 
     @Override
     protected void collectNavigationMarkers(@NotNull PsiElement element, @NotNull Collection<? super RelatedItemLineMarkerInfo> result) {
-        if (element instanceof PsiIdentifier && element.getParent() instanceof PsiClass &&
-                AtgComponentUtil.isApplicableToHaveComponents((PsiClass) element.getParent())) {
-            String className = ((PsiClass) element.getParent()).getQualifiedName();
-            Collection<PropertiesFileImpl> applicableComponents = AtgComponentUtil.suggestComponentsByClass((PsiClass) element.getParent());
-            if (!applicableComponents.isEmpty()) {
-                NavigationGutterIconBuilder<PsiElement> builder =
-                        NavigationGutterIconBuilder.create(Constants.Icons.COMPONENT_ICON).
-                                setTargets(applicableComponents).
-                                setTooltipText(AtgToolkitBundle.message("goto.component.from.class.description", className));
-                result.add(builder.createLineMarkerInfo(element));
+        if (element instanceof PsiIdentifier && element.getParent() instanceof PsiClass) {
+            PsiClass srcClass = (PsiClass) element.getParent();
+            if (AtgComponentUtil.isApplicableToHaveComponents((PsiClass) element.getParent())) {
+                String className = srcClass.getQualifiedName();
+                Collection<PropertiesFileImpl> applicableComponents = AtgComponentUtil.suggestComponentsByClasses(Collections.singleton(srcClass), srcClass.getProject());
+                if (!applicableComponents.isEmpty()) {
+                    NavigationGutterIconBuilder<PsiElement> builder =
+                            NavigationGutterIconBuilder.create(Constants.Icons.COMPONENT_ICON).
+                                    setTargets(applicableComponents).
+                                    setTooltipText(AtgToolkitBundle.message("goto.component.from.class.description", className));
+                    result.add(builder.createLineMarkerInfo(element));
+                }
             }
         }
     }

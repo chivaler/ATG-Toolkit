@@ -1,7 +1,7 @@
 package org.idea.plugin.atg.navigation;
 
 import com.intellij.codeInsight.actions.BaseCodeInsightAction;
-import com.intellij.lang.properties.psi.PropertiesFile;
+import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.Presentation;
@@ -49,10 +49,10 @@ public class GoToComponentCodeAction extends BaseCodeInsightAction {
                 presentation.setDescription(AtgToolkitBundle.message("goto.component.from.class.description", srcClass.get().getQualifiedName()));
                 presentation.setEnabled(true);
             }
-        } else if (psiFile instanceof PropertiesFile) {
+        } else if (psiFile instanceof PropertiesFileImpl) {
             presentation.setText(AtgToolkitBundle.message("goto.component.from.component.text"));
             presentation.setDescription(AtgToolkitBundle.message("goto.component.from.component.description"));
-            Optional<String> componentName = AtgComponentUtil.getComponentCanonicalName((PropertiesFile) psiFile);
+            Optional<String> componentName = AtgComponentUtil.getComponentCanonicalName((PropertiesFileImpl) psiFile);
             if (componentName.isPresent() && (AtgToolkitConfig.getInstance(project).showReferencesOnComponentInGoTo || AtgToolkitConfig.getInstance(project).showOverridesOfComponentInGoTo)) {
                 presentation.setEnabled(true);
             }
