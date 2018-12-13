@@ -25,7 +25,7 @@ public class Constants {
 
     public static final Pattern SUSPECTED_COMPONENT_NAME_REGEX = Pattern.compile("(?<=(^|\\s|=|,))/[^,=\\\\\\s]+");
     public static final String DEFAULT_ITEM_DESCRIPTOR_CLASS = "atg.adapter.gsa.GSAPropertyDescriptor";
-    public static final List<String> IGNORED_ATTRIBUTES_NAMES_FOR_DESCRIPTOR = ImmutableList.of("uiwritable", "uiqueryable", "resourceBundle", "deployable", "propertySortPriority", "references");
+    public static final List<String> IGNORED_ATTRIBUTES_NAMES_FOR_DESCRIPTOR = ImmutableList.of("uiwritable", "uiqueryable", "resourceBundle", "deployable", "propertySortPriority", "references", "serialize", "useCodeForValue", "stringEnumProvider", "unique");
     public static final String WEB_HELP_URL = "https://github.com/chivaler/ATG-Toolkit/wiki/";
     public static final String ATG_LIBRARY_SEPARATOR = ":";
     public static final String ATG_CONFIG_LIBRARY_PREFIX = "ATGConfig" + ATG_LIBRARY_SEPARATOR;
@@ -65,6 +65,20 @@ public class Constants {
             public static final String ATG_REQUIRED = "ATG-Required";
             public static final String ATG_VERSION = "ATG-Version";
             public static final String ATG_INSTALL_UNIT = "ATG-Install-Unit";
+        }
+
+        public static class Repository {
+            public static final String ITEM_DESCRIPTOR = "item-descriptor";
+            public static final String NAME = "name";
+            public static final String PROPERTY = "property";
+            public static final String SUPER_TYPE = "super-type";
+            public static final String ATTRIBUTE = "attribute";
+            public static final String VALUE = "value";
+            public static final String BEAN = "bean";
+            public static final String PROPERTY_TYPE = "property-type";
+            public static final String COMPONENT_ITEM_TYPE = "component-item-type";
+            public static final String EDITOR_CLASS = "editor-class";
+            public static final String REPOSITORY = "repository";
         }
 
         public static class Properties {

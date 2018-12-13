@@ -2,7 +2,6 @@
     <id>org.idea.plugin.atg</id>
     <name>ATG Toolkit (Beta)</name>
     <id>atg-toolkit</id>
-    <version>0.9</version>
     <vendor email="chivaler@gmail.com">Igor Pidgurskyi</vendor>
 
     <description><![CDATA[
@@ -34,7 +33,9 @@
             Icon on the gutter for Java class to navigate to components based on the class<br>
             Icon on the gutter for Properties and XMLs when another layers available<br>
             Inspections to verify presence of used classes, components, setters, getters and their types cast<br>
-        0.9 JSP References works in IDEA Ultimate<br>
+        0.9 JSP References works in IDEA Ultimate
+        0.10 Removed the warning if ATG_HOME value differs from system one's
+            Improved navigation in repository Xmls. Click on item-descriptor's name or property-name suggest all its overrides<br>
     ]]>
 
     </change-notes>
