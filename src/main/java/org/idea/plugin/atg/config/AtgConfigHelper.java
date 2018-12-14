@@ -41,16 +41,16 @@ public class AtgConfigHelper {
 
     public static PsiDirectory getComponentConfigPsiDirectory(AtgModuleFacet atgModuleFacet, PsiPackage srcPackage) {
         PsiManager psiManager = srcPackage.getManager();
-        Iterator<VirtualFile> iterator = atgModuleFacet.getConfiguration().getConfigRoots().iterator();
-        if (iterator.hasNext()) {
-            String targetDirStr = iterator.next().getCanonicalPath();
-            if (targetDirStr != null) {
-                return WriteCommandAction.writeCommandAction(srcPackage.getProject())
-                        .withName(AtgToolkitBundle.message("create.directory.command"))
-                        .compute(() -> DirectoryUtil.mkdirs(psiManager, targetDirStr + "/" + srcPackage.getQualifiedName().replace('.', '/')));
-            }
-        }
+        Collection<VirtualFile> configRoots = atgModuleFacet.getConfiguration().getConfigRoots();
+        Collection<VirtualFile> configLayerRoots = atgModuleFacet.getConfiguration().getConfigLayerRoots().keySet();
+        VirtualFile targetDirVfile = configRoots.stream().findFirst().orElse(configLayerRoots.stream().findFirst().orElse(null));
 
+        if (targetDirVfile != null) {
+            String targetDirStr = targetDirVfile.getCanonicalPath();
+            return WriteCommandAction.writeCommandAction(srcPackage.getProject())
+                    .withName(AtgToolkitBundle.message("create.directory.command"))
+                    .compute(() -> DirectoryUtil.mkdirs(psiManager, targetDirStr + "/" + srcPackage.getQualifiedName().replace('.', '/')));
+        }
         return null;
     }
 

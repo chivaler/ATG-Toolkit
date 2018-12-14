@@ -36,6 +36,7 @@
         0.9 JSP References works in IDEA Ultimate
         0.10 Removed the warning if ATG_HOME value differs from system one's
             Improved navigation in repository Xmls. Click on item-descriptor's name or property-name suggest all its overrides<br>
+            Added warnings for ATG component create action if invoked in non-ATG module, or without configRoot set<br>
     ]]>
 
     </change-notes>

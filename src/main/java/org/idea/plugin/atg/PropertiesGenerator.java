@@ -15,7 +15,6 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.source.PostprocessReformattingAspect;
@@ -23,8 +22,9 @@ import com.intellij.util.IncorrectOperationException;
 import org.idea.plugin.atg.config.AtgConfigHelper;
 import org.idea.plugin.atg.module.AtgModuleFacet;
 import org.idea.plugin.atg.util.AtgComponentUtil;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
@@ -37,34 +37,59 @@ public class PropertiesGenerator {
     private PropertiesGenerator() {
     }
 
-    public static void generatePropertiesFile(final PsiClass srcClass) {
+    public static void generatePropertiesFile(@NotNull final PsiClass srcClass) {
         Project project = srcClass.getProject();
         PsiDirectory srcDir = srcClass.getContainingFile().getContainingDirectory();
         PsiPackage srcPackage = JavaDirectoryService.getInstance().getPackage(srcDir);
         Module module = ModuleUtilCore.findModuleForFile(srcClass.getContainingFile());
-        if (module == null || srcPackage == null) return;
+
+        if (module == null) {
+            new Notification(Constants.NOTIFICATION_GROUP_ID,
+                    AtgToolkitBundle.message("intentions.create.component"),
+                    AtgToolkitBundle.message("intentions.create.component.moduleNotFound"),
+                    NotificationType.WARNING).notify(project);
+            return;
+        }
+
+        if (srcPackage == null) {
+            new Notification(Constants.NOTIFICATION_GROUP_ID,
+                    AtgToolkitBundle.message("intentions.create.component"),
+                    AtgToolkitBundle.message("intentions.create.component.packageNotFound"),
+                    NotificationType.WARNING).notify(project);
+            return;
+        }
 
         AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
-        if (atgFacet == null || atgFacet.getConfiguration().getConfigRoots().isEmpty()) return;
+        if (atgFacet == null) {
+            new Notification(Constants.NOTIFICATION_GROUP_ID,
+                    AtgToolkitBundle.message("intentions.create.component"),
+                    AtgToolkitBundle.message("intentions.create.component.moduleNotAtg", module.getName()),
+                    NotificationType.WARNING).notify(project);
+            return;
+        }
+
+        PsiDirectory targetDirectory = AtgConfigHelper.getComponentConfigPsiDirectory(atgFacet, srcPackage);
+        if (targetDirectory == null) {
+            new Notification(Constants.NOTIFICATION_GROUP_ID,
+                    AtgToolkitBundle.message("intentions.create.component"),
+                    AtgToolkitBundle.message("intentions.create.component.moduleHasNoRoots", module.getName()),
+                    NotificationType.WARNING).notify(project);
+            return;
+        }
 
         CommandProcessor.getInstance().executeCommand(project, () -> DumbService.getInstance(project).withAlternativeResolveEnabled(() ->
-                PropertiesGenerator.generatePropertiesFile(project, atgFacet, srcClass, srcPackage)), AtgToolkitBundle.message("intentions.create.component"), null);
+                PropertiesGenerator.generatePropertiesFile(project, targetDirectory, srcClass)), AtgToolkitBundle.message("intentions.create.component"), Constants.NOTIFICATION_GROUP_ID);
 
     }
 
-    @Nullable
-    public static PsiElement generatePropertiesFile(final Project project,
-                                                    final AtgModuleFacet moduleFacet,
-                                                    final PsiClass srcClass,
-                                                    final PsiPackage srcPackage) {
-        return PostprocessReformattingAspect.getInstance(project).postponeFormattingInside(
-                () -> ApplicationManager.getApplication().runWriteAction((Computable<PsiElement>) () -> {
-                    PsiFile targetClass = null;
+    private static void generatePropertiesFile(@NotNull final Project project,
+                                              @NotNull final PsiDirectory targetDirectory,
+                                              @NotNull final PsiClass srcClass) {
+        PostprocessReformattingAspect.getInstance(project).postponeFormattingInside(
+                () -> ApplicationManager.getApplication().runWriteAction(() -> {
                     try {
-                        PsiDirectory targetDirectory = AtgConfigHelper.getComponentConfigPsiDirectory(moduleFacet, srcPackage);
-
                         FileTemplateDescriptor fileTemplateDescriptor = new FileTemplateDescriptor("ATG Properties.properties");
-                        targetClass = createPropertyFileFromTemplate(fileTemplateDescriptor, targetDirectory, project, srcClass);
+                        PsiFile targetClass = createPropertyFileFromTemplate(fileTemplateDescriptor, targetDirectory, project, srcClass);
 
                         if (targetClass != null) {
                             IdeDocumentHistory.getInstance(project).includeCurrentPlaceAsChangePlace();
@@ -74,14 +99,14 @@ public class PropertiesGenerator {
                         new Notification(Constants.NOTIFICATION_GROUP_ID, AtgToolkitBundle.message("intentions.create.component.error"),
                                 e.getMessage(), NotificationType.ERROR).notify(project);
                     }
-                    return targetClass;
                 }));
     }
 
-    private static PsiFile createPropertyFileFromTemplate(final FileTemplateDescriptor fileTemplateDescriptor,
-                                                          final PsiDirectory targetDirectory,
-                                                          final Project project,
-                                                          final PsiClass srcClass) throws Exception {
+    @Nullable
+    private static PsiFile createPropertyFileFromTemplate(@NotNull final FileTemplateDescriptor fileTemplateDescriptor,
+                                                          @NotNull final PsiDirectory targetDirectory,
+                                                          @NotNull final Project project,
+                                                          @NotNull final PsiClass srcClass) throws Exception {
         String templateName = fileTemplateDescriptor.getFileName();
         FileTemplate fileTemplate = FileTemplateManager.getInstance(project).getCodeTemplate(templateName);
         fileTemplate.setReformatCode(false);
