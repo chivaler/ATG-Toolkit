@@ -5,6 +5,7 @@ import com.intellij.codeInsight.navigation.NavigationUtil;
 import com.intellij.icons.AllIcons;
 import com.intellij.lang.properties.psi.PropertiesFile;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.JarFileSystem;
@@ -20,6 +21,7 @@ import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.PropertiesGenerator;
 import org.idea.plugin.atg.config.AtgToolkitConfig;
+import org.idea.plugin.atg.index.AtgComponentsService;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -63,36 +65,40 @@ public class GoToComponentTargetHandler extends GotoTargetHandler {
                 });
                 return new GotoData(srcClass.get(), PsiUtilCore.toPsiElementArray(candidates), actions);
             }
-        } else if (file instanceof PropertiesFileImpl) {
-            Optional<String> componentName = AtgComponentUtil.getComponentCanonicalName((PropertiesFileImpl) file);
-            if (componentName.isPresent()) {
-                List<PsiElement> candidates = new ArrayList<>();
-                if (AtgToolkitConfig.getInstance(file.getProject()).showReferencesOnComponentInGoTo) {
-                    GlobalSearchScope scope = GlobalSearchScope.everythingScope(file.getProject());
-                    candidates.addAll(ReferencesSearch.search(file, scope, true).findAll().stream().map(PsiReference::getElement).collect(Collectors.toList()));
+        } else {
+            Project project = file.getProject();
+            if (file instanceof PropertiesFileImpl) {
+                Optional<String> componentName = AtgComponentUtil.getComponentCanonicalName((PropertiesFileImpl) file);
+                if (componentName.isPresent()) {
+                    AtgComponentsService componentsService = ServiceManager.getService(project, AtgComponentsService.class);
+                    List<PsiElement> candidates = new ArrayList<>();
+                    if (AtgToolkitConfig.getInstance(project).showReferencesOnComponentInGoTo) {
+                        GlobalSearchScope scope = GlobalSearchScope.everythingScope(project);
+                        candidates.addAll(ReferencesSearch.search(file, scope, true).findAll().stream().map(PsiReference::getElement).collect(Collectors.toList()));
+                    }
+                    if (AtgToolkitConfig.getInstance(project).showOverridesOfComponentInGoTo) {
+                        Collection<PropertiesFileImpl> componentsWithSameName = componentsService.getComponentsByName(componentName.get());
+                        componentsWithSameName.remove(file);
+                        candidates.addAll(componentsWithSameName);
+                    }
+                    return new GotoData(file, PsiUtilCore.toPsiElementArray(candidates), Collections.emptyList());
                 }
-                if (AtgToolkitConfig.getInstance(file.getProject()).showOverridesOfComponentInGoTo) {
-                    Collection<PropertiesFileImpl> componentsWithSameName = AtgComponentUtil.getApplicableComponentsByName(componentName.get(), file.getProject());
-                    componentsWithSameName.remove(file);
-                    candidates.addAll(componentsWithSameName);
+            } else if (file instanceof XmlFileImpl) {
+                Optional<String> xmlName = AtgComponentUtil.getXmlRelativePath((XmlFileImpl) file);
+                if (xmlName.isPresent()) {
+                    List<PsiElement> candidates = new ArrayList<>();
+                    if (AtgToolkitConfig.getInstance(project).showReferencesOnComponentInGoTo) {
+                        GlobalSearchScope scope = GlobalSearchScope.everythingScope(project);
+                        candidates.addAll(ReferencesSearch.search(file, scope, true).findAll().stream().map(PsiReference::getElement).collect(Collectors.toList()));
+                    }
+                    if (AtgToolkitConfig.getInstance(project).showOverridesOfComponentInGoTo) {
+                        candidates.addAll(AtgComponentUtil.getApplicableXmlsByName(xmlName.get(), project));
+                        candidates.remove(file);
+                    }
+                    return new GotoData(file, PsiUtilCore.toPsiElementArray(candidates), Collections.emptyList());
                 }
-                return new GotoData(file, PsiUtilCore.toPsiElementArray(candidates), Collections.emptyList());
-            }
-        } else if (file instanceof XmlFileImpl) {
-            Optional<String> xmlName = AtgComponentUtil.getXmlRelativePath((XmlFileImpl) file);
-            if (xmlName.isPresent()) {
-                List<PsiElement> candidates = new ArrayList<>();
-                if (AtgToolkitConfig.getInstance(file.getProject()).showReferencesOnComponentInGoTo) {
-                    GlobalSearchScope scope = GlobalSearchScope.everythingScope(file.getProject());
-                    candidates.addAll(ReferencesSearch.search(file, scope, true).findAll().stream().map(PsiReference::getElement).collect(Collectors.toList()));
-                }
-                if (AtgToolkitConfig.getInstance(file.getProject()).showOverridesOfComponentInGoTo) {
-                    candidates.addAll(AtgComponentUtil.getApplicableXmlsByName(xmlName.get(), file.getProject()));
-                    candidates.remove(file);
-                }
-                return new GotoData(file, PsiUtilCore.toPsiElementArray(candidates), Collections.emptyList());
-            }
 
+            }
         }
 
         return null;

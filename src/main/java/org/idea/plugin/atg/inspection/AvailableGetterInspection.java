@@ -4,10 +4,13 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.lang.properties.PropertiesInspectionBase;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.lang.properties.psi.impl.PropertyValueImpl;
+import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
 import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.Constants;
+import org.idea.plugin.atg.index.AtgComponentsService;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,7 +41,9 @@ public class AvailableGetterInspection extends PropertiesInspectionBase {
                             int start = matcher.start(0) + indexOfDot + 1;
                             String linkedPropertyName = beanName.substring(indexOfDot + 1);
                             beanName = beanName.contains(".") ? beanName.substring(0, indexOfDot) : value;
-                            Collection<PropertiesFileImpl> dependencyLayers = AtgComponentUtil.getApplicableComponentsByName(beanName, holder.getProject());
+                            Project project = holder.getProject();
+                            AtgComponentsService componentsService = ServiceManager.getService(project, AtgComponentsService.class);
+                            Collection<PropertiesFileImpl> dependencyLayers = componentsService.getComponentsByName(beanName);
                             if (!dependencyLayers.isEmpty()) {
                                 PropertiesFileImpl dependency = dependencyLayers.iterator().next();
                                 Optional<PsiClass> dependencyClass = AtgComponentUtil.getComponentClass(dependency);

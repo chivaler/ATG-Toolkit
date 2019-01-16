@@ -37,7 +37,7 @@
         0.10 Removed the warning if ATG_HOME value differs from system one's
             Improved navigation in repository Xmls. Click on item-descriptor's name or property-name suggest all its overrides<br>
             Added warnings for ATG component create action if invoked in non-ATG module, or without configRoot set<br>
-        0.11 Increased performance by using of indexes
+        0.11 Increased performance by using of indexes for retrieving components by name
     ]]>
 
     </change-notes>
@@ -57,6 +57,7 @@
         <projectConfigurable parentId="language" instance="org.idea.plugin.atg.config.AtgToolkitConfigurable"
                              displayName="ATG Toolkit"/>
         <projectService serviceImplementation="org.idea.plugin.atg.config.AtgToolkitConfig"/>
+        <projectService serviceImplementation="org.idea.plugin.atg.index.AtgComponentsService"/>
 
         <completion.contributor language="Properties"
                                 implementationClass="org.idea.plugin.atg.completion.ComponentPropertiesCompletionContributor"

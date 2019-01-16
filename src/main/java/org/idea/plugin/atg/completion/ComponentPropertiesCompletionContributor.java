@@ -9,12 +9,15 @@ import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.lang.properties.psi.impl.PropertyImpl;
 import com.intellij.lang.properties.psi.impl.PropertyKeyImpl;
 import com.intellij.lang.properties.psi.impl.PropertyValueImpl;
+import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.ProcessingContext;
 import org.apache.commons.lang.StringUtils;
 import org.idea.plugin.atg.Constants;
+import org.idea.plugin.atg.index.AtgComponentsService;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -104,9 +107,11 @@ public class ComponentPropertiesCompletionContributor extends CompletionContribu
                 String key = ((PropertyImpl) position).getKey();
                 if (key != null && key.endsWith("^")) {
                     String value = ((PropertyImpl) position).getValue();
+                    Project project = position.getProject();
+                    AtgComponentsService componentsService = ServiceManager.getService(project, AtgComponentsService.class);
                     if (value != null && value.contains(".")) {
                         String componentName = value.substring(0, value.indexOf('.'));
-                        Collection<PropertiesFileImpl> applicableComponents = AtgComponentUtil.getApplicableComponentsByName(componentName, position.getProject());
+                        Collection<PropertiesFileImpl> applicableComponents = componentsService.getComponentsByName(componentName);
                         PsiClass variableClass = AtgComponentUtil.getClassForComponentDependency((PropertyImpl) position);
                         if (variableClass != null) {
                             applicableComponents.stream()
@@ -136,8 +141,8 @@ public class ComponentPropertiesCompletionContributor extends CompletionContribu
                             }
                         }
                     } else {
-                        AtgComponentUtil.getAllComponents(position.getProject()).stream()
-                                .map(AtgComponentLookupElement::new)
+                        componentsService.getAllComponents().stream()
+                                .map(LookupElementBuilder::create)
                                 .forEach(result::addElement);
                     }
                     result.stopHere();

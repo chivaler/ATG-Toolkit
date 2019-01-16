@@ -3,12 +3,14 @@ package org.idea.plugin.atg.psi.reference;
 import com.google.common.collect.Lists;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.lang.properties.psi.impl.PropertyImpl;
+import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
-import com.intellij.util.IncorrectOperationException;
+import org.idea.plugin.atg.index.AtgComponentsService;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,12 +30,13 @@ public class AtgComponentFieldReference extends PsiPolyVariantReferenceBase<PsiE
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
-        Collection<PropertiesFileImpl> applicableComponents = AtgComponentUtil.getApplicableComponentsByName(beanName, myElement.getProject());
-        return applicableComponents.stream()
+        Project project = myElement.getProject();
+        AtgComponentsService componentsService = ServiceManager.getService(project, AtgComponentsService.class);
+        return componentsService.getComponentsByName(beanName).stream()
                 .map(psiFile -> Lists.newArrayList(psiFile.findPropertyByKey(propertyKey), psiFile.findPropertyByKey(propertyKey + "^")))
                 .flatMap(Collection::stream)
                 .filter(PropertyImpl.class::isInstance)
-                .map(element -> new PsiElementResolveResult((PropertyImpl)element, true))
+                .map(element -> new PsiElementResolveResult((PropertyImpl) element, true))
                 .toArray(ResolveResult[]::new);
     }
 
@@ -53,7 +56,7 @@ public class AtgComponentFieldReference extends PsiPolyVariantReferenceBase<PsiE
 
     @Override
     @SuppressWarnings("OptionalIsPresent")
-    public PsiElement bindToElement(@NotNull PsiElement element) throws IncorrectOperationException {
+    public PsiElement bindToElement(@NotNull PsiElement element) {
         if (element instanceof PropertiesFileImpl) {
             Optional<String> newComponentName = AtgComponentUtil.getComponentCanonicalName((PropertiesFileImpl) element);
             if (newComponentName.isPresent()) {

@@ -23,8 +23,9 @@ import java.util.Optional;
 
 public class AtgComponentsIndexExtension extends FileBasedIndexExtension<String, ComponentWrapper> implements PsiDependentIndex {
     private static final Logger LOG = Logger.getInstance(AtgComponentsIndexExtension.class);
-    public static final ID<String, ComponentWrapper> NAME = ID.create("atgComponents");
+    private static final String NULL_SUBSTITUTE = "NULL";
 
+    public static final ID<String, ComponentWrapper> NAME = ID.create("atgComponents");
 
     @NotNull
     @Override
@@ -78,20 +79,20 @@ public class AtgComponentsIndexExtension extends FileBasedIndexExtension<String,
             public void save(@NotNull DataOutput out, ComponentWrapper componentWrapper) throws IOException {
                 String javaClassStr = componentWrapper.getJavaClass();
                 String scope = componentWrapper.getScope();
-                String basedOn = componentWrapper.getScope();
-                IOUtil.writeUTF(out, javaClassStr != null ? javaClassStr : "");
-                IOUtil.writeUTF(out, scope != null ? scope : "");
-                IOUtil.writeUTF(out, basedOn != null ? basedOn : "");
+                String basedOn = componentWrapper.getBasedOn();
+                IOUtil.writeUTF(out, javaClassStr != null ? javaClassStr : NULL_SUBSTITUTE);
+                IOUtil.writeUTF(out, scope != null ? scope : NULL_SUBSTITUTE);
+                IOUtil.writeUTF(out, basedOn != null ? basedOn : NULL_SUBSTITUTE);
             }
 
             @Override
             public ComponentWrapper read(@NotNull DataInput in) throws IOException {
                 String javaClass = IOUtil.readUTF(in);
-                if ("".equals(javaClass)) javaClass = null;
+                if (NULL_SUBSTITUTE.equals(javaClass)) javaClass = null;
                 String scope = IOUtil.readUTF(in);
-                if ("".equals(scope)) scope = null;
+                if (NULL_SUBSTITUTE.equals(scope)) scope = null;
                 String basedOn = IOUtil.readUTF(in);
-                if ("".equals(basedOn)) basedOn = null;
+                if (NULL_SUBSTITUTE.equals(basedOn)) basedOn = null;
                 return new ComponentWrapper(scope, javaClass, basedOn);
             }
         };

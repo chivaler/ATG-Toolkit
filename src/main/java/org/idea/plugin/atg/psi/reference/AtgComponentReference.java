@@ -1,17 +1,18 @@
 package org.idea.plugin.atg.psi.reference;
 
+import com.google.common.collect.Lists;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.lang.properties.psi.impl.PropertyValueImpl;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleUtilCore;
+import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlText;
+import org.idea.plugin.atg.index.AtgComponentsService;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -41,12 +42,13 @@ public class AtgComponentReference extends PsiPolyVariantReferenceBase<PsiElemen
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
-        Module module = ModuleUtilCore.findModuleForPsiElement(myElement);
-        Collection<PsiFile> applicableComponents = new ArrayList<>();
+        Project project = myElement.getProject();
+        AtgComponentsService componentsService = ServiceManager.getService(project, AtgComponentsService.class);
+        Collection<PsiFile> applicableComponents;
         if (componentName.endsWith(".xml")) {
-            applicableComponents.addAll(AtgComponentUtil.getApplicableXmlsByName(componentName.replace(".xml", ""), myElement.getProject()));
+            applicableComponents = Lists.newArrayList(AtgComponentUtil.getApplicableXmlsByName(componentName.replace(".xml", ""), myElement.getProject()));
         } else {
-            applicableComponents.addAll(AtgComponentUtil.getApplicableComponentsByName(componentName, myElement.getProject()));
+            applicableComponents = Lists.newArrayList(componentsService.getComponentsByName(componentName));
         }
         return applicableComponents.stream()
                 .map(element -> new PsiElementResolveResult(element, true))

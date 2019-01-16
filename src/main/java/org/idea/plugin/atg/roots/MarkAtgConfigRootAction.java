@@ -4,7 +4,9 @@ import com.intellij.facet.FacetManager;
 import com.intellij.ide.projectView.actions.MarkRootActionBase;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ModuleRootManager;
@@ -13,11 +15,14 @@ import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.Constants;
+import org.idea.plugin.atg.index.AtgComponentsService;
 import org.idea.plugin.atg.module.AtgModuleFacet;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 
 import static org.idea.plugin.atg.util.AtgEnvironmentUtil.runWriteAction;
 
@@ -47,8 +52,8 @@ public class MarkAtgConfigRootAction extends MarkRootActionBase {
     protected void modifyRoots(@NotNull AnActionEvent e, @NotNull Module module, @NotNull VirtualFile[] files) {
         AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
         if (atgFacet == null) return;
+        Set<VirtualFile> changedRoots = new HashSet<>();
 
-        boolean rootWasAdded = false;
         final ModifiableRootModel model = ModuleRootManager.getInstance(module).getModifiableModel();
         for (VirtualFile file : files) {
             ContentEntry entry = findContentEntry(model, file);
@@ -64,16 +69,18 @@ public class MarkAtgConfigRootAction extends MarkRootActionBase {
                 Collection<VirtualFile> configRoots = atgFacet.getConfiguration().getConfigRoots();
                 if (!configRoots.contains(file)) {
                     configRoots.add(file);
-                    rootWasAdded = true;
+                    changedRoots.add(file);
                 }
             }
         }
 
-        if (rootWasAdded) {
+        if (!changedRoots.isEmpty()) {
+            Project project = module.getProject();
             runWriteAction(() -> {
                 model.commit();
-                module.getProject().save();
+                project.save();
             });
+            ServiceManager.getService(project, AtgComponentsService.class).notifyConfigRootsChanged(changedRoots);
         } else {
             model.dispose();
         }

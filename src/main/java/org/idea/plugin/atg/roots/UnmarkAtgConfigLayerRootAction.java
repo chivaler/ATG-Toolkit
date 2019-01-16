@@ -4,12 +4,15 @@ import com.intellij.facet.FacetManager;
 import com.intellij.ide.projectView.actions.MarkRootActionBase;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.Constants;
+import org.idea.plugin.atg.index.AtgComponentsService;
 import org.idea.plugin.atg.module.AtgModuleFacet;
 import org.jetbrains.annotations.NotNull;
 
@@ -79,10 +82,14 @@ public class UnmarkAtgConfigLayerRootAction extends MarkRootActionBase {
             atgFacet.getConfiguration().getConfigLayerRoots().keySet().removeAll(configLayerRootsToRemove);
             atgFacet.getConfiguration().getWebRoots().removeAll(webRootsToRemove);
 
+            Project project = module.getProject();
             runWriteAction(() -> {
                 ModuleRootManager.getInstance(module).getModifiableModel().commit();
-                module.getProject().save();
+                project.save();
             });
+            AtgComponentsService componentsService = ServiceManager.getService(project, AtgComponentsService.class);
+            componentsService.notifyConfigRootsChanged(configRootsToRemove);
+            componentsService.notifyConfigRootsChanged(configLayerRootsToRemove);
         }
 
 

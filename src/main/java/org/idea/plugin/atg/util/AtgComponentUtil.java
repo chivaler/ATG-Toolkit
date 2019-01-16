@@ -6,9 +6,9 @@ import com.intellij.lang.jvm.JvmModifier;
 import com.intellij.lang.jvm.JvmParameter;
 import com.intellij.lang.jvm.types.JvmType;
 import com.intellij.lang.properties.IProperty;
-import com.intellij.lang.properties.PropertiesImplUtil;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.lang.properties.psi.impl.PropertyImpl;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
@@ -27,13 +27,11 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.ClassInheritorsSearch;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.testFramework.LightVirtualFile;
-import com.intellij.util.indexing.FileBasedIndex;
 import org.apache.commons.lang.StringUtils;
-import org.fest.util.Sets;
 import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.config.AtgConfigHelper;
 import org.idea.plugin.atg.config.AtgToolkitConfig;
-import org.idea.plugin.atg.index.AtgComponentsIndexExtension;
+import org.idea.plugin.atg.index.AtgComponentsService;
 import org.idea.plugin.atg.module.AtgModuleFacet;
 import org.idea.plugin.atg.module.AtgModuleFacetConfiguration;
 import org.jetbrains.annotations.NotNull;
@@ -70,8 +68,10 @@ public class AtgComponentUtil {
             if (propertyClassName != null && StringUtils.isNotBlank(propertyClassName.getValue())) {
                 return Optional.of(propertyClassName.getValue());
             } else {
+                Project project = propertyFile.getProject();
+                AtgComponentsService componentsService = ServiceManager.getService(project, AtgComponentsService.class);
                 Collection<PropertiesFileImpl> applicableLayers = searchInAllLayers
-                        ? getApplicableComponentsByName(componentName.get(), propertyFile.getProject())
+                        ? componentsService.getComponentsByName(componentName.get())
                         : Collections.emptyList();
 
                 Optional<String> otherLayerDefined = applicableLayers.stream()
@@ -91,7 +91,7 @@ public class AtgComponentUtil {
                         .filter(Objects::nonNull)
                         .map(IProperty::getValue)
                         .filter(StringUtils::isNotBlank)
-                        .map(p -> getApplicableComponentsByName(p, propertyFile.getProject()))
+                        .map(componentsService::getComponentsByName)
                         .flatMap(Collection::stream)
                         .filter(p -> !resolvedFiles.contains(p))
                         .map(p -> getDerivedProperty(p, propertyName, false, resolvedFiles))
@@ -170,19 +170,6 @@ public class AtgComponentUtil {
         sourceConfigRoots.addAll(sourceConfigLayersRoots);
         sourceConfigRoots.addAll(libraryVirtualFiles);
         return sourceConfigRoots;
-    }
-
-    @NotNull
-    public static Collection<PropertiesFileImpl> getApplicableComponentsByName(@NotNull String componentName,
-                                                                               @NotNull Project project) {
-        return FileBasedIndex.getInstance().getContainingFiles(AtgComponentsIndexExtension.NAME,
-                componentName, GlobalSearchScope.allScope(project)).stream()
-                .filter(VirtualFile::exists)
-                .map(virtualFile -> PsiManager.getInstance(project)
-                        .findFile(virtualFile))
-                .filter(PropertiesFileImpl.class::isInstance)
-                .map(f -> (PropertiesFileImpl) f)
-                .collect(Collectors.toList());
     }
 
     @NotNull
@@ -318,7 +305,8 @@ public class AtgComponentUtil {
         Collection<PsiClass> classAndInheritors = ClassInheritorsSearch.search(srcClass, scope, true, true, false)
                 .findAll();
         classAndInheritors.add(srcClass);
-        return suggestComponentNamesByClass(classAndInheritors, srcClass.getProject());
+        AtgComponentsService componentsService = ServiceManager.getService(srcClass.getProject(), AtgComponentsService.class);
+        return componentsService.suggestComponentNamesByClass(classAndInheritors);
     }
 
     @NotNull
@@ -326,60 +314,23 @@ public class AtgComponentUtil {
         if (srcClass == null) {
             return Collections.emptyList();
         }
+        AtgComponentsService componentsService = ServiceManager.getService(srcClass.getProject(), AtgComponentsService.class);
         return suggestComponentNamesByClassWithInheritors(srcClass)
                 .stream()
-                .map(s-> getApplicableComponentsByName(s, srcClass.getProject()))
+                .map(componentsService::getComponentsByName)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
     }
 
     @NotNull
     public static Collection<PropertiesFileImpl> suggestComponentsByClasses(@NotNull Collection<PsiClass> srcClasses, @NotNull Project project) {
-        return suggestComponentNamesByClass(srcClasses, project).stream()
-                .map(s-> getApplicableComponentsByName(s, project))
+        AtgComponentsService componentsService = ServiceManager.getService(project, AtgComponentsService.class);
+        return componentsService.suggestComponentNamesByClass(srcClasses).stream()
+                .map(componentsService::getComponentsByName)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
     }
 
-    @NotNull
-    public static Collection<String> suggestComponentNamesByClass(@NotNull Collection<PsiClass> srcClasses, @NotNull Project project) {
-        if (srcClasses.isEmpty()) {
-            return Collections.emptyList();
-        }
-        Collection<String> srcClassesStr = srcClasses.stream().map(PsiClass::getQualifiedName).collect(Collectors.toList());
-        FileBasedIndex fileBasedIndex = FileBasedIndex.getInstance();
-        GlobalSearchScope scope = GlobalSearchScope.allScope(project);
-
-        Set<String> result = Sets.newHashSet();
-        for (String componentName : fileBasedIndex.getAllKeys(AtgComponentsIndexExtension.NAME, project)) {
-//            fileBasedIndex.getValues(AtgComponentsIndexExtension.NAME, componentName, GlobalSearchScope.allScope(project)).stream()
-//                    .filter(componentWrapper -> srcClassesStr.contains(componentWrapper.getJavaClass()))
-//                    .findAny()
-//                    .ifPresent(c -> result.add(componentName));
-
-            fileBasedIndex.processValues(AtgComponentsIndexExtension.NAME, componentName, null, (file, componentWrapper) -> {
-                if (srcClassesStr.contains(componentWrapper.getJavaClass())) {
-                    result.add(componentName);
-                }
-                return true;
-            }, scope);
-        }
-
-        return result;
-    }
-
-    @Deprecated
-    @NotNull
-    public static List<PropertiesFileImpl> getAllComponents(@NotNull Project project) {
-        return PropertiesImplUtil.findPropertiesByKey(project, Constants.Keywords.Properties.CLASS_PROPERTY)
-                .stream()
-                .filter(Objects::nonNull)
-                .map(IProperty::getPropertiesFile)
-                .filter(PropertiesFileImpl.class::isInstance)
-                .map(p -> (PropertiesFileImpl)p)
-                .distinct()
-                .collect(Collectors.toList());
-    }
 
     @NotNull
     public static List<PsiMethod> getSettersOfClass(@NotNull PsiClass psiClass) {

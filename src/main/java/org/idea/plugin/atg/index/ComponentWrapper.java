@@ -5,8 +5,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 
 public class ComponentWrapper {
+    @Nullable
     private String scope;
+    @Nullable
     private String javaClass;
+    @Nullable
     private String basedOn;
 
     public ComponentWrapper(@Nullable String scope, @Nullable String javaClass, @Nullable String basedOn) {
@@ -15,12 +18,10 @@ public class ComponentWrapper {
         this.basedOn = basedOn;
     }
 
-    @Nullable
     public String getScope() {
         return scope;
     }
 
-    @Nullable
     public String getJavaClass() {
         return javaClass;
     }

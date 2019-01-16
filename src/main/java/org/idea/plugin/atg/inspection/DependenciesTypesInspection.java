@@ -7,10 +7,12 @@ import com.intellij.lang.properties.PropertiesInspectionBase;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.lang.properties.psi.impl.PropertyImpl;
 import com.intellij.lang.properties.psi.impl.PropertyValueImpl;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
 import com.intellij.psi.util.TypeConversionUtil;
 import org.idea.plugin.atg.AtgToolkitBundle;
+import org.idea.plugin.atg.index.AtgComponentsService;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -56,8 +58,8 @@ public class DependenciesTypesInspection extends PropertiesInspectionBase {
                                     ? dependencyStr.substring(0, dependencyStr.indexOf('.'))
                                     : dependencyStr;
                             String dependencyField = dependencyStr.contains(".") ? dependencyStr.substring(dependencyStr.indexOf('.') + 1) : "";
-
-                            Collection<PropertiesFileImpl> dependencyLayers = AtgComponentUtil.getApplicableComponentsByName(dependencyComponentName, holder.getProject());
+                            AtgComponentsService componentsService = ServiceManager.getService(holder.getProject(), AtgComponentsService.class);
+                            Collection<PropertiesFileImpl> dependencyLayers = componentsService.getComponentsByName(dependencyComponentName);
                             if (!dependencyLayers.isEmpty()) {
                                 PropertiesFileImpl dependency = dependencyLayers.iterator().next();
                                 JvmType jvmTypeSetterMethod = AtgComponentUtil.getJvmTypeForSetterMethod(setterForProperty.get());

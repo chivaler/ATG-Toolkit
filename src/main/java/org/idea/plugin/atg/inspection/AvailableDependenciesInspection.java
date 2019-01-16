@@ -4,12 +4,15 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.lang.properties.PropertiesInspectionBase;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.lang.properties.psi.impl.PropertyValueImpl;
+import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiFile;
 import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.Constants;
+import org.idea.plugin.atg.index.AtgComponentsService;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -36,7 +39,9 @@ public class AvailableDependenciesInspection extends PropertiesInspectionBase {
                         String beanName = matcher.group(0);
                         int start = matcher.start(0);
                         beanName = beanName.contains(".") ? beanName.substring(0, beanName.indexOf('.')) : beanName;
-                        Collection<PropertiesFileImpl> dependencyLayers = AtgComponentUtil.getApplicableComponentsByName(beanName, holder.getProject());
+                        Project project = element.getProject();
+                        AtgComponentsService componentsService = ServiceManager.getService(project, AtgComponentsService.class);
+                        Collection<PropertiesFileImpl> dependencyLayers = componentsService.getComponentsByName(beanName);
                         if (dependencyLayers.isEmpty()) {
                             holder.registerProblem(element,
                                     new TextRange(start, start + beanName.length()),
