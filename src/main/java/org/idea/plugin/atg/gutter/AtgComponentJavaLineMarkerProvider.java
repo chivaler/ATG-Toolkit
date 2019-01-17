@@ -9,6 +9,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiIdentifier;
 import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.Constants;
+import org.idea.plugin.atg.render.AtgPropertiesFileRenderer;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,7 +29,8 @@ public class AtgComponentJavaLineMarkerProvider extends RelatedItemLineMarkerPro
                     NavigationGutterIconBuilder<PsiElement> builder =
                             NavigationGutterIconBuilder.create(Constants.Icons.COMPONENT_ICON).
                                     setTargets(applicableComponents).
-                                    setTooltipText(AtgToolkitBundle.message("goto.component.from.class.description", className));
+                                    setTooltipText(AtgToolkitBundle.message("goto.component.from.class.description", className)).
+                                    setCellRenderer(AtgPropertiesFileRenderer.INSTANCE);
                     result.add(builder.createLineMarkerInfo(element));
                 }
             }

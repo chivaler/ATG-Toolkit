@@ -9,6 +9,7 @@ import com.intellij.psi.impl.source.xml.XmlFileImpl;
 import com.intellij.psi.xml.XmlTag;
 import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.Constants;
+import org.idea.plugin.atg.render.AtgPropertiesFileRenderer;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,7 +32,8 @@ public class AtgXmlLayersLineMarkerProvider extends RelatedItemLineMarkerProvide
                         NavigationGutterIconBuilder<PsiElement> builder =
                                 NavigationGutterIconBuilder.create(Constants.Icons.COMPONENT_ICON).
                                         setTargets(xmlFilesWithSameName).
-                                        setTooltipText(AtgToolkitBundle.message("goto.component.layers.description", xmlName.get()));
+                                        setTooltipText(AtgToolkitBundle.message("goto.component.layers.description", xmlName.get())).
+                                        setCellRenderer(AtgPropertiesFileRenderer.INSTANCE);
                         result.add(builder.createLineMarkerInfo(element));
                     }
                 }

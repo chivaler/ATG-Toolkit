@@ -3,6 +3,7 @@ package org.idea.plugin.atg.navigation;
 import com.intellij.codeInsight.navigation.GotoTargetHandler;
 import com.intellij.codeInsight.navigation.NavigationUtil;
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.util.PsiElementListCellRenderer;
 import com.intellij.lang.properties.psi.PropertiesFile;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.openapi.components.ServiceManager;
@@ -22,6 +23,7 @@ import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.PropertiesGenerator;
 import org.idea.plugin.atg.config.AtgToolkitConfig;
 import org.idea.plugin.atg.index.AtgComponentsService;
+import org.idea.plugin.atg.render.AtgPropertiesFileRenderer;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -31,11 +33,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class GoToComponentTargetHandler extends GotoTargetHandler {
-
-    @Override
-    protected String getFeatureUsedKey() {
-        return "navigation.goto.component";
-    }
 
     @Override
     @Nullable
@@ -102,6 +99,17 @@ public class GoToComponentTargetHandler extends GotoTargetHandler {
         }
 
         return null;
+    }
+
+    @Override
+    protected String getFeatureUsedKey() {
+        return "navigation.goto.component";
+    }
+
+    @NotNull
+    @Override
+    protected PsiElementListCellRenderer getRenderer(Object value, @NotNull GotoData gotoData) {
+        return AtgPropertiesFileRenderer.INSTANCE;
     }
 
     @Override
