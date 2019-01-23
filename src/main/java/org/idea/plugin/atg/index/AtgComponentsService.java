@@ -7,6 +7,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
+import com.intellij.openapi.util.RecursionManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
@@ -17,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class AtgComponentsService {
@@ -35,6 +37,58 @@ public class AtgComponentsService {
                 .parallelStream()
                 .map(this::getPropertiesPsiFileSafely)
                 .collect(Collectors.toList());
+    }
+
+    @NotNull
+    public Set<String> getComponentScopesWithBasedOns(@NotNull String bean) {
+        return  getComponentDerivedPropertyWithBasedOns(bean, this::getComponentAndLayerScopes);
+    }
+
+    @NotNull
+    public Set<String> getComponentClassStrWithBasedOns(@NotNull String bean) {
+        return  getComponentDerivedPropertyWithBasedOns(bean, this::getComponentAndLayerClasses);
+    }
+
+    @NotNull
+    private Set<String> getComponentDerivedPropertyWithBasedOns(@NotNull String bean, @NotNull Function<String, Set<String>> propertyExtractor) {
+        Set<String> resolvedClasses = RecursionManager.doPreventingRecursion(bean, true, () -> {
+            ProgressManager.checkCanceled();
+            Set<String> beanClasses = propertyExtractor.apply(bean);
+            if (!beanClasses.isEmpty()) return beanClasses;
+            return getComponentAndLayerBasedOns(bean).
+                    stream().
+                    map(b -> getComponentDerivedPropertyWithBasedOns(b, propertyExtractor)).
+                    flatMap(Collection::stream).
+                    collect(Collectors.toSet());
+        });
+        return resolvedClasses != null ? resolvedClasses : new HashSet<>();
+    }
+
+    @NotNull
+    private Set<String> getComponentAndLayerBasedOns(@NotNull String bean) {
+        return FileBasedIndex.getInstance().getValues(AtgComponentsIndexExtension.NAME, bean, GlobalSearchScope.allScope(project))
+                .parallelStream()
+                .map(ComponentWrapper::getJavaClass)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+    }
+
+    @NotNull
+    private Set<String> getComponentAndLayerClasses(@NotNull String bean) {
+        return FileBasedIndex.getInstance().getValues(AtgComponentsIndexExtension.NAME, bean, GlobalSearchScope.allScope(project))
+                .parallelStream()
+                .map(ComponentWrapper::getJavaClass)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+    }
+
+    @NotNull
+    private Set<String> getComponentAndLayerScopes(@NotNull String bean) {
+        return FileBasedIndex.getInstance().getValues(AtgComponentsIndexExtension.NAME, bean, GlobalSearchScope.allScope(project))
+                .parallelStream()
+                .map(ComponentWrapper::getJavaClass)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
     }
 
     @NotNull

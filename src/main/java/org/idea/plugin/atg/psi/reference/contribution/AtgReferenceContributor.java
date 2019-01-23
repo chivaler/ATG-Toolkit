@@ -51,7 +51,7 @@ public class AtgReferenceContributor extends PsiReferenceContributor {
                 String key = propertyKey.getText();
                 if (!CompletionUtilCore.DUMMY_IDENTIFIER_TRIMMED.equals(key) && !key.startsWith("$")) {
                     PropertiesFileImpl properties = PsiTreeUtil.getTopmostParentOfType(element, PropertiesFileImpl.class);
-                    Optional<PsiClass> componentClass = AtgComponentUtil.getComponentClass(properties);
+                    Optional<PsiClass> componentClass = AtgComponentUtil.getSupposedComponentClass(properties);
                     if (componentClass.isPresent()) {
                         int offsetForRange = 0;
                         if (key.endsWith("^") || key.endsWith("+") || key.endsWith("-")) {

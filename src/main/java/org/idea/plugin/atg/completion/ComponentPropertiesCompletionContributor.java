@@ -70,7 +70,7 @@ public class ComponentPropertiesCompletionContributor extends CompletionContribu
             PsiElement position = parameters.getPosition().getContext();
             if (position instanceof PropertyImpl) {
                 PsiFile propertyFile = position.getContainingFile();
-                Optional<PsiClass> componentClass = AtgComponentUtil.getComponentClass(propertyFile);
+                Optional<PsiClass> componentClass = AtgComponentUtil.getSupposedComponentClass(propertyFile);
                 if (!componentClass.isPresent()) return;
 
                 Set<String> existFields = ((PropertiesFile) propertyFile).getProperties().stream()
@@ -115,7 +115,7 @@ public class ComponentPropertiesCompletionContributor extends CompletionContribu
                         PsiClass variableClass = AtgComponentUtil.getClassForComponentDependency((PropertyImpl) position);
                         if (variableClass != null) {
                             applicableComponents.stream()
-                                    .map(AtgComponentUtil::getComponentClass)
+                                    .map(AtgComponentUtil::getSupposedComponentClass)
                                     .filter(Optional::isPresent)
                                     .map(Optional::get)
                                     .map(AtgComponentUtil::getSettersOfClass)
@@ -129,7 +129,7 @@ public class ComponentPropertiesCompletionContributor extends CompletionContribu
                             JvmType variableType = AtgComponentUtil.getJvmTypeForComponentDependency((PropertyImpl) position);
                             if (variableType != null) {
                                 applicableComponents.stream()
-                                        .map(AtgComponentUtil::getComponentClass)
+                                        .map(AtgComponentUtil::getSupposedComponentClass)
                                         .filter(Optional::isPresent)
                                         .map(Optional::get)
                                         .map(AtgComponentUtil::getSettersOfClass)

@@ -40,7 +40,7 @@ public class DependenciesTypesInspection extends PropertiesInspectionBase {
     @NotNull
     @Override
     public PsiElementVisitor buildVisitor(@NotNull final ProblemsHolder holder, boolean isOnTheFly) {
-        Optional<PsiClass> componentClass = AtgComponentUtil.getComponentClass(holder.getFile());
+        Optional<PsiClass> componentClass = AtgComponentUtil.getSupposedComponentClass(holder.getFile());
         if (!componentClass.isPresent()) return PsiElementVisitor.EMPTY_VISITOR;
 
         return new PsiElementVisitor() {
@@ -63,7 +63,7 @@ public class DependenciesTypesInspection extends PropertiesInspectionBase {
                             if (!dependencyLayers.isEmpty()) {
                                 PropertiesFileImpl dependency = dependencyLayers.iterator().next();
                                 JvmType jvmTypeSetterMethod = AtgComponentUtil.getJvmTypeForSetterMethod(setterForProperty.get());
-                                Optional<PsiClass> dependencyClass = AtgComponentUtil.getComponentClass(dependency);
+                                Optional<PsiClass> dependencyClass = AtgComponentUtil.getSupposedComponentClass(dependency);
                                 if (jvmTypeSetterMethod instanceof PsiType && dependencyClass.isPresent()) {
                                     PsiClass setterClass = jvmTypeSetterMethod instanceof PsiClassType ? ((PsiClassType) jvmTypeSetterMethod).resolve() : null;
                                     String setterTypePresentableName = setterClass != null ? setterClass.getQualifiedName() : ((PsiType) jvmTypeSetterMethod).getPresentableText();

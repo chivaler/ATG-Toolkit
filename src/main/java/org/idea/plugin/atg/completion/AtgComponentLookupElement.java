@@ -3,11 +3,8 @@ package org.idea.plugin.atg.completion;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementPresentation;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
-import com.intellij.psi.PsiClass;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Optional;
 
 public class AtgComponentLookupElement extends LookupElement {
     private final PropertiesFileImpl targetComponent;
@@ -33,8 +30,7 @@ public class AtgComponentLookupElement extends LookupElement {
     @Override
     public void renderElement(LookupElementPresentation presentation) {
         presentation.setItemText(presentableName);
-        Optional<PsiClass> componentClass = AtgComponentUtil.getComponentClass(targetComponent.getContainingFile());
-        componentClass.ifPresent(psiClass -> presentation.setTypeText(psiClass.getQualifiedName()));
+        AtgComponentUtil.getComponentClassesStr(targetComponent).stream().findFirst().ifPresent(presentation::setTypeText);
         presentation.setTypeGrayed(true);
     }
 }

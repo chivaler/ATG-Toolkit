@@ -111,22 +111,26 @@ public class AtgComponentUtil {
     }
 
     @NotNull
-    public static Optional<String> getComponentClassStr(@NotNull PropertiesFileImpl propertyFile) {
-        return getDerivedProperty(propertyFile, Constants.Keywords.Properties.CLASS_PROPERTY);
+    public static Set<String> getComponentClassesStr(@NotNull PropertiesFileImpl propertyFile) {
+        AtgComponentsService componentsService = ServiceManager.getService(propertyFile.getProject(), AtgComponentsService.class);
+        Optional<String> beanName = getComponentCanonicalName(propertyFile);
+        return beanName.map(componentsService::getComponentClassStrWithBasedOns).orElse(new HashSet<>());
     }
 
     @NotNull
-    public static Optional<PsiClass> getComponentClass(@Nullable PsiFile propertyFile) {
+    public static Optional<PsiClass> getSupposedComponentClass(@Nullable PsiFile propertyFile) {
         if (!(propertyFile instanceof PropertiesFileImpl)) {
             return Optional.empty();
         }
-        Optional<String> className = getComponentClassStr((PropertiesFileImpl) propertyFile);
-        if (!className.isPresent()) return Optional.empty();
+        Set<String> classesName = getComponentClassesStr((PropertiesFileImpl) propertyFile);
 
-        Project project = propertyFile.getProject();
-        GlobalSearchScope scope = GlobalSearchScope.allScope(project);
-        return Optional.ofNullable(JavaPsiFacade.getInstance(project)
-                .findClass(className.get(), scope));
+        Iterator<String> classesIterator = classesName.iterator();
+        if (classesIterator.hasNext()) {
+            Project project = propertyFile.getProject();
+            GlobalSearchScope scope = GlobalSearchScope.allScope(project);
+            return Optional.ofNullable(JavaPsiFacade.getInstance(project)
+                    .findClass(classesIterator.next(), scope));
+        } else return  Optional.empty();
     }
 
     @NotNull
@@ -197,7 +201,7 @@ public class AtgComponentUtil {
     @NotNull
     public static Optional<String> getComponentCanonicalName(@NotNull VirtualFile supposedVirtualFile, @NotNull Project project) {
         VirtualFile virtualFile = supposedVirtualFile instanceof LightVirtualFile ?
-                ((LightVirtualFile)supposedVirtualFile).getOriginalFile() :
+                ((LightVirtualFile) supposedVirtualFile).getOriginalFile() :
                 supposedVirtualFile;
         if (!supposedVirtualFile.isValid()) return Optional.empty();
         if (virtualFile.getFileSystem() instanceof JarFileSystem) {
@@ -205,6 +209,7 @@ public class AtgComponentUtil {
                     .filter(LibraryOrderEntry.class::isInstance)
                     .map(f -> ((LibraryOrderEntry) f).getLibrary())
                     .filter(Objects::nonNull)
+                    //TODO probably not needed
                     .filter(l -> l.getName() != null && l.getName().startsWith(Constants.ATG_CONFIG_LIBRARY_PREFIX))
                     .findAny();
             if (libraryForFile.isPresent()) {
@@ -262,7 +267,7 @@ public class AtgComponentUtil {
         if (StringUtils.isBlank(key) || key.startsWith("$")) {
             return Optional.empty();
         }
-        Optional<PsiClass> srcClass = getComponentClass(propertyFile);
+        Optional<PsiClass> srcClass = getSupposedComponentClass(propertyFile);
         if (!srcClass.isPresent()) {
             return Optional.empty();
         }

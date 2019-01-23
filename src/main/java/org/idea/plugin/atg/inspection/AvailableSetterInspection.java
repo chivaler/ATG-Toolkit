@@ -19,7 +19,7 @@ public class AvailableSetterInspection extends PropertiesInspectionBase {
     @Override
     public PsiElementVisitor buildVisitor(@NotNull final ProblemsHolder holder, boolean isOnTheFly) {
         PsiFile psiFile = holder.getFile();
-        Optional<PsiClass> componentClass = AtgComponentUtil.getComponentClass(psiFile);
+        Optional<PsiClass> componentClass = AtgComponentUtil.getSupposedComponentClass(psiFile);
         if (!componentClass.isPresent()) return PsiElementVisitor.EMPTY_VISITOR;
 
         return new PsiElementVisitor() {
