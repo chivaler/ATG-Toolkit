@@ -105,6 +105,11 @@
                          groupKey="inspection.group.display.name" enabledByDefault="true"
                          level="WARNING"
                          implementationClass="org.idea.plugin.atg.inspection.AvailableDependenciesInspection"/>
+        <localInspection language="Properties" shortName="TrailingSlashes"
+                         key="inspection.trailingSlash.text"
+                         groupKey="inspection.group.display.name" enabledByDefault="true"
+                         level="WEAK WARNING"
+                         implementationClass="org.idea.plugin.atg.inspection.TrailingSlashesInspection"/>
         <localInspection language="Properties" shortName="DependenciesTypes"
                          key="inspection.dependenciesTypes.title"
                          groupKey="inspection.group.display.name" enabledByDefault="true"

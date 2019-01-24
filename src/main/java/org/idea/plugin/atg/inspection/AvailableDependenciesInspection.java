@@ -51,7 +51,7 @@ public class AvailableDependenciesInspection extends PropertiesInspectionBase {
                             }
                             beanName = beanName.substring(0, beanName.indexOf('.'));
                         }
-
+                        beanName = beanName.replaceAll("/+$", "");
                         Project project = element.getProject();
                         AtgComponentsService componentsService = ServiceManager.getService(project, AtgComponentsService.class);
                         Collection<PropertiesFileImpl> dependencyLayers = componentsService.getComponentsByName(beanName);
