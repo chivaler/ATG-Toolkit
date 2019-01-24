@@ -1,6 +1,7 @@
 package org.idea.plugin.atg.inspection;
 
 import com.intellij.codeInspection.ProblemsHolder;
+import com.intellij.lang.properties.IProperty;
 import com.intellij.lang.properties.PropertiesInspectionBase;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.lang.properties.psi.impl.PropertyValueImpl;
@@ -38,7 +39,19 @@ public class AvailableDependenciesInspection extends PropertiesInspectionBase {
                     while (matcher.find()) {
                         String beanName = matcher.group(0);
                         int start = matcher.start(0);
-                        beanName = beanName.contains(".") ? beanName.substring(0, beanName.indexOf('.')) : beanName;
+
+                        if (beanName.contains(".")) {
+                            if (start > 0) {
+                                if (start == 1 || value.charAt(start - 2) != '^') return;
+                            } else {
+                                PsiElement parent = element.getParent();
+                                if (!(parent instanceof IProperty)) return;
+                                String key = ((IProperty) parent).getKey();
+                                if (key == null || !key.endsWith("^")) return;
+                            }
+                            beanName = beanName.substring(0, beanName.indexOf('.'));
+                        }
+
                         Project project = element.getProject();
                         AtgComponentsService componentsService = ServiceManager.getService(project, AtgComponentsService.class);
                         Collection<PropertiesFileImpl> dependencyLayers = componentsService.getComponentsByName(beanName);
