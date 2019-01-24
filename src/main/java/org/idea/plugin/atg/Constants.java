@@ -24,6 +24,7 @@ public class Constants {
     public static final String FACET_PRESENTABLE_NAME = "ATG Facet"; //don't change this in future releases
 
     public static final Pattern SUSPECTED_COMPONENT_NAME_REGEX = Pattern.compile("(?<=(^|\\s|=|,))/[^,=\\\\\\s]+");
+    public static final Pattern SUSPECTED_REFERENCE_NAME_REGEX = Pattern.compile("(?<=(^|\\s|=|,))/[^,=\\\\\\s]+");
     public static final String DEFAULT_ITEM_DESCRIPTOR_CLASS = "atg.adapter.gsa.GSAPropertyDescriptor";
     public static final List<String> IGNORED_ATTRIBUTES_NAMES_FOR_DESCRIPTOR = ImmutableList.of("uiwritable", "uiqueryable", "resourceBundle", "deployable", "propertySortPriority", "references", "serialize", "useCodeForValue", "stringEnumProvider", "unique");
     public static final String WEB_HELP_URL = "https://github.com/chivaler/ATG-Toolkit/wiki/";
@@ -87,6 +88,10 @@ public class Constants {
             public static final String BASED_ON_PROPERTY = "$basedOn";
             public static final String CLASS_PROPERTY = "$class";
             public static final String SCOPE_PROPERTY = "$scope";
+        }
+
+        public static class Java {
+            public static final List<String> NUCLEUS_REFERENCES = ImmutableList.of("atg.nucleus.GenericReference", "atg.nucleus.ContextualSuffixGenericReference", "atg.nucleus.StaticMethodReference", "atg.nucleus.JNDIReference");
         }
 
         public static final String INCLUDE_TAG = "include";

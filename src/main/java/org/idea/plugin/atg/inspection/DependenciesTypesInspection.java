@@ -12,6 +12,7 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
 import com.intellij.psi.util.TypeConversionUtil;
 import org.idea.plugin.atg.AtgToolkitBundle;
+import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.index.AtgComponentsService;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
@@ -64,7 +65,7 @@ public class DependenciesTypesInspection extends PropertiesInspectionBase {
                                 PropertiesFileImpl dependency = dependencyLayers.iterator().next();
                                 JvmType jvmTypeSetterMethod = AtgComponentUtil.getJvmTypeForSetterMethod(setterForProperty.get());
                                 Optional<PsiClass> dependencyClass = AtgComponentUtil.getSupposedComponentClass(dependency);
-                                if (jvmTypeSetterMethod instanceof PsiType && dependencyClass.isPresent()) {
+                                if (jvmTypeSetterMethod instanceof PsiType && dependencyClass.isPresent() && Constants.Keywords.Java.NUCLEUS_REFERENCES.contains(dependencyClass.get().getQualifiedName())) {
                                     PsiClass setterClass = jvmTypeSetterMethod instanceof PsiClassType ? ((PsiClassType) jvmTypeSetterMethod).resolve() : null;
                                     String setterTypePresentableName = setterClass != null ? setterClass.getQualifiedName() : ((PsiType) jvmTypeSetterMethod).getPresentableText();
                                     if (!"".equals(dependencyField)) {
