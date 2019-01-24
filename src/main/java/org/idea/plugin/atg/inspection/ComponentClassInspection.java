@@ -30,7 +30,7 @@ public class ComponentClassInspection extends PropertiesInspectionBase {
                     if (parent instanceof PropertyImpl) {
                         String key = ((PropertyImpl) parent).getKey();
                         if (Constants.Keywords.Properties.CLASS_PROPERTY.equals(key)) {
-                            String javaClass = element.getText();
+                            String javaClass = element.getText().trim();
                             GlobalSearchScope scope = GlobalSearchScope.allScope(holderFile.getProject());
                             PsiClass psiClass = JavaPsiFacade.getInstance(holderFile.getProject()).findClass(javaClass, scope);
                             if (psiClass == null) {
