@@ -1,6 +1,7 @@
 package org.idea.plugin.atg.inspection;
 
 import com.intellij.codeInspection.ProblemsHolder;
+import com.intellij.lang.properties.IProperty;
 import com.intellij.lang.properties.PropertiesInspectionBase;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.lang.properties.psi.impl.PropertyValueImpl;
@@ -38,6 +39,16 @@ public class AvailableGetterInspection extends PropertiesInspectionBase {
                         String beanName = matcher.group(0);
                         int indexOfDot = beanName.indexOf('.');
                         if (indexOfDot >= 0) {
+                            int startInParent = matcher.start(0);
+                            if (startInParent > 0) {
+                                if (startInParent == 1 || value.charAt(startInParent - 2) != '^') return;
+                            } else {
+                                PsiElement parent = element.getParent();
+                                if (!(parent instanceof IProperty)) return;
+                                String key = ((IProperty) parent).getKey();
+                                if (key == null || !key.endsWith("^")) return;
+                            }
+
                             int start = matcher.start(0) + indexOfDot + 1;
                             String linkedPropertyName = beanName.substring(indexOfDot + 1);
                             beanName = beanName.contains(".") ? beanName.substring(0, indexOfDot) : value;
@@ -46,7 +57,7 @@ public class AvailableGetterInspection extends PropertiesInspectionBase {
                             Collection<PropertiesFileImpl> dependencyLayers = componentsService.getComponentsByName(beanName);
                             if (!dependencyLayers.isEmpty()) {
                                 PropertiesFileImpl dependency = dependencyLayers.iterator().next();
-                                Optional<PsiClass> dependencyClass = AtgComponentUtil.getComponentClass(dependency);
+                                Optional<PsiClass> dependencyClass = AtgComponentUtil.getSupposedComponentClass(dependency);
                                 if (dependencyClass.isPresent()) {
                                     Optional<PsiMethod> getter = AtgComponentUtil.getGetter(dependencyClass.get(), linkedPropertyName);
                                     if (!getter.isPresent()) {

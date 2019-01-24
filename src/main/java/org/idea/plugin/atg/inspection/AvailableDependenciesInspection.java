@@ -38,11 +38,11 @@ public class AvailableDependenciesInspection extends PropertiesInspectionBase {
                     Matcher matcher = Constants.SUSPECTED_COMPONENT_NAME_REGEX.matcher(value);
                     while (matcher.find()) {
                         String beanName = matcher.group(0);
-                        int start = matcher.start(0);
+                        int startInParent = matcher.start(0);
 
                         if (beanName.contains(".")) {
-                            if (start > 0) {
-                                if (start == 1 || value.charAt(start - 2) != '^') return;
+                            if (startInParent > 0) {
+                                if (startInParent == 1 || value.charAt(startInParent - 2) != '^') return;
                             } else {
                                 PsiElement parent = element.getParent();
                                 if (!(parent instanceof IProperty)) return;
@@ -57,7 +57,7 @@ public class AvailableDependenciesInspection extends PropertiesInspectionBase {
                         Collection<PropertiesFileImpl> dependencyLayers = componentsService.getComponentsByName(beanName);
                         if (dependencyLayers.isEmpty()) {
                             holder.registerProblem(element,
-                                    new TextRange(start, start + beanName.length()),
+                                    new TextRange(startInParent, startInParent + beanName.length()),
                                     AtgToolkitBundle.message("inspection.dependenciesAbsent.text", beanName));
                         }
                     }
