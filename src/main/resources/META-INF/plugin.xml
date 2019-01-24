@@ -95,6 +95,11 @@
                          groupKey="inspection.group.display.name" enabledByDefault="true"
                          level="WARNING"
                          implementationClass="org.idea.plugin.atg.inspection.AvailableSetterInspection"/>
+        <localInspection language="XML" shortName="AvailableSetter"
+                         key="inspection.availableSetter.title"
+                         groupKey="inspection.group.display.name" enabledByDefault="true"
+                         level="ERROR"
+                         implementationClass="org.idea.plugin.atg.inspection.xml.AvailableSetterInXmlInspection"/>
         <localInspection language="Properties" shortName="AvailableGetter"
                          key="inspection.availableGetter.title"
                          groupKey="inspection.group.display.name" enabledByDefault="true"

@@ -275,6 +275,14 @@ public class AtgComponentUtil {
     }
 
     @NotNull
+    public static Optional<PsiMethod> getSetterByFieldName(@NotNull PsiClass javaClass, @NotNull String key) {
+        return Arrays.stream(javaClass.getAllMethods())
+                .filter(m -> m.getName()
+                        .equals(AtgComponentUtil.convertPropertyNameToSetter(key)))
+                .findAny();
+    }
+
+    @NotNull
     public static Optional<PsiMethod> getSetterForProperty(@NotNull PropertyImpl property) {
         PsiFile propertyFile = property.getContainingFile();
         String key = property.getKey();
@@ -285,10 +293,7 @@ public class AtgComponentUtil {
         if (!srcClass.isPresent()) {
             return Optional.empty();
         }
-        return Arrays.stream(srcClass.get().getAllMethods())
-                .filter(m -> m.getName()
-                        .equals(AtgComponentUtil.convertPropertyNameToSetter(key)))
-                .findAny();
+        return getSetterByFieldName(srcClass.get(), key);
     }
 
     @Nullable
