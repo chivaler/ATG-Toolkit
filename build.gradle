@@ -22,7 +22,7 @@ intellij {
 }
 
 runIde {
-    jvmArgs '-Xmx1024m', '-Didea.cycle.buffer.size=disabled', 'XX:+HeapDumpOnOutOfMemoryError'
+    jvmArgs '-Xmx1024m', '-Didea.cycle.buffer.size=disabled'
 }
 
 publishPlugin {

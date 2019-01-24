@@ -107,7 +107,16 @@ public class AtgComponentUtil {
 
     @NotNull
     public static String getComponentScope(@NotNull PropertiesFileImpl propertyFile) {
-        return getDerivedProperty(propertyFile, Constants.Keywords.Properties.SCOPE_PROPERTY).orElse("global");
+        IProperty propertyScope = propertyFile.findPropertyByKey(Constants.Keywords.Properties.SCOPE_PROPERTY);
+        Optional<String> supposedScope = propertyScope != null ? Optional.ofNullable(propertyScope.getValue()) : Optional.empty();
+        if (!supposedScope.isPresent() || !Constants.Keywords.Properties.AVAILABLE_SCOPES.contains(supposedScope.get())) {
+            AtgComponentsService componentsService = ServiceManager.getService(propertyFile.getProject(), AtgComponentsService.class);
+            supposedScope = getComponentCanonicalName(propertyFile).
+                    map(componentsService::getComponentScopesWithBasedOns).
+                    map(Collection::stream)
+                    .flatMap(Stream::findAny);
+        }
+        return supposedScope.orElse(Constants.Scope.GLOBAL);
     }
 
     @NotNull
@@ -122,15 +131,20 @@ public class AtgComponentUtil {
         if (!(propertyFile instanceof PropertiesFileImpl)) {
             return Optional.empty();
         }
-        Set<String> classesName = getComponentClassesStr((PropertiesFileImpl) propertyFile);
 
-        Iterator<String> classesIterator = classesName.iterator();
-        if (classesIterator.hasNext()) {
-            Project project = propertyFile.getProject();
-            GlobalSearchScope scope = GlobalSearchScope.allScope(project);
-            return Optional.ofNullable(JavaPsiFacade.getInstance(project)
-                    .findClass(classesIterator.next(), scope));
-        } else return  Optional.empty();
+        Project project = propertyFile.getProject();
+        GlobalSearchScope scope = GlobalSearchScope.allScope(project);
+
+        Optional<String> supposedClassStr;
+        IProperty propertyClassName = ((PropertiesFileImpl) propertyFile).findPropertyByKey(Constants.Keywords.Properties.CLASS_PROPERTY);
+        if (propertyClassName != null) {
+            supposedClassStr = Optional.ofNullable(propertyClassName.getValue());
+        } else {
+            supposedClassStr = getComponentClassesStr((PropertiesFileImpl) propertyFile).stream().findFirst();
+        }
+
+        return supposedClassStr.map(c -> JavaPsiFacade.getInstance(project)
+                .findClass(c, scope));
     }
 
     @NotNull
