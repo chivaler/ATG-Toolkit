@@ -1,7 +1,7 @@
 package org.idea.plugin.atg.inspection.xml;
 
+import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemsHolder;
-import com.intellij.lang.properties.PropertiesInspectionBase;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.patterns.XmlAttributeValuePattern;
 import com.intellij.patterns.XmlPatterns;
@@ -20,7 +20,7 @@ import java.util.Optional;
 
 import static org.idea.plugin.atg.Constants.Keywords.Repository.PROPERTY_TYPE;
 
-public class AvailableSetterInXmlInspection extends PropertiesInspectionBase {
+public class XmlItemDescriptorInspection extends LocalInspectionTool {
 
     private XmlAttributeValuePattern itemDescriptorAttributeValuePattern = XmlPatterns.xmlAttributeValue()
             .withParent(XmlPatterns.xmlAttribute().withName(Repository.NAME)

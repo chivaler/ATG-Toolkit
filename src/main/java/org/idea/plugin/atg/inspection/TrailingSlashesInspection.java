@@ -1,8 +1,8 @@
 package org.idea.plugin.atg.inspection;
 
+import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
-import com.intellij.lang.properties.PropertiesInspectionBase;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.lang.properties.psi.impl.PropertyValueImpl;
 import com.intellij.openapi.util.TextRange;
@@ -16,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.regex.Matcher;
 
-public class TrailingSlashesInspection extends PropertiesInspectionBase {
+public class TrailingSlashesInspection extends LocalInspectionTool {
 
     @NotNull
     @Override

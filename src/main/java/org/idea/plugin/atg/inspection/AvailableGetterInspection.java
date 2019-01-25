@@ -1,8 +1,8 @@
 package org.idea.plugin.atg.inspection;
 
+import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.lang.properties.IProperty;
-import com.intellij.lang.properties.PropertiesInspectionBase;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.lang.properties.psi.impl.PropertyValueImpl;
 import com.intellij.openapi.components.ServiceManager;
@@ -19,7 +19,7 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.regex.Matcher;
 
-public class AvailableGetterInspection extends PropertiesInspectionBase {
+public class AvailableGetterInspection extends LocalInspectionTool {
 
     @NotNull
     @Override

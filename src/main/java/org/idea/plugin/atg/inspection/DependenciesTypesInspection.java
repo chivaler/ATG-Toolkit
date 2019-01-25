@@ -1,9 +1,9 @@
 package org.idea.plugin.atg.inspection;
 
+import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.jvm.types.JvmType;
-import com.intellij.lang.properties.PropertiesInspectionBase;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.lang.properties.psi.impl.PropertyImpl;
 import com.intellij.lang.properties.psi.impl.PropertyValueImpl;
@@ -20,7 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
 import java.util.Optional;
 
-public class DependenciesTypesInspection extends PropertiesInspectionBase {
+public class DependenciesTypesInspection extends LocalInspectionTool {
 
     private static boolean shouldCheckClassCast(@NotNull PsiMethod m) {
         JvmType parameterType = m.getParameters()[0].getType();

@@ -1,7 +1,7 @@
 package org.idea.plugin.atg.inspection;
 
+import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemsHolder;
-import com.intellij.lang.properties.PropertiesInspectionBase;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.lang.properties.psi.impl.PropertyImpl;
 import com.intellij.lang.properties.psi.impl.PropertyValueImpl;
@@ -12,7 +12,7 @@ import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
-public class ComponentClassInspection extends PropertiesInspectionBase {
+public class ComponentClassInspection extends LocalInspectionTool {
 
     @NotNull
     @Override

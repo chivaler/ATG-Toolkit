@@ -1,8 +1,8 @@
 package org.idea.plugin.atg.inspection;
 
+import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.lang.ASTNode;
-import com.intellij.lang.properties.PropertiesInspectionBase;
 import com.intellij.lang.properties.psi.impl.PropertyImpl;
 import com.intellij.lang.properties.psi.impl.PropertyKeyImpl;
 import com.intellij.openapi.util.TextRange;
@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
-public class AvailableSetterInspection extends PropertiesInspectionBase {
+public class AvailableSetterInspection extends LocalInspectionTool {
 
     @NotNull
     @Override
