@@ -2,15 +2,18 @@ package org.idea.plugin.atg.config;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.options.ConfigurableUi;
-import com.intellij.openapi.project.DumbAwareRunnable;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.project.DumbModeTask;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
+import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.util.AtgEnvironmentUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
 public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
-
+    private static final String DEPENDENCIES_TASK = "DEPENDENCIES_TASK";
     private Project project;
 
     private JPanel rootPanel;
@@ -85,19 +88,26 @@ public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
         atgToolkitConfig.setShowReferencesOnComponentInGoTo(showReferencesOnComponentInGoTo.isSelected());
 
         if (dependenciesResolvingChanged) {
-            ApplicationManager.getApplication().invokeLater((DumbAwareRunnable) () -> {
-                AtgEnvironmentUtil.removeAtgDependenciesForAllModules(project);
-                if (AtgToolkitConfig.getInstance(project).isAttachConfigsOfAtgDependencies() || AtgToolkitConfig.getInstance(project).isAttachClassPathOfAtgDependencies()) {
-                    AtgEnvironmentUtil.addAtgDependenciesForAllModules(project);
+            DumbService.getInstance(project).queueTask(new DumbModeTask(DEPENDENCIES_TASK) {
+                @Override
+                public void performInDumbMode(@NotNull ProgressIndicator indicator) {
+                    ApplicationManager.getApplication().runReadAction(() -> {
+                        AtgEnvironmentUtil.removeAtgDependenciesForAllModules(project, indicator);
+                        if (AtgToolkitConfig.getInstance(project).isAttachConfigsOfAtgDependencies() || AtgToolkitConfig.getInstance(project).isAttachClassPathOfAtgDependencies()) {
+                            AtgEnvironmentUtil.addAtgDependenciesForAllModules(project, indicator);
+                        }
+                    });
+                    indicator.setText(AtgToolkitBundle.message("update.dependencies.indexing.text"));
+                    indicator.setText2(null);
                 }
-            }, project.getDisposed());
+            });
         }
     }
 
-        @NotNull
-        @Override
-        public JComponent getComponent () {
-            return rootPanel;
-        }
-
+    @NotNull
+    @Override
+    public JComponent getComponent() {
+        return rootPanel;
     }
+
+}

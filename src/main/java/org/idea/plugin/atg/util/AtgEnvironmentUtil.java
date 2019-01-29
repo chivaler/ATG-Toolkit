@@ -12,8 +12,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.util.ProgressIndicatorBase;
-import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.roots.ModifiableRootModel;
@@ -35,7 +33,6 @@ import org.idea.plugin.atg.config.AtgToolkitConfig;
 import org.idea.plugin.atg.module.AtgModuleFacet;
 import org.idea.plugin.atg.module.AtgModuleFacetConfiguration;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.lang.manifest.psi.Header;
 import org.jetbrains.lang.manifest.psi.ManifestFile;
 
@@ -117,7 +114,7 @@ public class AtgEnvironmentUtil {
             PsiFile manifestPsiFile = null;
             if (manifestFile != null) {
                 manifestPsiFile = PsiManager.getInstance(project).findFile(manifestFile);
-                LOG.info("Parsing Manifest of " + atgModuleRelativePath);
+                LOG.debug("Parsing Manifest of " + atgModuleRelativePath);
             }
             if (manifestPsiFile instanceof ManifestFile) return Optional.of((ManifestFile) manifestPsiFile);
         }
@@ -129,7 +126,7 @@ public class AtgEnvironmentUtil {
     public static List<String> getRequiredModules(@NotNull final String atgModuleName, @NotNull final Project project) {
         Optional<ManifestFile> manifestFile = suggestManifestFileForModule(atgModuleName, project);
         if (manifestFile.isPresent()) {
-            LOG.info("Reading Manifest for " + atgModuleName);
+            LOG.debug("Reading Manifest for " + atgModuleName);
             //TODO Require-if-present
             Header requiredHeader = manifestFile.get().getHeader(Constants.Keywords.Manifest.ATG_REQUIRED);
             if (requiredHeader != null && requiredHeader.getHeaderValue() != null) {
@@ -175,7 +172,7 @@ public class AtgEnvironmentUtil {
                                                      @NotNull final Project project, @NotNull String header) {
         Optional<ManifestFile> manifestFile = suggestManifestFileForModule(atgModuleName, project);
         if (manifestFile.isPresent()) {
-            LOG.info("Resolving jars for " + atgModuleName);
+            LOG.debug("Resolving jars for " + atgModuleName);
             String[] configs = new String[0];
             Header configPathHeader = manifestFile.get().getHeader(header);
             if (configPathHeader != null && configPathHeader.getHeaderValue() != null) {
@@ -193,12 +190,7 @@ public class AtgEnvironmentUtil {
         return Collections.emptyList();
     }
 
-    public static void addDependenciesToModule(@NotNull final Module module, @Nullable ProgressIndicator indicator) {
-        if (indicator != null) {
-            indicator.checkCanceled();
-            indicator.setText(AtgToolkitBundle.message("update.dependencies.progress.text", module.getName()));
-        }
-
+    public static void addDependenciesToModule(@NotNull final Module module, LibraryTable.ModifiableModel projectLibraryModifiableModel) {
         AtgModuleFacet atgModuleFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
         if (atgModuleFacet != null) {
             String atgModuleName = atgModuleFacet.getConfiguration().getAtgModuleName();
@@ -213,7 +205,6 @@ public class AtgEnvironmentUtil {
                         .collect(Collectors.toSet());
 
                 ModifiableRootModel modifiableModel = ModuleRootManager.getInstance(module).getModifiableModel();
-                LibraryTable.ModifiableModel projectLibraryModifiableModel = ProjectLibraryTable.getInstance(module.getProject()).getModifiableModel();
 
                 for (String prefix : new String[]{Constants.ATG_CONFIG_LIBRARY_PREFIX, Constants.ATG_CLASSES_LIBRARY_PREFIX}) {
                     Arrays.stream(modifiableModel.getOrderEntries())
@@ -221,9 +212,10 @@ public class AtgEnvironmentUtil {
                             .map(f -> (LibraryOrderEntry) f)
                             .filter(f -> f.getLibraryName() != null && f.getLibraryName().startsWith(prefix))
                             .filter(f -> !requiredAtgModules.contains(f.getLibraryName().replace(prefix, "")))
-                            .peek(f -> LOG.info("Removing " + f.getLibraryName() + " from module " + module.getName() + " as it's not present in ATG-Required in Manifest"))
+                            .peek(f -> LOG.debug("Removing " + f.getLibraryName() + " from module " + module.getName() + " as it's not present in ATG-Required in Manifest"))
                             .forEach(f -> runWriteAction(() -> modifiableModel.removeOrderEntry(f)));
                 }
+
                 requiredAtgModules.forEach(m -> {
                     if (!presentModulesInProject.contains(m)) {
                         if (AtgToolkitConfig.getInstance(project).isAttachConfigsOfAtgDependencies()) {
@@ -237,7 +229,6 @@ public class AtgEnvironmentUtil {
                     }
                 });
 
-                runWriteAction(projectLibraryModifiableModel::commit);
                 runWriteAction(modifiableModel::commit);
             }
         } else {
@@ -251,17 +242,15 @@ public class AtgEnvironmentUtil {
                                                @NotNull ModifiableRootModel modifiableModel,
                                                @NotNull LibraryTable.ModifiableModel projectLibraryModifiableModel,
                                                @NotNull String prefix) {
-        LOG.info("Adding dependencies to " + module.getName());
+        LOG.debug("Adding dependencies to " + module.getName());
         Library atgDependencyLibrary = getOrCreateLibrary(atgModuleName, jarFiles, projectLibraryModifiableModel, prefix);
 
-        if (atgDependencyLibrary != null) {
-            boolean dependencyAlredyInModule = Arrays.stream(modifiableModel.getOrderEntries())
-                    .filter(LibraryOrderEntry.class::isInstance)
-                    .map(f -> ((LibraryOrderEntry) f).getLibrary())
-                    .anyMatch(atgDependencyLibrary::equals);
-            if (!dependencyAlredyInModule) {
-                runWriteAction(() -> modifiableModel.addLibraryEntry(atgDependencyLibrary));
-            }
+        boolean dependencyAlredyInModule = Arrays.stream(modifiableModel.getOrderEntries())
+                .filter(LibraryOrderEntry.class::isInstance)
+                .map(f -> ((LibraryOrderEntry) f).getLibrary())
+                .anyMatch(atgDependencyLibrary::equals);
+        if (!dependencyAlredyInModule) {
+            runWriteAction(() -> modifiableModel.addLibraryEntry(atgDependencyLibrary));
         }
     }
 
@@ -294,33 +283,40 @@ public class AtgEnvironmentUtil {
         }
     }
 
-    public static void addAtgDependenciesForAllModules(@NotNull Project project) {
-
-        ProgressIndicatorBase progressIndicator = new ProgressIndicatorBase();
-        progressIndicator.setText2("title");
-        progressIndicator.setText("message");
+    public static void addAtgDependenciesForAllModules(@NotNull Project project, ProgressIndicator indicator) {
+        indicator.setText(AtgToolkitBundle.message("update.dependencies.parsingDynamoRoot.text"));
         parseAtgHome(project);
         Module[] allModules = ModuleManager.getInstance(project).getModules();
-
-        DumbService.getInstance(project).runReadActionInSmartMode(() -> {
-            for (int i = 0; i < allModules.length; i++) {
-                Module currentModule = allModules[i];
-                addDependenciesToModule(currentModule, null);
-            }
-        });
+        indicator.setText(AtgToolkitBundle.message("update.dependencies.attach.text"));
+        int currentModuleNumber = 0;
+        LibraryTable.ModifiableModel projectLibraryModifiableModel = ProjectLibraryTable.getInstance(project).getModifiableModel();
+        for (Module module : allModules) {
+            indicator.setFraction(currentModuleNumber++ / (double) allModules.length);
+            indicator.setText2(AtgToolkitBundle.message("update.dependencies.attach.text2", module.getName()));
+            addDependenciesToModule(module, projectLibraryModifiableModel);
+        }
+        runWriteAction(projectLibraryModifiableModel::commit);
     }
 
-    public static void removeAtgDependenciesForAllModules(@NotNull Project project) {
+    public static void removeAtgDependenciesForAllModules(@NotNull Project project, ProgressIndicator indicator) {
+        LibraryTable.ModifiableModel projectLibraryModifiableModel = ProjectLibraryTable.getInstance(project).getModifiableModel();
         if (!AtgToolkitConfig.getInstance(project).isAttachConfigsOfAtgDependencies()) {
-            removeAtgDependenciesForAllModules(project, Constants.ATG_CONFIG_LIBRARY_PREFIX);
+            indicator.setText(AtgToolkitBundle.message("update.dependencies.removeConfigs.text"));
+            removeAtgDependenciesForAllModules(project, projectLibraryModifiableModel, indicator, Constants.ATG_CONFIG_LIBRARY_PREFIX);
         }
         if (!AtgToolkitConfig.getInstance(project).isAttachClassPathOfAtgDependencies()) {
-            removeAtgDependenciesForAllModules(project, Constants.ATG_CLASSES_LIBRARY_PREFIX);
+            indicator.setText(AtgToolkitBundle.message("update.dependencies.removeClasses.text"));
+            removeAtgDependenciesForAllModules(project, projectLibraryModifiableModel, indicator, Constants.ATG_CLASSES_LIBRARY_PREFIX);
         }
+        runWriteAction(projectLibraryModifiableModel::commit);
     }
 
-    public static void removeAtgDependenciesForAllModules(@NotNull Project project, @NotNull String libraryPrefix) {
-        for (Module module : ModuleManager.getInstance(project).getModules()) {
+    public static void removeAtgDependenciesForAllModules(@NotNull Project project, @NotNull LibraryTable.ModifiableModel projectLibraryModifiableModel, ProgressIndicator indicator, @NotNull String libraryPrefix) {
+        Module[] allModules = ModuleManager.getInstance(project).getModules();
+        int currentModuleNumber = 0;
+        for (Module module : allModules) {
+            indicator.setFraction(currentModuleNumber++ / (double) allModules.length);
+            indicator.setText2(AtgToolkitBundle.message("update.dependencies.attach.text2", module.getName()));
             ModifiableRootModel moduleModifiableModel = ModuleRootManager.getInstance(module).getModifiableModel();
             Set<LibraryOrderEntry> atgLibraryEntries = Arrays.stream(moduleModifiableModel.getOrderEntries())
                     .filter(LibraryOrderEntry.class::isInstance)
@@ -337,15 +333,11 @@ public class AtgEnvironmentUtil {
             }
         }
 
-        LibraryTable projectLibraryTable = ProjectLibraryTable.getInstance(project);
-        Set<Library> projectEntries = Arrays.stream(projectLibraryTable.getLibraries())
+        Set<Library> projectEntries = Arrays.stream(projectLibraryModifiableModel.getLibraries())
                 .filter(l -> l.getName() != null && l.getName().startsWith(libraryPrefix))
                 .collect(Collectors.toSet());
         if (!projectEntries.isEmpty()) {
-            runWriteAction(() -> {
-                projectEntries.forEach(projectLibraryTable::removeLibrary);
-                projectLibraryTable.getModifiableModel().commit();
-            });
+            runWriteAction(() -> projectEntries.forEach(projectLibraryModifiableModel::removeLibrary));
         }
     }
 
@@ -357,6 +349,5 @@ public class AtgEnvironmentUtil {
             application.invokeLater(() -> application.runWriteAction(runnable));
         }
     }
-
 
 }
