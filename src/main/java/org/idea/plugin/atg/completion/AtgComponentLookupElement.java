@@ -6,6 +6,8 @@ import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Optional;
+
 public class AtgComponentLookupElement extends LookupElement {
     private final PropertiesFileImpl targetComponent;
     private final String presentableName;
@@ -30,7 +32,11 @@ public class AtgComponentLookupElement extends LookupElement {
     @Override
     public void renderElement(LookupElementPresentation presentation) {
         presentation.setItemText(presentableName);
-        AtgComponentUtil.getComponentClassesStr(targetComponent).stream().findFirst().ifPresent(presentation::setTypeText);
         presentation.setTypeGrayed(true);
+        Optional<String> beanName = AtgComponentUtil.getComponentCanonicalName(targetComponent);
+        AtgComponentUtil.getComponentClassesStr(beanName.orElse(null), targetComponent.getProject()).
+                stream().
+                findFirst().
+                ifPresent(presentation::setTypeText);
     }
 }

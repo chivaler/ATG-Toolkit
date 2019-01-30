@@ -65,7 +65,7 @@ public class DependenciesTypesInspection extends LocalInspectionTool {
                                 PropertiesFileImpl dependency = dependencyLayers.iterator().next();
                                 JvmType jvmTypeSetterMethod = AtgComponentUtil.getJvmTypeForSetterMethod(setterForProperty.get());
                                 Optional<PsiClass> dependencyClass = AtgComponentUtil.getSupposedComponentClass(dependency);
-                                if (jvmTypeSetterMethod instanceof PsiType && dependencyClass.isPresent() && Constants.Keywords.Java.NUCLEUS_REFERENCES.contains(dependencyClass.get().getQualifiedName())) {
+                                if (jvmTypeSetterMethod instanceof PsiType && dependencyClass.isPresent() && !Constants.Keywords.Java.NUCLEUS_REFERENCES.contains(dependencyClass.get().getQualifiedName())) {
                                     PsiClass setterClass = jvmTypeSetterMethod instanceof PsiClassType ? ((PsiClassType) jvmTypeSetterMethod).resolve() : null;
                                     String setterTypePresentableName = setterClass != null ? setterClass.getQualifiedName() : ((PsiType) jvmTypeSetterMethod).getPresentableText();
                                     if (!"".equals(dependencyField)) {
