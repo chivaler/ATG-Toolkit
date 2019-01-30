@@ -4,6 +4,7 @@ import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
+import com.intellij.lang.properties.psi.impl.PropertyImpl;
 import com.intellij.lang.properties.psi.impl.PropertyValueImpl;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
@@ -29,17 +30,22 @@ public class TrailingSlashesInspection extends LocalInspectionTool {
         return new PsiElementVisitor() {
             @Override
             public void visitElement(PsiElement element) {
-                if (element instanceof PropertyValueImpl) {
+                if (element instanceof PropertyValueImpl && element.getParent() instanceof PropertyImpl) {
                     String value = ((PropertyValueImpl) element).getText();
-                    Matcher matcher = Constants.SUSPECTED_COMPONENT_NAME_REGEX.matcher(value);
-                    while (matcher.find()) {
-                        String beanName = matcher.group(0);
-                        int startInParent = matcher.start(0);
-                        if (beanName.endsWith("/")) {
-                            String trimmedBeanName = beanName.replaceAll("/+$", "");
-                            holder.registerProblem(element, AtgToolkitBundle.message("inspection.trailingSlash.text"), ProblemHighlightType.LIKE_UNUSED_SYMBOL,
-                                    new TextRange(startInParent + trimmedBeanName.length(),
-                                            startInParent + beanName.length()));
+                    Boolean treatAsDependecy = AtgComponentUtil.getSetterForProperty((PropertyImpl) element.getParent()).
+                            map(AtgComponentUtil::treatAsDependencySetter).
+                            orElse(false);
+                    if (treatAsDependecy) {
+                        Matcher matcher = Constants.SUSPECTED_COMPONENT_NAME_REGEX.matcher(value);
+                        while (matcher.find()) {
+                            String beanName = matcher.group(0);
+                            int startInParent = matcher.start(0);
+                            if (beanName.endsWith("/")) {
+                                String trimmedBeanName = beanName.replaceAll("/+$", "");
+                                holder.registerProblem(element, AtgToolkitBundle.message("inspection.trailingSlash.text"), ProblemHighlightType.LIKE_UNUSED_SYMBOL,
+                                        new TextRange(startInParent + trimmedBeanName.length(),
+                                                startInParent + beanName.length()));
+                            }
                         }
                     }
 
