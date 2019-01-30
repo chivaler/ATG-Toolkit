@@ -49,7 +49,7 @@ public class AtgComponentsIndexExtension extends FileBasedIndexExtension<String,
                         IProperty scopeProperty = ((PropertiesFileImpl) psiFile).findPropertyByKey(Constants.Keywords.Properties.SCOPE_PROPERTY);
                         String scope = scopeProperty != null ? scopeProperty.getUnescapedValue() : null;
 
-                        IProperty basedOnProperty = ((PropertiesFileImpl) psiFile).findPropertyByKey(Constants.Keywords.Properties.SCOPE_PROPERTY);
+                        IProperty basedOnProperty = ((PropertiesFileImpl) psiFile).findPropertyByKey(Constants.Keywords.Properties.BASED_ON_PROPERTY);
                         String basedOn = basedOnProperty != null ? basedOnProperty.getUnescapedValue() : null;
 
                         ComponentWrapper componentWrapper = new ComponentWrapper(scope, javaClass, basedOn);

@@ -1,5 +1,6 @@
 package org.idea.plugin.atg.util;
 
+import com.google.common.collect.Sets;
 import com.intellij.facet.FacetManager;
 import com.intellij.facet.ProjectFacetManager;
 import com.intellij.lang.jvm.JvmModifier;
@@ -32,6 +33,7 @@ import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.config.AtgConfigHelper;
 import org.idea.plugin.atg.config.AtgToolkitConfig;
 import org.idea.plugin.atg.index.AtgComponentsService;
+import org.idea.plugin.atg.index.ComponentWrapper;
 import org.idea.plugin.atg.module.AtgModuleFacet;
 import org.idea.plugin.atg.module.AtgModuleFacetConfiguration;
 import org.jetbrains.annotations.NotNull;
@@ -106,24 +108,33 @@ public class AtgComponentUtil {
     }
 
     @NotNull
-    public static String getComponentScope(@NotNull PropertiesFileImpl propertyFile) {
+    public static Set<String> getComponentScope(@NotNull PropertiesFileImpl propertyFile) {
         IProperty propertyScope = propertyFile.findPropertyByKey(Constants.Keywords.Properties.SCOPE_PROPERTY);
         Optional<String> supposedScope = propertyScope != null ? Optional.ofNullable(propertyScope.getValue()) : Optional.empty();
-        if (!supposedScope.isPresent() || !Constants.Keywords.Properties.AVAILABLE_SCOPES.contains(supposedScope.get())) {
-            AtgComponentsService componentsService = ServiceManager.getService(propertyFile.getProject(), AtgComponentsService.class);
-            supposedScope = getComponentCanonicalName(propertyFile).
-                    map(componentsService::getComponentScopesWithBasedOns).
-                    map(Collection::stream)
-                    .flatMap(Stream::findAny);
+        if (supposedScope.isPresent() && Constants.Keywords.Properties.AVAILABLE_SCOPES.contains(supposedScope.get())) {
+            return Sets.newHashSet(supposedScope.get());
         }
-        return supposedScope.orElse(Constants.Scope.GLOBAL);
+
+        Optional<String> beanName = getComponentCanonicalName(propertyFile);
+        if (!beanName.isPresent()) return   Sets.newHashSet(Constants.Scope.GLOBAL);
+
+        return getComponentScope(beanName.get(), propertyFile.getProject());
+    }
+
+    @NotNull
+    public static Set<String> getComponentScope(@NotNull  String beanName, @NotNull Project project) {
+        AtgComponentsService componentsService = ServiceManager.getService(project, AtgComponentsService.class);
+        Set<String> derivedValues = componentsService.getComponentDerivedPropertyWithBasedOns(beanName, ComponentWrapper::getScope);
+        return  derivedValues.isEmpty() ? Sets.newHashSet(Constants.Scope.GLOBAL) : derivedValues;
     }
 
     @NotNull
     public static Set<String> getComponentClassesStr(@NotNull PropertiesFileImpl propertyFile) {
         AtgComponentsService componentsService = ServiceManager.getService(propertyFile.getProject(), AtgComponentsService.class);
         Optional<String> beanName = getComponentCanonicalName(propertyFile);
-        return beanName.map(componentsService::getComponentClassStrWithBasedOns).orElse(new HashSet<>());
+        return beanName.
+                map(c -> componentsService.getComponentDerivedPropertyWithBasedOns(c, ComponentWrapper::getJavaClass)).
+                orElse(new HashSet<>());
     }
 
     @NotNull
@@ -429,28 +440,28 @@ public class AtgComponentUtil {
         return !parameterClassName.equals("atg.nucleus.ServiceMap");
     }
 
-    static class IsMethodIgnored implements Predicate<PsiMethod> {
-        private final List<Pattern> ignoredClassPatterns;
+static class IsMethodIgnored implements Predicate<PsiMethod> {
+    private final List<Pattern> ignoredClassPatterns;
 
-        IsMethodIgnored(@NotNull Project project) {
-            AtgToolkitConfig atgToolkitConfig = AtgToolkitConfig.getInstance(project);
-            String ignoredClassesForSetters = atgToolkitConfig.getIgnoredClassesForSetters();
-            ignoredClassPatterns = AtgConfigHelper.convertToPatternList(ignoredClassesForSetters);
-        }
-
-        @Override
-        public boolean test(PsiMethod psiMethod) {
-            for (Pattern classNamePattern : ignoredClassPatterns) {
-                PsiClass containingClass = psiMethod.getContainingClass();
-                if (containingClass == null || containingClass.isInterface()) return false;
-                String className = containingClass.getQualifiedName();
-                if (StringUtils.isNotBlank(className) && classNamePattern.matcher(className)
-                        .matches()) {
-                    return false;
-                }
-            }
-            return true;
-        }
+    IsMethodIgnored(@NotNull Project project) {
+        AtgToolkitConfig atgToolkitConfig = AtgToolkitConfig.getInstance(project);
+        String ignoredClassesForSetters = atgToolkitConfig.getIgnoredClassesForSetters();
+        ignoredClassPatterns = AtgConfigHelper.convertToPatternList(ignoredClassesForSetters);
     }
+
+    @Override
+    public boolean test(PsiMethod psiMethod) {
+        for (Pattern classNamePattern : ignoredClassPatterns) {
+            PsiClass containingClass = psiMethod.getContainingClass();
+            if (containingClass == null || containingClass.isInterface()) return false;
+            String className = containingClass.getQualifiedName();
+            if (StringUtils.isNotBlank(className) && classNamePattern.matcher(className)
+                    .matches()) {
+                return false;
+            }
+        }
+        return true;
+    }
+}
 
 }

@@ -31,6 +31,7 @@ public class AtgComponentsService {
 
     @NotNull
     //TODO Different scopes for layers and
+    @Deprecated
     public List<PropertiesFileImpl> getComponentsByName(@NotNull String componentName) {
         return FileBasedIndex.getInstance().getContainingFiles(AtgComponentsIndexExtension.NAME,
                 componentName, GlobalSearchScope.allScope(project))
@@ -40,35 +41,34 @@ public class AtgComponentsService {
     }
 
     @NotNull
-    public Set<String> getComponentScopesWithBasedOns(@NotNull String bean) {
-        return  getComponentDerivedPropertyWithBasedOns(bean, this::getComponentAndLayerScopes);
-    }
-
-    @NotNull
-    public Set<String> getComponentClassStrWithBasedOns(@NotNull String bean) {
-        return  getComponentDerivedPropertyWithBasedOns(bean, this::getComponentAndLayerClasses);
-    }
-
-    @NotNull
-    private Set<String> getComponentDerivedPropertyWithBasedOns(@NotNull String bean, @NotNull Function<String, Set<String>> propertyExtractor) {
-        Set<String> resolvedClasses = RecursionManager.doPreventingRecursion(bean, true, () -> {
+    public  Set<String> getComponentDerivedPropertyWithBasedOns(@NotNull String bean, @NotNull Function<ComponentWrapper, String> propertyExtractor) {
+        Set<String> resolvedValues = RecursionManager.doPreventingRecursion(bean, true, () -> {
             ProgressManager.checkCanceled();
-            Set<String> beanClasses = propertyExtractor.apply(bean);
-            if (!beanClasses.isEmpty()) return beanClasses;
-            return getComponentAndLayerBasedOns(bean).
+            Set<String> propertyValues = getComponentIndexedProperty(bean, propertyExtractor);
+            if (!propertyValues.isEmpty()) return propertyValues;
+            return getComponentIndexedProperty(bean, ComponentWrapper::getBasedOn).
                     stream().
                     map(b -> getComponentDerivedPropertyWithBasedOns(b, propertyExtractor)).
                     flatMap(Collection::stream).
                     collect(Collectors.toSet());
         });
-        return resolvedClasses != null ? resolvedClasses : new HashSet<>();
+        return resolvedValues != null ? resolvedValues : new HashSet<>();
     }
 
     @NotNull
     private Set<String> getComponentAndLayerBasedOns(@NotNull String bean) {
         return FileBasedIndex.getInstance().getValues(AtgComponentsIndexExtension.NAME, bean, GlobalSearchScope.allScope(project))
                 .parallelStream()
-                .map(ComponentWrapper::getJavaClass)
+                .map(ComponentWrapper::getBasedOn)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+    }
+
+    @NotNull
+    private Set<String> getComponentIndexedProperty(@NotNull String bean, @NotNull Function<ComponentWrapper,String> propertyExtractor) {
+        return FileBasedIndex.getInstance().getValues(AtgComponentsIndexExtension.NAME, bean, GlobalSearchScope.allScope(project))
+                .parallelStream()
+                .map(propertyExtractor)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
     }

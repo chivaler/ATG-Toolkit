@@ -31,4 +31,4 @@ publishPlugin {
 }
 
 group 'org.idea.plugin.atg'
-version '0.11' // Plugin version
+version '0.12' // Plugin version
