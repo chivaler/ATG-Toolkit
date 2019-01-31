@@ -4,6 +4,7 @@ import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.lang.properties.IProperty;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
+import com.intellij.lang.properties.psi.impl.PropertyImpl;
 import com.intellij.lang.properties.psi.impl.PropertyValueImpl;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
@@ -56,9 +57,14 @@ public class AvailableDependenciesInspection extends LocalInspectionTool {
                         AtgComponentsService componentsService = ServiceManager.getService(project, AtgComponentsService.class);
                         Collection<PropertiesFileImpl> dependencyLayers = componentsService.getComponentsByName(beanName);
                         if (dependencyLayers.isEmpty()) {
-                            holder.registerProblem(element,
-                                    new TextRange(startInParent, startInParent + beanName.length()),
-                                    AtgToolkitBundle.message("inspection.dependenciesAbsent.text", beanName));
+                            Boolean treatAsDependecy = AtgComponentUtil.getSetterForProperty((PropertyImpl) element.getParent()).
+                                    map(AtgComponentUtil::treatAsDependencySetter).
+                                    orElse(false);
+                            if (treatAsDependecy) {
+                                holder.registerProblem(element,
+                                        new TextRange(startInParent, startInParent + beanName.length()),
+                                        AtgToolkitBundle.message("inspection.dependenciesAbsent.text", beanName));
+                            }
                         }
                     }
 

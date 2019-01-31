@@ -20,9 +20,9 @@ import java.util.Optional;
 
 import static org.idea.plugin.atg.Constants.Keywords.Repository.PROPERTY_TYPE;
 
-public class XmlItemDescriptorInspection extends LocalInspectionTool {
+public class ItemDescriptorAvailableAttributeInspection extends LocalInspectionTool {
 
-    private XmlAttributeValuePattern itemDescriptorAttributeValuePattern = XmlPatterns.xmlAttributeValue()
+    private XmlAttributeValuePattern itemDescriptorAttributeNamePattern = XmlPatterns.xmlAttributeValue()
             .withParent(XmlPatterns.xmlAttribute().withName(Repository.NAME)
                     .withParent(XmlPatterns.xmlTag().withName(Repository.ATTRIBUTE)
                             .withParent(XmlPatterns.xmlTag().withName(Repository.PROPERTY)
@@ -42,7 +42,7 @@ public class XmlItemDescriptorInspection extends LocalInspectionTool {
                         XmlAttributeValue valueElement = (XmlAttributeValue) element;
                         String keyName = valueElement.getValue();
                         if (keyName != null && !Constants.IGNORED_ATTRIBUTES_NAMES_FOR_DESCRIPTOR.contains(keyName)) {
-                            if (itemDescriptorAttributeValuePattern.accepts(valueElement)) {
+                            if (itemDescriptorAttributeNamePattern.accepts(valueElement)) {
                                 XmlTag propertyTag = (XmlTag) element.getParent().getParent().getParent();
                                 if (propertyTag != null) {
                                     String propertyTagAttributeValue = propertyTag.getAttributeValue(PROPERTY_TYPE);

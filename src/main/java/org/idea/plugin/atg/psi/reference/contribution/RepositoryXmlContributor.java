@@ -9,6 +9,7 @@ import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.ProcessingContext;
 import com.jgoodies.common.base.Strings;
 import org.idea.plugin.atg.Constants;
+import org.idea.plugin.atg.Constants.Keywords.Repository;
 import org.idea.plugin.atg.psi.provider.XmlAttributeComponentNamesProvider;
 import org.idea.plugin.atg.psi.provider.XmlAttributeJavaClassProvider;
 import org.idea.plugin.atg.psi.reference.ItemDescriptorReference;
@@ -18,62 +19,60 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.idea.plugin.atg.Constants.Keywords.Repository.*;
-
 public class RepositoryXmlContributor extends PsiReferenceContributor {
 
     @Override
     public void registerReferenceProviders(@NotNull PsiReferenceRegistrar registrar) {
         registrar.registerReferenceProvider(XmlPatterns.xmlAttributeValue()
-                        .withParent(XmlPatterns.xmlAttribute().withName(VALUE, BEAN)
-                                .withParent(XmlPatterns.xmlTag().withName(ATTRIBUTE)
-                                        .withParent(XmlPatterns.xmlTag().withName(PROPERTY)
-                                                .andOr(XmlPatterns.xmlTag().withParent(XmlPatterns.xmlTag().withName(ITEM_DESCRIPTOR)),
-                                                        XmlPatterns.xmlTag().withSuperParent(2, XmlPatterns.xmlTag().withName(ITEM_DESCRIPTOR)))
+                        .withParent(XmlPatterns.xmlAttribute().withName(Repository.VALUE, Repository.BEAN)
+                                .withParent(XmlPatterns.xmlTag().withName(Repository.ATTRIBUTE)
+                                        .withParent(XmlPatterns.xmlTag().withName(Repository.PROPERTY)
+                                                .andOr(XmlPatterns.xmlTag().withParent(XmlPatterns.xmlTag().withName(Repository.ITEM_DESCRIPTOR)),
+                                                        XmlPatterns.xmlTag().withSuperParent(2, XmlPatterns.xmlTag().withName(Repository.ITEM_DESCRIPTOR)))
                                         )))
                         .and(XmlPatterns.xmlAttributeValue().withValue(StandardPatterns.string().startsWith("/"))),
                 new XmlAttributeComponentNamesProvider());
 
         registrar.registerReferenceProvider(XmlPatterns.xmlAttributeValue()
-                        .withParent(XmlPatterns.xmlAttribute().withName(REPOSITORY)
-                                .withParent(XmlPatterns.xmlTag().withName(PROPERTY)
-                                        .andOr(XmlPatterns.xmlTag().withParent(XmlPatterns.xmlTag().withName(ITEM_DESCRIPTOR)),
-                                                XmlPatterns.xmlTag().withSuperParent(2, XmlPatterns.xmlTag().withName(ITEM_DESCRIPTOR)))
+                        .withParent(XmlPatterns.xmlAttribute().withName(Repository.REPOSITORY)
+                                .withParent(XmlPatterns.xmlTag().withName(Repository.PROPERTY)
+                                        .andOr(XmlPatterns.xmlTag().withParent(XmlPatterns.xmlTag().withName(Repository.ITEM_DESCRIPTOR)),
+                                                XmlPatterns.xmlTag().withSuperParent(2, XmlPatterns.xmlTag().withName(Repository.ITEM_DESCRIPTOR)))
                                 ))
                         .and(XmlPatterns.xmlAttributeValue().withValue(StandardPatterns.string().startsWith("/"))),
                 new XmlAttributeComponentNamesProvider());
 
         registrar.registerReferenceProvider(XmlPatterns.xmlAttributeValue()
-                        .withParent(XmlPatterns.xmlAttribute().withName(PROPERTY_TYPE, EDITOR_CLASS)
-                                .withParent(XmlPatterns.xmlTag().withName(PROPERTY)
-                                        .andOr(XmlPatterns.xmlTag().withParent(XmlPatterns.xmlTag().withName(ITEM_DESCRIPTOR)),
-                                                XmlPatterns.xmlTag().withSuperParent(2, XmlPatterns.xmlTag().withName(ITEM_DESCRIPTOR))))),
+                        .withParent(XmlPatterns.xmlAttribute().withName(Repository.PROPERTY_TYPE, Repository.EDITOR_CLASS)
+                                .withParent(XmlPatterns.xmlTag().withName(Repository.PROPERTY)
+                                        .andOr(XmlPatterns.xmlTag().withParent(XmlPatterns.xmlTag().withName(Repository.ITEM_DESCRIPTOR)),
+                                                XmlPatterns.xmlTag().withSuperParent(2, XmlPatterns.xmlTag().withName(Repository.ITEM_DESCRIPTOR))))),
                 new XmlAttributeJavaClassProvider());
 
         registrar.registerReferenceProvider(XmlPatterns.xmlAttributeValue()
-                        .withParent(XmlPatterns.xmlAttribute().withName(NAME)
-                                .withParent(XmlPatterns.xmlTag().withName(ATTRIBUTE)
-                                        .withParent(XmlPatterns.xmlTag().withName(PROPERTY)
-                                                .andOr(XmlPatterns.xmlTag().withParent(XmlPatterns.xmlTag().withName(ITEM_DESCRIPTOR)),
-                                                        XmlPatterns.xmlTag().withSuperParent(2, XmlPatterns.xmlTag().withName(ITEM_DESCRIPTOR)))))),
+                        .withParent(XmlPatterns.xmlAttribute().withName(Repository.NAME)
+                                .withParent(XmlPatterns.xmlTag().withName(Repository.ATTRIBUTE)
+                                        .withParent(XmlPatterns.xmlTag().withName(Repository.PROPERTY)
+                                                .andOr(XmlPatterns.xmlTag().withParent(XmlPatterns.xmlTag().withName(Repository.ITEM_DESCRIPTOR)),
+                                                        XmlPatterns.xmlTag().withSuperParent(2, XmlPatterns.xmlTag().withName(Repository.ITEM_DESCRIPTOR)))))),
                 new PropertyDescriptorAttributesProvider());
 
         registrar.registerReferenceProvider(XmlPatterns.xmlAttributeValue()
-                        .withParent(XmlPatterns.xmlAttribute().withName(NAME)
-                                .withParent(XmlPatterns.xmlTag().withName(ITEM_DESCRIPTOR))),
+                        .withParent(XmlPatterns.xmlAttribute().withName(Repository.NAME)
+                                .withParent(XmlPatterns.xmlTag().withName(Repository.ITEM_DESCRIPTOR))),
                 new ItemDescriptorReferenceProvider());
 
         registrar.registerReferenceProvider(XmlPatterns.xmlAttributeValue()
-                        .withParent(XmlPatterns.xmlAttribute().withName(SUPER_TYPE)
-                                .withParent(XmlPatterns.xmlTag().withName(ITEM_DESCRIPTOR))),
+                        .withParent(XmlPatterns.xmlAttribute().withName(Repository.SUPER_TYPE)
+                                .withParent(XmlPatterns.xmlTag().withName(Repository.ITEM_DESCRIPTOR))),
                 new ItemDescriptorReferenceProvider());
 
 
         registrar.registerReferenceProvider(XmlPatterns.xmlAttributeValue()
-                        .withParent(XmlPatterns.xmlAttribute().withName(COMPONENT_ITEM_TYPE)
-                                .withParent(XmlPatterns.xmlTag().withName(PROPERTY)
-                                        .andOr(XmlPatterns.xmlTag().withParent(XmlPatterns.xmlTag().withName(ITEM_DESCRIPTOR)),
-                                                XmlPatterns.xmlTag().withSuperParent(2, XmlPatterns.xmlTag().withName(ITEM_DESCRIPTOR))))),
+                        .withParent(XmlPatterns.xmlAttribute().withName(Repository.COMPONENT_ITEM_TYPE)
+                                .withParent(XmlPatterns.xmlTag().withName(Repository.PROPERTY)
+                                        .andOr(XmlPatterns.xmlTag().withParent(XmlPatterns.xmlTag().withName(Repository.ITEM_DESCRIPTOR)),
+                                                XmlPatterns.xmlTag().withSuperParent(2, XmlPatterns.xmlTag().withName(Repository.ITEM_DESCRIPTOR))))),
                 new ItemDescriptorReferenceProvider());
     }
 
@@ -103,7 +102,7 @@ public class RepositoryXmlContributor extends PsiReferenceContributor {
             if (Strings.isNotBlank(valueElement.getValue()) && !Constants.IGNORED_ATTRIBUTES_NAMES_FOR_DESCRIPTOR.contains(valueElement.getValue())) {
                 XmlTag propertyTag = (XmlTag) element.getParent().getParent().getParent();
                 if (propertyTag != null) {
-                    String propertyTagAttributeValue = propertyTag.getAttributeValue(PROPERTY_TYPE);
+                    String propertyTagAttributeValue = propertyTag.getAttributeValue(Repository.PROPERTY_TYPE);
                     String propertyDescriptorClass = propertyTagAttributeValue != null
                             ? propertyTagAttributeValue
                             : Constants.DEFAULT_ITEM_DESCRIPTOR_CLASS;
