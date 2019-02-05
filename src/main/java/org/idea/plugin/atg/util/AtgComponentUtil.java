@@ -228,7 +228,7 @@ public class AtgComponentUtil {
         VirtualFile virtualFile = supposedVirtualFile instanceof LightVirtualFile ?
                 ((LightVirtualFile) supposedVirtualFile).getOriginalFile() :
                 supposedVirtualFile;
-        if (!supposedVirtualFile.isValid()) return Optional.empty();
+        if (virtualFile == null || !virtualFile.isValid()) return Optional.empty();
         if (virtualFile.getFileSystem() instanceof JarFileSystem) {
             Optional<Library> libraryForFile = ProjectFileIndex.getInstance(project).getOrderEntriesForFile(virtualFile).stream()
                     .filter(LibraryOrderEntry.class::isInstance)
