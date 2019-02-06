@@ -20,6 +20,9 @@ public class AtgToolkitConfig implements PersistentStateComponent<AtgToolkitConf
     public String ignoredClassesForSetters = DEFAULT_IGNORED_PARENTS;
     public String configRootsPatterns = DEFAULT_RELATIVE_CONFIG_PATH;
     public String configLayerRootsPatterns = DEFAULT_RELATIVE_CONFIG_LAYERS_PATH;
+    public boolean removeRootsNonMatchedToPatterns = false;
+    public boolean removeFacetsIfModuleHasNoAtgRoots = false;
+
     public boolean attachClassPathOfAtgDependencies = false;
     public boolean attachConfigsOfAtgDependencies = false;
 
@@ -104,5 +107,21 @@ public class AtgToolkitConfig implements PersistentStateComponent<AtgToolkitConf
 
     public void setShowReferencesOnComponentInGoTo(boolean showReferencesOnComponentInGoTo) {
         this.showReferencesOnComponentInGoTo = showReferencesOnComponentInGoTo;
+    }
+
+    public boolean isRemoveRootsNonMatchedToPatterns() {
+        return removeRootsNonMatchedToPatterns;
+    }
+
+    public void setRemoveRootsNonMatchedToPatterns(boolean removeRootsNonMatchedToPatterns) {
+        this.removeRootsNonMatchedToPatterns = removeRootsNonMatchedToPatterns;
+    }
+
+    public boolean isRemoveFacetsIfModuleHasNoAtgRoots() {
+        return removeFacetsIfModuleHasNoAtgRoots;
+    }
+
+    public void setRemoveFacetsIfModuleHasNoAtgRoots(boolean removeFacetsIfModuleHasNoAtgRoots) {
+        this.removeFacetsIfModuleHasNoAtgRoots = removeFacetsIfModuleHasNoAtgRoots;
     }
 }

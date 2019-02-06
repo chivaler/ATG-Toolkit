@@ -25,10 +25,12 @@ public class AtgModuleFacetType extends FacetType<AtgModuleFacet, AtgModuleFacet
         super(Constants.FACET_TYPE_ID, Constants.FACET_STRING_ID, Constants.FACET_PRESENTABLE_NAME);
     }
 
+    @Override
     public AtgModuleFacetConfiguration createDefaultConfiguration() {
         return new AtgModuleFacetConfiguration();
     }
 
+    @Override
     public AtgModuleFacet createFacet(@NotNull final Module module,
                                       final String name,
                                       @NotNull final AtgModuleFacetConfiguration configuration,
@@ -41,6 +43,7 @@ public class AtgModuleFacetType extends FacetType<AtgModuleFacet, AtgModuleFacet
         return moduleType.equals(JavaModuleType.getModuleType());
     }
 
+    @Override
     public Icon getIcon() {
         return Constants.Icons.FACET_ICON;
     }

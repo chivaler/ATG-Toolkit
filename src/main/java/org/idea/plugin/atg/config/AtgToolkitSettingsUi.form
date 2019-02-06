@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="org.idea.plugin.atg.config.AtgToolkitSettingsUi">
-  <grid id="111c4" binding="rootPanel" layout-manager="GridLayoutManager" row-count="8" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+  <grid id="111c4" binding="rootPanel" layout-manager="GridLayoutManager" row-count="7" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
       <xy x="1" y="44" width="1134" height="687"/>
@@ -8,62 +8,97 @@
     <properties/>
     <border type="none"/>
     <children>
-      <grid id="fe3b6" layout-manager="GridLayoutManager" row-count="2" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="fe3b6" layout-manager="GridLayoutManager" row-count="4" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
           <grid row="0" column="0" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
-        <clientProperties>
-          <BorderFactoryClass class="java.lang.String" value="com.intellij.ui.IdeBorderFactory$PlainSmallWithIndent"/>
-        </clientProperties>
         <border type="etched" title-resource-bundle="org/idea/plugin/atg/AtgToolkitBundle" title-key="gui.config.detection.title">
           <font/>
         </border>
         <children>
-          <component id="2a6e8" class="javax.swing.JLabel">
+          <grid id="3f05a" layout-manager="GridLayoutManager" row-count="2" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
-              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="0" fill="3" indent="0" use-parent-layout="true"/>
             </constraints>
             <properties>
-              <labelFor value="2008d"/>
-              <text resource-bundle="org/idea/plugin/atg/AtgToolkitBundle" key="gui.config.detection.configRoots.text"/>
+              <enabled value="true"/>
+            </properties>
+            <border type="none"/>
+            <children>
+              <component id="2a6e8" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <labelFor value="2008d"/>
+                  <text resource-bundle="org/idea/plugin/atg/AtgToolkitBundle" key="gui.config.detection.configRoots.text"/>
+                </properties>
+              </component>
+              <component id="a2263" class="javax.swing.JLabel">
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <labelFor value="a1a67"/>
+                  <text resource-bundle="org/idea/plugin/atg/AtgToolkitBundle" key="gui.config.detection.configLayersRoots.text"/>
+                </properties>
+              </component>
+              <component id="2008d" class="javax.swing.JTextField" binding="configPatternsField">
+                <constraints>
+                  <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="-1"/>
+                  </grid>
+                </constraints>
+                <properties>
+                  <toolTipText resource-bundle="org/idea/plugin/atg/AtgToolkitBundle" key="gui.config.detection.configRoots.hint"/>
+                </properties>
+              </component>
+              <component id="a1a67" class="javax.swing.JTextField" binding="configLayersPatternsField">
+                <constraints>
+                  <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                    <preferred-size width="150" height="-1"/>
+                  </grid>
+                </constraints>
+                <properties>
+                  <toolTipText resource-bundle="org/idea/plugin/atg/AtgToolkitBundle" key="gui.config.detection.configLayersRoots.hint"/>
+                </properties>
+              </component>
+            </children>
+          </grid>
+          <component id="9adad" class="javax.swing.JButton" binding="detectAllConfigurationRootsButton" default-binding="true">
+            <constraints>
+              <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text resource-bundle="org/idea/plugin/atg/AtgToolkitBundle" key="gui.config.detection.button.title"/>
             </properties>
           </component>
-          <component id="a2263" class="javax.swing.JLabel">
+          <component id="dfe8" class="javax.swing.JCheckBox" binding="removeRootsNonMatchedToPatterns">
             <constraints>
-              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <labelFor value="a1a67"/>
-              <text resource-bundle="org/idea/plugin/atg/AtgToolkitBundle" key="gui.config.detection.configLayersRoots.text"/>
+              <text resource-bundle="org/idea/plugin/atg/AtgToolkitBundle" key="gui.config.detection.removeRootsNonMatchedToPatterns.text"/>
+              <toolTipText resource-bundle="org/idea/plugin/atg/AtgToolkitBundle" key="gui.config.detection.removeRootsNonMatchedToPatterns.hint"/>
             </properties>
           </component>
-          <component id="2008d" class="javax.swing.JTextField" binding="configPatternsField">
+          <component id="253e2" class="javax.swing.JCheckBox" binding="removeFacetsIfModuleHasNoAtgRoots">
             <constraints>
-              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                <preferred-size width="150" height="-1"/>
-              </grid>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <toolTipText resource-bundle="org/idea/plugin/atg/AtgToolkitBundle" key="gui.config.detection.configRoots.hint"/>
-            </properties>
-          </component>
-          <component id="a1a67" class="javax.swing.JTextField" binding="configLayersPatternsField">
-            <constraints>
-              <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                <preferred-size width="150" height="-1"/>
-              </grid>
-            </constraints>
-            <properties>
-              <toolTipText resource-bundle="org/idea/plugin/atg/AtgToolkitBundle" key="gui.config.detection.configLayersRoots.hint"/>
+              <text resource-bundle="org/idea/plugin/atg/AtgToolkitBundle" key="gui.config.detection.removeFacetsIfModuleHasNoAtgRoots.text"/>
+              <toolTipText resource-bundle="org/idea/plugin/atg/AtgToolkitBundle" key="gui.config.detection.removeFacetsIfModuleHasNoAtgRoots.hint"/>
             </properties>
           </component>
         </children>
       </grid>
       <vspacer id="53d33">
         <constraints>
-          <grid row="7" column="0" row-span="1" col-span="4" vsize-policy="7" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+          <grid row="6" column="0" row-span="1" col-span="4" vsize-policy="7" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
         </constraints>
       </vspacer>
       <component id="ffae6" class="javax.swing.JLabel" binding="errorLabel">
@@ -81,9 +116,6 @@
           <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
-        <clientProperties>
-          <BorderFactoryClass class="java.lang.String" value="com.intellij.ui.IdeBorderFactory$PlainSmallWithIndent"/>
-        </clientProperties>
         <border type="empty" title-resource-bundle="org/idea/plugin/atg/AtgToolkitBundle" title-key="gui.config.dependencies.title">
           <color color="-4473925"/>
         </border>
@@ -128,9 +160,6 @@
           <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
-        <clientProperties>
-          <BorderFactoryClass class="java.lang.String" value="com.intellij.ui.IdeBorderFactory$PlainSmallWithIndent"/>
-        </clientProperties>
         <border type="etched" title-resource-bundle="org/idea/plugin/atg/AtgToolkitBundle" title-key="gui.config.goto.title"/>
         <children>
           <component id="68a10" class="javax.swing.JCheckBox" binding="showOverridesOfComponentInGoTo">
@@ -163,9 +192,6 @@
           <grid row="1" column="0" row-span="1" col-span="4" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
-        <clientProperties>
-          <BorderFactoryClass class="java.lang.String" value="com.intellij.ui.IdeBorderFactory$PlainSmallWithIndent"/>
-        </clientProperties>
         <border type="etched" title-resource-bundle="org/idea/plugin/atg/AtgToolkitBundle" title-key="gui.config.completion.title">
           <font/>
         </border>

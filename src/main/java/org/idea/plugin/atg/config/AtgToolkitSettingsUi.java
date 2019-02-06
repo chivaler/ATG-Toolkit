@@ -19,6 +19,9 @@ public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
     private JPanel rootPanel;
     private JTextField configPatternsField;
     private JTextField configLayersPatternsField;
+    private JCheckBox removeRootsNonMatchedToPatterns;
+    private JCheckBox removeFacetsIfModuleHasNoAtgRoots;
+
     private JTextField ignoredClassesField;
 
     private JCheckBox attachClassPathOfAtgDependencies;
@@ -28,15 +31,20 @@ public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
     private JCheckBox showOverridesOfComponentInGoTo;
 
     private JLabel errorLabel;
+    private JButton detectAllConfigurationRootsButton;
 
     public AtgToolkitSettingsUi(Project project) {
         this.project = project;
+        detectAllConfigurationRootsButton.addActionListener(e -> new DetectAtgRootsAction()
+                .runDetection(project, configPatternsField.getText(), configLayersPatternsField.getText(), removeRootsNonMatchedToPatterns.isSelected(), removeFacetsIfModuleHasNoAtgRoots.isSelected()));
     }
 
     @Override
     public void reset(@NotNull AtgToolkitConfig atgToolkitConfig) {
         configPatternsField.setText(atgToolkitConfig.getConfigRootsPatterns());
         configLayersPatternsField.setText(atgToolkitConfig.getConfigLayerRootsPatterns());
+        removeRootsNonMatchedToPatterns.setSelected(atgToolkitConfig.isRemoveRootsNonMatchedToPatterns());
+        removeFacetsIfModuleHasNoAtgRoots.setSelected(atgToolkitConfig.isRemoveFacetsIfModuleHasNoAtgRoots());
         ignoredClassesField.setText(atgToolkitConfig.getIgnoredClassesForSetters());
         attachClassPathOfAtgDependencies.setSelected(atgToolkitConfig.isAttachClassPathOfAtgDependencies());
         attachConfigsOfAtgDependencies.setSelected(atgToolkitConfig.isAttachConfigsOfAtgDependencies());
@@ -48,10 +56,16 @@ public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
     public boolean isModified(@NotNull AtgToolkitConfig atgToolkitConfig) {
         boolean isModified = false;
 
-        if (!configPatternsField.getText().equals(atgToolkitConfig.getConfigRootsPatterns())) isModified = true;
+        if (!configPatternsField.getText().equals(atgToolkitConfig.getConfigRootsPatterns()))
+            isModified = true;
         if (!configLayersPatternsField.getText().equals(atgToolkitConfig.getConfigLayerRootsPatterns()))
             isModified = true;
-        if (!ignoredClassesField.getText().equals(atgToolkitConfig.getIgnoredClassesForSetters())) isModified = true;
+        if (removeFacetsIfModuleHasNoAtgRoots.isSelected() != atgToolkitConfig.isRemoveFacetsIfModuleHasNoAtgRoots())
+            isModified = true;
+        if (removeRootsNonMatchedToPatterns.isSelected() != atgToolkitConfig.isRemoveRootsNonMatchedToPatterns())
+            isModified = true;
+        if (!ignoredClassesField.getText().equals(atgToolkitConfig.getIgnoredClassesForSetters()))
+            isModified = true;
         if (attachClassPathOfAtgDependencies.isSelected() != atgToolkitConfig.isAttachClassPathOfAtgDependencies())
             isModified = true;
         if (attachConfigsOfAtgDependencies.isSelected() != atgToolkitConfig.isAttachConfigsOfAtgDependencies())
@@ -73,6 +87,9 @@ public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
 
         atgToolkitConfig.setConfigRootsPatterns(configRootPatters);
         atgToolkitConfig.setConfigLayerRootsPatterns(configLayerRootPatters);
+        atgToolkitConfig.setRemoveRootsNonMatchedToPatterns(removeRootsNonMatchedToPatterns.isSelected());
+        atgToolkitConfig.setRemoveFacetsIfModuleHasNoAtgRoots(removeFacetsIfModuleHasNoAtgRoots.isSelected());
+
         atgToolkitConfig.setIgnoredClassesForSetters(ignoredClassesField.getText());
 
         boolean dependenciesResolvingChanged = false;
@@ -109,5 +126,4 @@ public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
     public JComponent getComponent() {
         return rootPanel;
     }
-
 }
