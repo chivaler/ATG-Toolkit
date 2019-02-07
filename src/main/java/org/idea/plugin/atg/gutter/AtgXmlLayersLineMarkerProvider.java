@@ -28,11 +28,12 @@ public class AtgXmlLayersLineMarkerProvider extends RelatedItemLineMarkerProvide
                     List<XmlFileImpl> xmlFilesWithSameName = AtgComponentUtil.getApplicableXmlsByName(xmlName.get(), element.getProject());
                     xmlFilesWithSameName.remove(psiFile);
                     if (!xmlFilesWithSameName.isEmpty()) {
+                        PsiElement elementToMark = element.getFirstChild() != null ? element .getFirstChild() : element;
                         NavigationGutterIconBuilder<PsiElement> builder =
                                 NavigationGutterIconBuilder.create(Constants.Icons.COMPONENT_ICON).
                                         setTargets(xmlFilesWithSameName).
                                         setTooltipText(AtgToolkitBundle.message("goto.component.layers.description", xmlName.get()));
-                        result.add(builder.createLineMarkerInfo(element));
+                        result.add(builder.createLineMarkerInfo(elementToMark));
                     }
                 }
 
