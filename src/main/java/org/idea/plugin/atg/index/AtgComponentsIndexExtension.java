@@ -41,7 +41,7 @@ public class AtgComponentsIndexExtension extends FileBasedIndexExtension<String,
                 FileContentImpl fileContent = (FileContentImpl) inputData;
                 PsiFile psiFile = fileContent.getPsiFileForPsiDependentIndex();
                 if (psiFile instanceof PropertiesFileImpl) {
-                    Optional<String> componentName = AtgComponentUtil.getComponentCanonicalName(inputData.getFile(), inputData.getProject());
+                    Optional<String> componentName = AtgComponentUtil.getComponentCanonicalName((PropertiesFileImpl)psiFile);
                     if (componentName.isPresent()) {
                         IProperty classProperty = ((PropertiesFileImpl) psiFile).findPropertyByKey(Constants.Keywords.Properties.CLASS_PROPERTY);
                         String javaClass = classProperty != null ? classProperty.getUnescapedValue() : null;
@@ -59,7 +59,7 @@ public class AtgComponentsIndexExtension extends FileBasedIndexExtension<String,
             } catch (ProcessCanceledException e) {
                 throw e;
             } catch (Exception e) {
-                LOG.info("Unexpected Error during indexing of bytecode", e);
+                LOG.info("Unexpected Error during indexing of properties file", e);
             }
             return Collections.emptyMap();
         };

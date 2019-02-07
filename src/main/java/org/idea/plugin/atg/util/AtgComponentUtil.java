@@ -7,11 +7,11 @@ import com.intellij.lang.jvm.JvmModifier;
 import com.intellij.lang.jvm.JvmParameter;
 import com.intellij.lang.jvm.types.JvmType;
 import com.intellij.lang.properties.IProperty;
+import com.intellij.lang.properties.PropertiesFileType;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.lang.properties.psi.impl.PropertyImpl;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.roots.ModuleRootManager;
@@ -202,6 +202,7 @@ public class AtgComponentUtil {
     }
 
     @NotNull
+    @Deprecated
     public static List<XmlFileImpl> getApplicableXmlsByName(@NotNull String xmlRelativePath,
                                                             @NotNull Project project) {
         return getApplicableConfigRoots(null, project, false).stream()
@@ -220,43 +221,47 @@ public class AtgComponentUtil {
     @NotNull
     public static Optional<String> getComponentCanonicalName(@NotNull PropertiesFileImpl file) {
         VirtualFile virtualFile = file.getViewProvider().getVirtualFile();
-        return getComponentCanonicalName(virtualFile, file.getProject());
+        return getAtgRelativeName(virtualFile, file.getProject(), PropertiesFileType.DOT_DEFAULT_EXTENSION);
     }
 
     @NotNull
-    public static Optional<String> getComponentCanonicalName(@NotNull VirtualFile supposedVirtualFile, @NotNull Project project) {
+    public static Optional<String> getAtgRelativeName(@NotNull VirtualFile supposedVirtualFile, @Nullable Project project, @NotNull  String extensionToTrim) {
+        if (project == null) return Optional.empty();
         VirtualFile virtualFile = supposedVirtualFile instanceof LightVirtualFile ?
                 ((LightVirtualFile) supposedVirtualFile).getOriginalFile() :
                 supposedVirtualFile;
         if (virtualFile == null || !virtualFile.isValid()) return Optional.empty();
+        ProjectFileIndex projectFileIndex = ProjectFileIndex.getInstance(project);
+
         if (virtualFile.getFileSystem() instanceof JarFileSystem) {
-            Optional<Library> libraryForFile = ProjectFileIndex.getInstance(project).getOrderEntriesForFile(virtualFile).stream()
+            Optional<Library> libraryForFile = projectFileIndex.getOrderEntriesForFile(virtualFile).stream()
                     .filter(LibraryOrderEntry.class::isInstance)
                     .map(f -> ((LibraryOrderEntry) f).getLibrary())
                     .filter(Objects::nonNull)
-                    //TODO probably not needed
                     .filter(l -> l.getName() != null && l.getName().startsWith(Constants.ATG_CONFIG_LIBRARY_PREFIX))
                     .findAny();
             if (libraryForFile.isPresent()) {
                 String path = virtualFile.getPath();
                 int separatorIndex = path.indexOf("!/");
-                return Optional.of(path.substring(separatorIndex + 1).replace(".properties", ""));
+                return Optional.of(path.substring(separatorIndex + 1).replace(extensionToTrim, ""));
             }
-        }
-
-        Module module = ModuleUtilCore.findModuleForFile(virtualFile, project);
-        if (module != null) {
-            AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
-            if (atgFacet != null) {
-                AtgModuleFacetConfiguration configuration = atgFacet.getConfiguration();
-                Collection<VirtualFile> configRoots = configuration.getConfigRoots();
-                Set<VirtualFile> configLayersRoots = configuration.getConfigLayerRoots().keySet();
-                return Stream.concat(configRoots.stream(), configLayersRoots.stream())
-                        .filter(Objects::nonNull)
-                        .filter(VirtualFile::isDirectory)
-                        .filter(r -> VfsUtilCore.isAncestor(r, virtualFile, true))
-                        .map(r -> "/" + VfsUtilCore.getRelativeLocation(virtualFile, r).replace(".properties", ""))
-                        .findFirst();
+        } else {
+            Module module = projectFileIndex.getModuleForFile(virtualFile);
+            if (module != null) {
+                AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
+                if (atgFacet != null) {
+                    AtgModuleFacetConfiguration configuration = atgFacet.getConfiguration();
+                    Collection<VirtualFile> configRoots = configuration.getConfigRoots();
+                    Set<VirtualFile> configLayersRoots = configuration.getConfigLayerRoots().keySet();
+                    return Stream.concat(configRoots.stream(), configLayersRoots.stream())
+                            .filter(Objects::nonNull)
+                            .filter(VirtualFile::isDirectory)
+                            .filter(r -> VfsUtilCore.isAncestor(r, virtualFile, true))
+                            .map(r -> VfsUtilCore.getRelativeLocation(virtualFile, r))
+                            .filter(Objects::nonNull)
+                            .map(p -> "/" + p.replace(extensionToTrim, ""))
+                            .findAny();
+                }
             }
         }
 
@@ -265,12 +270,7 @@ public class AtgComponentUtil {
 
     @NotNull
     public static Optional<String> getXmlRelativePath(@NotNull XmlFile file) {
-        return getApplicableConfigRoots(null, file.getProject(), true).stream()
-                .filter(Objects::nonNull)
-                .filter(VirtualFile::isDirectory)
-                .filter(r -> VfsUtilCore.isAncestor(r, file.getVirtualFile(), true))
-                .map(r -> "/" + VfsUtilCore.getRelativeLocation(file.getVirtualFile(), r).replace(".xml", ""))
-                .findFirst();
+        return getAtgRelativeName(file.getVirtualFile(), file.getProject(), "" );
     }
 
     @Nullable

@@ -1,5 +1,6 @@
 package org.idea.plugin.atg.psi.reference;
 
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiPolyVariantReferenceBase;
@@ -9,6 +10,7 @@ import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import org.apache.commons.lang.StringUtils;
+import org.idea.plugin.atg.index.AtgComponentsService;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -40,8 +42,9 @@ public class ItemDescriptorReference extends PsiPolyVariantReferenceBase<XmlAttr
 
         Set<XmlFile> xmlFilesWithSamePath = new HashSet<>();
         xmlFilesWithSamePath.add((XmlFile) containingFile);
+        AtgComponentsService componentsService = ServiceManager.getService(containingFile.getProject(), AtgComponentsService.class);
         Optional<String> xmlRelativePath = AtgComponentUtil.getXmlRelativePath((XmlFile) containingFile);
-        xmlRelativePath.ifPresent(s -> xmlFilesWithSamePath.addAll(AtgComponentUtil.getApplicableXmlsByName(s, containingFile.getProject())));
+        xmlRelativePath.ifPresent(s -> xmlFilesWithSamePath.addAll(componentsService.getXmlsByName(s)));
         return xmlFilesWithSamePath.stream()
                 .map(f -> findItemDescriptorByName(seekingItemDescriptorName, f))
                 .filter(Objects::nonNull)

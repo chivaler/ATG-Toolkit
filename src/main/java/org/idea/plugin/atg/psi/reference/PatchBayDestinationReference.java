@@ -1,12 +1,14 @@
 package org.idea.plugin.atg.psi.reference;
 
 import com.google.common.collect.Lists;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlText;
 import org.apache.commons.lang.StringUtils;
+import org.idea.plugin.atg.index.AtgComponentsService;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -35,8 +37,9 @@ public class PatchBayDestinationReference extends PsiPolyVariantReferenceBase<Xm
 
         Set<XmlFile> xmlFilesWithSamePath = new HashSet<>();
         xmlFilesWithSamePath.add((XmlFile) containingFile);
+        AtgComponentsService componentsService = ServiceManager.getService(containingFile.getProject(), AtgComponentsService.class);
         Optional<String> xmlRelativePath = AtgComponentUtil.getXmlRelativePath((XmlFile) containingFile);
-        xmlRelativePath.ifPresent(s -> xmlFilesWithSamePath.addAll(AtgComponentUtil.getApplicableXmlsByName(s, containingFile.getProject())));
+        xmlRelativePath.ifPresent(s -> xmlFilesWithSamePath.addAll(componentsService.getXmlsByName(s)));
         return xmlFilesWithSamePath.stream()
                 .map(f -> findDestinations(destinationName, f))
                 .flatMap(Collection::stream)

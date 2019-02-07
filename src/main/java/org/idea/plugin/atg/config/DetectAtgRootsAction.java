@@ -53,7 +53,6 @@ public class DetectAtgRootsAction extends AnAction {
                              boolean removeRootsNonMatchedToPatterns, boolean removeFacetsIfModuleHasNoAtgRoots) {
         List<Pattern> configRootsPatterns = AtgConfigHelper.convertToPatternList(configRootsPatternsStr);
         List<Pattern> configRootsLayerPatterns = AtgConfigHelper.convertToPatternList(configRootsLayerPatternsStr);
-        AtgToolkitConfig atgToolkitConfig = AtgToolkitConfig.getInstance(project);
         AtgComponentsService atgComponentsService = ServiceManager.getService(project, AtgComponentsService.class);
         addedRoots = Lists.newArrayList();
         removedRoots = Lists.newArrayList();
@@ -133,9 +132,10 @@ public class DetectAtgRootsAction extends AnAction {
     }
 
     private void removePreviousRootsIfRequired(@NotNull AtgModuleFacet atgFacet,
-                                               @NotNull boolean removeRootsNonMatchedToPatterns,
+                                               boolean removeRootsNonMatchedToPatterns,
                                                @NotNull AtgComponentsService atgComponentsService) {
         if (removeRootsNonMatchedToPatterns) {
+            //TODO ContainerUtil.intersection
             AtgModuleFacetConfiguration atgFacetConfiguration = atgFacet.getConfiguration();
             Collection<VirtualFile> configRoots = atgFacetConfiguration.getConfigRoots();
             Collection<VirtualFile> previousConfigRoots = Lists.newArrayList(configRoots);

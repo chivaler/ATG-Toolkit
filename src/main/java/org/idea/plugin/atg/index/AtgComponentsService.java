@@ -12,6 +12,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
+import com.intellij.psi.impl.source.xml.XmlFileImpl;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.indexing.FileBasedIndex;
 import org.jetbrains.annotations.NotNull;
@@ -31,17 +32,30 @@ public class AtgComponentsService {
 
     @NotNull
     //TODO Different scopes for layers and
-    @Deprecated
     public List<PropertiesFileImpl> getComponentsByName(@NotNull String componentName) {
         return FileBasedIndex.getInstance().getContainingFiles(AtgComponentsIndexExtension.NAME,
                 componentName, GlobalSearchScope.allScope(project))
-                .parallelStream()
-                .map(this::getPropertiesPsiFileSafely)
+                .stream()
+                .map(this::getPsiFileSafely)
+                .filter(PropertiesFileImpl.class::isInstance)
+                .map(PropertiesFileImpl.class::cast)
                 .collect(Collectors.toList());
     }
 
     @NotNull
-    public  Set<String> getComponentDerivedPropertyWithBasedOns(@NotNull String bean, @NotNull Function<ComponentWrapper, String> propertyExtractor) {
+    //TODO Different scopes for layers and
+    public List<XmlFileImpl> getXmlsByName(@NotNull String componentName) {
+        return FileBasedIndex.getInstance().getContainingFiles(AtgXmlsIndexExtension.NAME,
+                componentName, GlobalSearchScope.allScope(project))
+                .stream()
+                .map(this::getPsiFileSafely)
+                .filter(XmlFileImpl.class::isInstance)
+                .map(XmlFileImpl.class::cast)
+                .collect(Collectors.toList());
+    }
+
+    @NotNull
+    public Set<String> getComponentDerivedPropertyWithBasedOns(@NotNull String bean, @NotNull Function<ComponentWrapper, String> propertyExtractor) {
         Set<String> resolvedValues = RecursionManager.doPreventingRecursion(bean, true, () -> {
             ProgressManager.checkCanceled();
             Set<String> propertyValues = getComponentIndexedProperty(bean, propertyExtractor);
@@ -65,7 +79,7 @@ public class AtgComponentsService {
     }
 
     @NotNull
-    private Set<String> getComponentIndexedProperty(@NotNull String bean, @NotNull Function<ComponentWrapper,String> propertyExtractor) {
+    private Set<String> getComponentIndexedProperty(@NotNull String bean, @NotNull Function<ComponentWrapper, String> propertyExtractor) {
         return FileBasedIndex.getInstance().getValues(AtgComponentsIndexExtension.NAME, bean, GlobalSearchScope.allScope(project))
                 .parallelStream()
                 .map(propertyExtractor)
@@ -136,13 +150,12 @@ public class AtgComponentsService {
 
 
     @Nullable
-    private PropertiesFileImpl getPropertiesPsiFileSafely(@Nullable final VirtualFile file) {
+    private PsiFile getPsiFileSafely(@Nullable final VirtualFile file) {
         if (project.isDisposed() || file == null) {
             return null;
         }
-        PsiFile psiFile = ApplicationManager.getApplication().runReadAction((Computable<PsiFile>) () ->
+        return ApplicationManager.getApplication().runReadAction((Computable<PsiFile>) () ->
                 file.isValid() ? PsiManager.getInstance(project).findFile(file) : null);
-        return psiFile instanceof PropertiesFileImpl ? (PropertiesFileImpl) psiFile : null;
     }
 
 }

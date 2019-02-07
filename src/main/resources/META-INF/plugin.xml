@@ -1,6 +1,6 @@
 <idea-plugin url="https://github.com/chivaler/ATG-Toolkit">
     <id>org.idea.plugin.atg</id>
-    <name>ATG Toolkit (Beta)</name>
+    <name>ATG Toolkit</name>
     <id>atg-toolkit</id>
     <vendor email="chivaler@gmail.com">Igor Pidgurskyi</vendor>
 
@@ -40,6 +40,11 @@
         0.11 Increased performance by using of indexes for retrieving components by name<br>
         0.12 Improved performance  and UI freeze fix  when dependencies is being attached<br>
             Fixed for defects, and inspections improvements<br>
+        1.0 Fixed NPE occurred in background of modal windows<br>
+            Fixed a defect, that roots added by Framework Detector weren't adding to index of components
+            Added an action which seeks and marks Atg roots for whole project<br>
+            Attach of OOTB modules can be invoked as action<br>
+            Increased performance by using of indexes for retrieving XMLs<br>
     ]]>
 
     </change-notes>
@@ -129,6 +134,7 @@
                                  order="first"/>
 
         <fileBasedIndex implementation="org.idea.plugin.atg.index.AtgComponentsIndexExtension"/>
+        <fileBasedIndex implementation="org.idea.plugin.atg.index.AtgXmlsIndexExtension" />
 
         <facetType implementation="org.idea.plugin.atg.module.AtgModuleFacetType"/>
         <framework.detector implementation="org.idea.plugin.atg.framework.AtgFrameworkDetector"/>
@@ -137,6 +143,9 @@
     </extensions>
 
     <actions>
+
+        <action id="DetectAtgRoots" class="org.idea.plugin.atg.config.DetectAtgRootsAction"
+                description="Detect ATG Roots"/>
 
         <action id="GoToAtgComponents" class="org.idea.plugin.atg.navigation.GoToComponentCodeAction"
                 description="Go to all components based on the class">

@@ -67,10 +67,10 @@ public class GoToComponentTargetHandler extends GotoTargetHandler {
             }
         } else {
             Project project = file.getProject();
+            AtgComponentsService componentsService = ServiceManager.getService(project, AtgComponentsService.class);
             if (file instanceof PropertiesFileImpl) {
                 Optional<String> componentName = AtgComponentUtil.getComponentCanonicalName((PropertiesFileImpl) file);
                 if (componentName.isPresent()) {
-                    AtgComponentsService componentsService = ServiceManager.getService(project, AtgComponentsService.class);
                     List<PsiElement> candidates = new ArrayList<>();
                     if (AtgToolkitConfig.getInstance(project).showReferencesOnComponentInGoTo) {
                         GlobalSearchScope scope = GlobalSearchScope.everythingScope(project);
@@ -92,7 +92,7 @@ public class GoToComponentTargetHandler extends GotoTargetHandler {
                         candidates.addAll(ReferencesSearch.search(file, scope, true).findAll().stream().map(PsiReference::getElement).collect(Collectors.toList()));
                     }
                     if (AtgToolkitConfig.getInstance(project).showOverridesOfComponentInGoTo) {
-                        candidates.addAll(AtgComponentUtil.getApplicableXmlsByName(xmlName.get(), project));
+                        candidates.addAll(componentsService.getXmlsByName(xmlName.get()));
                         candidates.remove(file);
                     }
                     return new GotoData(file, PsiUtilCore.toPsiElementArray(candidates), Collections.emptyList());

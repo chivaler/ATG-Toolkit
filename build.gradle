@@ -5,7 +5,7 @@ buildscript {
 }
 
 plugins {
-    id "org.jetbrains.intellij" version "0.3.4"
+    id "org.jetbrains.intellij" version "0.4.2"
 }
 
 apply plugin: 'idea'
@@ -31,4 +31,4 @@ publishPlugin {
 }
 
 group 'org.idea.plugin.atg'
-version '0.12' // Plugin version
+version '1.0' // Plugin version

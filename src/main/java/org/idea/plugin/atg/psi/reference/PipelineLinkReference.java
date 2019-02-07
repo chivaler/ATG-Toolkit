@@ -1,11 +1,13 @@
 package org.idea.plugin.atg.psi.reference;
 
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
+import org.idea.plugin.atg.index.AtgComponentsService;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -57,8 +59,9 @@ public class PipelineLinkReference extends PsiPolyVariantReferenceBase<XmlAttrib
         PsiManager psiManager = PsiManager.getInstance(project);
         Set<XmlFile> xmlFilesWithSamePath = new HashSet<>();
         xmlFilesWithSamePath.add((XmlFile) containingFile);
+        AtgComponentsService componentsService = ServiceManager.getService(project, AtgComponentsService.class);
         Optional<String> xmlRelativePath = AtgComponentUtil.getXmlRelativePath((XmlFile) containingFile);
-        xmlRelativePath.ifPresent(s -> xmlFilesWithSamePath.addAll(AtgComponentUtil.getApplicableXmlsByName(s, project)));
+        xmlRelativePath.ifPresent(s -> xmlFilesWithSamePath.addAll(componentsService.getXmlsByName(s)));
         return xmlFilesWithSamePath.stream()
                 .map(f -> findPipelineLinkByName(seekingLinkName, seekingChainName, f))
                 .filter(Objects::nonNull)

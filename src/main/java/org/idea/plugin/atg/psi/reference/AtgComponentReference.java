@@ -1,6 +1,7 @@
 package org.idea.plugin.atg.psi.reference;
 
 import com.google.common.collect.Lists;
+import com.intellij.lang.properties.PropertiesFileType;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.lang.properties.psi.impl.PropertyValueImpl;
 import com.intellij.openapi.components.ServiceManager;
@@ -46,7 +47,7 @@ public class AtgComponentReference extends PsiPolyVariantReferenceBase<PsiElemen
         AtgComponentsService componentsService = ServiceManager.getService(project, AtgComponentsService.class);
         Collection<PsiFile> applicableComponents;
         if (componentName.endsWith(".xml")) {
-            applicableComponents = Lists.newArrayList(AtgComponentUtil.getApplicableXmlsByName(componentName.replace(".xml", ""), myElement.getProject()));
+            applicableComponents = Lists.newArrayList(componentsService.getXmlsByName(componentName));
         } else {
             applicableComponents = Lists.newArrayList(componentsService.getComponentsByName(componentName));
         }
@@ -65,7 +66,7 @@ public class AtgComponentReference extends PsiPolyVariantReferenceBase<PsiElemen
     @Override
     public PsiElement handleElementRename(final String newElementName) {
         int endIndex = componentName.contains("/") ? componentName.lastIndexOf("/") + 1 : 0;
-        String newComponentName = componentName.substring(0, endIndex) + newElementName.replace(".properties", "");
+        String newComponentName = componentName.substring(0, endIndex) + newElementName.replace(PropertiesFileType.DOT_DEFAULT_EXTENSION, "");
         return super.handleElementRename(newComponentName);
     }
 

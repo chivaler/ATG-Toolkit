@@ -3,12 +3,14 @@ package org.idea.plugin.atg.gutter;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.impl.source.xml.XmlFileImpl;
 import com.intellij.psi.xml.XmlTag;
 import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.Constants;
+import org.idea.plugin.atg.index.AtgComponentsService;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,7 +27,8 @@ public class AtgXmlLayersLineMarkerProvider extends RelatedItemLineMarkerProvide
             if (psiFile instanceof XmlFileImpl) {
                 Optional<String> xmlName = AtgComponentUtil.getXmlRelativePath((XmlFileImpl) psiFile);
                 if (xmlName.isPresent()) {
-                    List<XmlFileImpl> xmlFilesWithSameName = AtgComponentUtil.getApplicableXmlsByName(xmlName.get(), element.getProject());
+                    AtgComponentsService componentsService = ServiceManager.getService(element.getProject(), AtgComponentsService.class);
+                    List<XmlFileImpl> xmlFilesWithSameName = componentsService.getXmlsByName(xmlName.get());
                     xmlFilesWithSameName.remove(psiFile);
                     if (!xmlFilesWithSameName.isEmpty()) {
                         PsiElement elementToMark = element.getFirstChild() != null ? element .getFirstChild() : element;
@@ -36,7 +39,6 @@ public class AtgXmlLayersLineMarkerProvider extends RelatedItemLineMarkerProvide
                         result.add(builder.createLineMarkerInfo(elementToMark));
                     }
                 }
-
             }
         }
     }
