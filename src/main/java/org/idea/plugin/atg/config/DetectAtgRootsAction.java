@@ -11,6 +11,10 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.project.DumbModeTask;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ModuleRootManager;
@@ -35,9 +39,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class DetectAtgRootsAction extends AnAction {
+    private static final String DETECT_ROOTS_TASK = "DETECT_ROOTS_TASK";
     private AtgModuleFacetType atgModuleFacetType = AtgModuleFacetType.getInstance();
-    private List<VirtualFile> addedRoots;
-    private List<VirtualFile> removedRoots;
+    private List<VirtualFile> addedRoots = Lists.newArrayList();
+    private List<VirtualFile> removedRoots = Lists.newArrayList();
 
     @Override
     public void actionPerformed(AnActionEvent e) {
@@ -56,41 +61,59 @@ public class DetectAtgRootsAction extends AnAction {
         AtgIndexService atgIndexService = ServiceManager.getService(project, AtgIndexService.class);
         addedRoots = Lists.newArrayList();
         removedRoots = Lists.newArrayList();
+        DumbService.getInstance(project).queueTask(new DumbModeTask(DETECT_ROOTS_TASK) {
+            @Override
+            public void performInDumbMode(@NotNull ProgressIndicator indicator) {
+                ApplicationManager.getApplication().runReadAction(() -> {
+                    indicator.setText(AtgToolkitBundle.message("action.detect.roots.text"));
+                    int currentModuleNumber = 0;
+                    Module[] allModules = ModuleManager.getInstance(project).getModules();
+                    for (Module module : allModules) {
+                        ProgressManager.checkCanceled();
+                        indicator.setFraction(currentModuleNumber++ / (double) allModules.length);
+                        indicator.setText2(AtgToolkitBundle.message("action.detect.roots.text2", module.getName()));
+                        ModifiableRootModel modifiableRootModel = ModuleRootManager.getInstance(module).getModifiableModel();
+                        AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
 
-        ApplicationManager.getApplication().runReadAction(() -> {
-            for (Module module : ModuleManager.getInstance(project).getModules()) {
-                ModifiableRootModel modifiableRootModel = ModuleRootManager.getInstance(module).getModifiableModel();
-                AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
+                        List<VirtualFile> foundConfigRoots = Arrays.stream(modifiableRootModel.getContentRoots())
+                                .map(r -> AtgConfigHelper.collectRootsMatchedPatterns(r, configRootsPatterns))
+                                .flatMap(Collection::stream)
+                                .collect(Collectors.toList());
 
-                List<VirtualFile> foundConfigRoots = Arrays.stream(modifiableRootModel.getContentRoots())
-                        .map(r -> AtgConfigHelper.collectRootsMatchedPatterns(r, configRootsPatterns))
-                        .flatMap(Collection::stream)
-                        .collect(Collectors.toList());
+                        List<VirtualFile> foundConfigLayerRoots = Arrays.stream(modifiableRootModel.getContentRoots())
+                                .map(r -> AtgConfigHelper.collectRootsMatchedPatterns(r, configRootsLayerPatterns))
+                                .flatMap(Collection::stream)
+                                .collect(Collectors.toList());
 
-                List<VirtualFile> foundConfigLayerRoots = Arrays.stream(modifiableRootModel.getContentRoots())
-                        .map(r -> AtgConfigHelper.collectRootsMatchedPatterns(r, configRootsLayerPatterns))
-                        .flatMap(Collection::stream)
-                        .collect(Collectors.toList());
+                        if (!foundConfigRoots.isEmpty() || !foundConfigLayerRoots.isEmpty()) {
+                            if (atgFacet == null) {
+                                atgFacet = createDefaultFacetForModule(module);
+                            }
+                            AtgModuleFacetConfiguration atgFacetConfiguration = atgFacet.getConfiguration();
+                            synchronizePersistedWitFoundByPatterns(foundConfigRoots, atgFacetConfiguration.getConfigRoots(),
+                                    atgIndexService, removeRootsNonMatchedToPatterns,
+                                    c -> atgFacetConfiguration.getConfigRoots().addAll(c));
+                            synchronizePersistedWitFoundByPatterns(foundConfigLayerRoots, atgFacetConfiguration.getConfigLayerRoots().keySet(),
+                                    atgIndexService, removeRootsNonMatchedToPatterns,
+                                    c -> atgFacetConfiguration.getConfigLayerRoots().putAll(c.stream().collect((Collectors.toMap(f -> f, f -> "")))));
+                        } else if (atgFacet != null) {
+                            removePreviousRootsIfRequired(atgFacet, removeRootsNonMatchedToPatterns, atgIndexService);
+                        }
 
-                if (!foundConfigRoots.isEmpty() || !foundConfigLayerRoots.isEmpty()) {
-                    if (atgFacet == null) {
-                        atgFacet = createDefaultFacetForModule(module);
+                        deleteFacetIfRequired(module, atgFacet, removeFacetsIfModuleHasNoAtgRoots);
+                        AtgEnvironmentUtil.runWriteAction(modifiableRootModel::commit);
                     }
-                    AtgModuleFacetConfiguration atgFacetConfiguration = atgFacet.getConfiguration();
-                    synchronizePersistedWitFoundByPatterns(foundConfigRoots, atgFacetConfiguration.getConfigRoots(),
-                            atgIndexService, removeRootsNonMatchedToPatterns,
-                            c -> atgFacetConfiguration.getConfigRoots().addAll(c));
-                    synchronizePersistedWitFoundByPatterns(foundConfigLayerRoots, atgFacetConfiguration.getConfigLayerRoots().keySet(),
-                            atgIndexService, removeRootsNonMatchedToPatterns,
-                            c -> atgFacetConfiguration.getConfigLayerRoots().putAll(c.stream().collect((Collectors.toMap(f -> f, f -> "")))));
-                } else if (atgFacet != null) {
-                    removePreviousRootsIfRequired(atgFacet, removeRootsNonMatchedToPatterns, atgIndexService);
-                }
-
-                deleteFacetIfRequired(module, atgFacet, removeFacetsIfModuleHasNoAtgRoots);
-                AtgEnvironmentUtil.runWriteAction(modifiableRootModel::commit);
+                });
+                indicator.setText(AtgToolkitBundle.message("action.update.dependencies.indexing.text"));
+                indicator.setText2(null);
+                notifyAboutChangedRoots(addedRoots, removedRoots, project);
             }
         });
+    }
+
+    private void notifyAboutChangedRoots(@NotNull List<VirtualFile> addedRoots,
+                                         @NotNull List<VirtualFile> removedRoots,
+                                         @NotNull Project project) {
         if (addedRoots.isEmpty() && removedRoots.isEmpty()) {
             new Notification(Constants.NOTIFICATION_GROUP_ID,
                     AtgToolkitBundle.message("gui.config.detection.changedRoots.title"),
@@ -110,12 +133,11 @@ public class DetectAtgRootsAction extends AnAction {
                         NotificationType.INFORMATION).notify(project);
             }
         }
-
-
     }
 
     @NotNull
-    private List<String> getRelativePaths(@NotNull Collection<VirtualFile> virtualFiles, @NotNull Project project) {
+    private List<String> getRelativePaths(@NotNull Collection<VirtualFile> virtualFiles,
+                                          @NotNull Project project) {
         return virtualFiles.stream().map(f -> {
             String path = null;
             ProjectFileIndex projectFileIndex = ProjectFileIndex.getInstance(project);

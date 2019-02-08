@@ -114,7 +114,7 @@ public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
                             AtgEnvironmentUtil.addAtgDependenciesForAllModules(project, indicator);
                         }
                     });
-                    indicator.setText(AtgToolkitBundle.message("update.dependencies.indexing.text"));
+                    indicator.setText(AtgToolkitBundle.message("action.update.dependencies.indexing.text"));
                     indicator.setText2(null);
                 }
             });

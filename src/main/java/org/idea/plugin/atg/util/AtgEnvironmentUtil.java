@@ -284,15 +284,15 @@ public class AtgEnvironmentUtil {
     }
 
     public static void addAtgDependenciesForAllModules(@NotNull Project project, ProgressIndicator indicator) {
-        indicator.setText(AtgToolkitBundle.message("update.dependencies.parsingDynamoRoot.text"));
+        indicator.setText(AtgToolkitBundle.message("action.update.dependencies.parsingDynamoRoot.text"));
         parseAtgHome(project);
         Module[] allModules = ModuleManager.getInstance(project).getModules();
-        indicator.setText(AtgToolkitBundle.message("update.dependencies.attach.text"));
+        indicator.setText(AtgToolkitBundle.message("action.update.dependencies.attach.text"));
         int currentModuleNumber = 0;
         LibraryTable.ModifiableModel projectLibraryModifiableModel = ProjectLibraryTable.getInstance(project).getModifiableModel();
         for (Module module : allModules) {
             indicator.setFraction(currentModuleNumber++ / (double) allModules.length);
-            indicator.setText2(AtgToolkitBundle.message("update.dependencies.attach.text2", module.getName()));
+            indicator.setText2(AtgToolkitBundle.message("action.update.dependencies.attach.text2", module.getName()));
             addDependenciesToModule(module, projectLibraryModifiableModel);
         }
         runWriteAction(projectLibraryModifiableModel::commit);
@@ -301,11 +301,11 @@ public class AtgEnvironmentUtil {
     public static void removeAtgDependenciesForAllModules(@NotNull Project project, ProgressIndicator indicator) {
         LibraryTable.ModifiableModel projectLibraryModifiableModel = ProjectLibraryTable.getInstance(project).getModifiableModel();
         if (!AtgToolkitConfig.getInstance(project).isAttachConfigsOfAtgDependencies()) {
-            indicator.setText(AtgToolkitBundle.message("update.dependencies.removeConfigs.text"));
+            indicator.setText(AtgToolkitBundle.message("action.update.dependencies.removeConfigs.text"));
             removeAtgDependenciesForAllModules(project, projectLibraryModifiableModel, indicator, Constants.ATG_CONFIG_LIBRARY_PREFIX);
         }
         if (!AtgToolkitConfig.getInstance(project).isAttachClassPathOfAtgDependencies()) {
-            indicator.setText(AtgToolkitBundle.message("update.dependencies.removeClasses.text"));
+            indicator.setText(AtgToolkitBundle.message("action.update.dependencies.removeClasses.text"));
             removeAtgDependenciesForAllModules(project, projectLibraryModifiableModel, indicator, Constants.ATG_CLASSES_LIBRARY_PREFIX);
         }
         runWriteAction(projectLibraryModifiableModel::commit);
@@ -316,7 +316,7 @@ public class AtgEnvironmentUtil {
         int currentModuleNumber = 0;
         for (Module module : allModules) {
             indicator.setFraction(currentModuleNumber++ / (double) allModules.length);
-            indicator.setText2(AtgToolkitBundle.message("update.dependencies.attach.text2", module.getName()));
+            indicator.setText2(AtgToolkitBundle.message("action.update.dependencies.attach.text2", module.getName()));
             ModifiableRootModel moduleModifiableModel = ModuleRootManager.getInstance(module).getModifiableModel();
             Set<LibraryOrderEntry> atgLibraryEntries = Arrays.stream(moduleModifiableModel.getOrderEntries())
                     .filter(LibraryOrderEntry.class::isInstance)
