@@ -1,20 +1,12 @@
 package org.idea.plugin.atg.config;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.options.ConfigurableUi;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.project.DumbModeTask;
-import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
-import org.idea.plugin.atg.AtgToolkitBundle;
-import org.idea.plugin.atg.util.AtgEnvironmentUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
 public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
-    private static final String DEPENDENCIES_TASK = "DEPENDENCIES_TASK";
-    private Project project;
 
     private JPanel rootPanel;
     private JTextField configPatternsField;
@@ -32,11 +24,13 @@ public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
 
     private JLabel errorLabel;
     private JButton detectAllConfigurationRootsButton;
+    private JButton detectAndAttachDependenciesButton;
 
     public AtgToolkitSettingsUi(Project project) {
-        this.project = project;
         detectAllConfigurationRootsButton.addActionListener(e -> new DetectAtgRootsAction()
                 .runDetection(project, configPatternsField.getText(), configLayersPatternsField.getText(), removeRootsNonMatchedToPatterns.isSelected(), removeFacetsIfModuleHasNoAtgRoots.isSelected()));
+        detectAndAttachDependenciesButton.addActionListener(e -> new AttachAtgDependenciesAction()
+                .runProjectUpdate(project, attachClassPathOfAtgDependencies.isSelected(), attachConfigsOfAtgDependencies.isSelected()));
     }
 
     @Override
@@ -92,33 +86,10 @@ public class AtgToolkitSettingsUi implements ConfigurableUi<AtgToolkitConfig> {
 
         atgToolkitConfig.setIgnoredClassesForSetters(ignoredClassesField.getText());
 
-        boolean dependenciesResolvingChanged = false;
-        if (attachClassPathOfAtgDependencies.isSelected() != atgToolkitConfig.isAttachClassPathOfAtgDependencies()) {
-            dependenciesResolvingChanged = true;
-        }
-        if (attachConfigsOfAtgDependencies.isSelected() != atgToolkitConfig.isAttachConfigsOfAtgDependencies()) {
-            dependenciesResolvingChanged = true;
-        }
         atgToolkitConfig.setAttachClassPathOfAtgDependencies(attachClassPathOfAtgDependencies.isSelected());
         atgToolkitConfig.setAttachConfigsOfAtgDependencies(attachConfigsOfAtgDependencies.isSelected());
         atgToolkitConfig.setShowOverridesOfComponentInGoTo(showOverridesOfComponentInGoTo.isSelected());
         atgToolkitConfig.setShowReferencesOnComponentInGoTo(showReferencesOnComponentInGoTo.isSelected());
-
-        if (dependenciesResolvingChanged) {
-            DumbService.getInstance(project).queueTask(new DumbModeTask(DEPENDENCIES_TASK) {
-                @Override
-                public void performInDumbMode(@NotNull ProgressIndicator indicator) {
-                    ApplicationManager.getApplication().runReadAction(() -> {
-                        AtgEnvironmentUtil.removeAtgDependenciesForAllModules(project, indicator);
-                        if (AtgToolkitConfig.getInstance(project).isAttachConfigsOfAtgDependencies() || AtgToolkitConfig.getInstance(project).isAttachClassPathOfAtgDependencies()) {
-                            AtgEnvironmentUtil.addAtgDependenciesForAllModules(project, indicator);
-                        }
-                    });
-                    indicator.setText(AtgToolkitBundle.message("action.update.dependencies.indexing.text"));
-                    indicator.setText2(null);
-                }
-            });
-        }
     }
 
     @NotNull

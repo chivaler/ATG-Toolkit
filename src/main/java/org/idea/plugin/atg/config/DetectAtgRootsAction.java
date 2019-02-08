@@ -54,7 +54,7 @@ public class DetectAtgRootsAction extends AnAction {
         }
     }
 
-    public void runDetection(@NotNull Project project, @NotNull String configRootsPatternsStr, @NotNull String configRootsLayerPatternsStr,
+    void runDetection(@NotNull Project project, @NotNull String configRootsPatternsStr, @NotNull String configRootsLayerPatternsStr,
                              boolean removeRootsNonMatchedToPatterns, boolean removeFacetsIfModuleHasNoAtgRoots) {
         List<Pattern> configRootsPatterns = AtgConfigHelper.convertToPatternList(configRootsPatternsStr);
         List<Pattern> configRootsLayerPatterns = AtgConfigHelper.convertToPatternList(configRootsLayerPatternsStr);
