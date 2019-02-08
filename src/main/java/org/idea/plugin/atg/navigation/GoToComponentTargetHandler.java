@@ -21,7 +21,7 @@ import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.PropertiesGenerator;
 import org.idea.plugin.atg.config.AtgToolkitConfig;
-import org.idea.plugin.atg.index.AtgComponentsService;
+import org.idea.plugin.atg.index.AtgIndexService;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -67,7 +67,7 @@ public class GoToComponentTargetHandler extends GotoTargetHandler {
             }
         } else {
             Project project = file.getProject();
-            AtgComponentsService componentsService = ServiceManager.getService(project, AtgComponentsService.class);
+            AtgIndexService componentsService = ServiceManager.getService(project, AtgIndexService.class);
             if (file instanceof PropertiesFileImpl) {
                 Optional<String> componentName = AtgComponentUtil.getComponentCanonicalName((PropertiesFileImpl) file);
                 if (componentName.isPresent()) {

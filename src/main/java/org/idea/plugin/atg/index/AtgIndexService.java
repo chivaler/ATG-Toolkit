@@ -22,11 +22,11 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class AtgComponentsService {
+public class AtgIndexService {
     @NotNull
     private Project project;
 
-    public AtgComponentsService(@NotNull Project project) {
+    public AtgIndexService(@NotNull Project project) {
         this.project = project;
     }
 

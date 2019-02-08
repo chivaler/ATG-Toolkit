@@ -19,7 +19,7 @@ import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.Constants;
-import org.idea.plugin.atg.index.AtgComponentsService;
+import org.idea.plugin.atg.index.AtgIndexService;
 import org.idea.plugin.atg.module.AtgModuleFacet;
 import org.idea.plugin.atg.module.AtgModuleFacetConfiguration;
 import org.idea.plugin.atg.module.AtgModuleFacetType;
@@ -53,7 +53,7 @@ public class DetectAtgRootsAction extends AnAction {
                              boolean removeRootsNonMatchedToPatterns, boolean removeFacetsIfModuleHasNoAtgRoots) {
         List<Pattern> configRootsPatterns = AtgConfigHelper.convertToPatternList(configRootsPatternsStr);
         List<Pattern> configRootsLayerPatterns = AtgConfigHelper.convertToPatternList(configRootsLayerPatternsStr);
-        AtgComponentsService atgComponentsService = ServiceManager.getService(project, AtgComponentsService.class);
+        AtgIndexService atgIndexService = ServiceManager.getService(project, AtgIndexService.class);
         addedRoots = Lists.newArrayList();
         removedRoots = Lists.newArrayList();
 
@@ -78,13 +78,13 @@ public class DetectAtgRootsAction extends AnAction {
                     }
                     AtgModuleFacetConfiguration atgFacetConfiguration = atgFacet.getConfiguration();
                     synchronizePersistedWitFoundByPatterns(foundConfigRoots, atgFacetConfiguration.getConfigRoots(),
-                            atgComponentsService, removeRootsNonMatchedToPatterns,
+                            atgIndexService, removeRootsNonMatchedToPatterns,
                             c -> atgFacetConfiguration.getConfigRoots().addAll(c));
                     synchronizePersistedWitFoundByPatterns(foundConfigLayerRoots, atgFacetConfiguration.getConfigLayerRoots().keySet(),
-                            atgComponentsService, removeRootsNonMatchedToPatterns,
+                            atgIndexService, removeRootsNonMatchedToPatterns,
                             c -> atgFacetConfiguration.getConfigLayerRoots().putAll(c.stream().collect((Collectors.toMap(f -> f, f -> "")))));
                 } else if (atgFacet != null) {
-                    removePreviousRootsIfRequired(atgFacet, removeRootsNonMatchedToPatterns, atgComponentsService);
+                    removePreviousRootsIfRequired(atgFacet, removeRootsNonMatchedToPatterns, atgIndexService);
                 }
 
                 deleteFacetIfRequired(module, atgFacet, removeFacetsIfModuleHasNoAtgRoots);
@@ -133,19 +133,19 @@ public class DetectAtgRootsAction extends AnAction {
 
     private void removePreviousRootsIfRequired(@NotNull AtgModuleFacet atgFacet,
                                                boolean removeRootsNonMatchedToPatterns,
-                                               @NotNull AtgComponentsService atgComponentsService) {
+                                               @NotNull AtgIndexService atgIndexService) {
         if (removeRootsNonMatchedToPatterns) {
             //TODO ContainerUtil.intersection
             AtgModuleFacetConfiguration atgFacetConfiguration = atgFacet.getConfiguration();
             Collection<VirtualFile> configRoots = atgFacetConfiguration.getConfigRoots();
             Collection<VirtualFile> previousConfigRoots = Lists.newArrayList(configRoots);
             configRoots.removeAll(previousConfigRoots);
-            atgComponentsService.notifyConfigRootsChanged(previousConfigRoots);
+            atgIndexService.notifyConfigRootsChanged(previousConfigRoots);
 
             Collection<VirtualFile> configLayerRoots = atgFacetConfiguration.getConfigLayerRoots().keySet();
             Collection<VirtualFile> previousConfigLayerRoots = Lists.newArrayList(configLayerRoots);
             configRoots.removeAll(previousConfigLayerRoots);
-            atgComponentsService.notifyConfigRootsChanged(previousConfigLayerRoots);
+            atgIndexService.notifyConfigRootsChanged(previousConfigLayerRoots);
         }
     }
 
@@ -175,7 +175,7 @@ public class DetectAtgRootsAction extends AnAction {
 
     private void synchronizePersistedWitFoundByPatterns(@NotNull List<VirtualFile> foundRoots,
                                                         @NotNull Collection<VirtualFile> facetExistRoots,
-                                                        @NotNull AtgComponentsService atgComponentsService,
+                                                        @NotNull AtgIndexService atgIndexService,
                                                         boolean removeRootsNonMatchedToPatterns,
                                                         @NotNull Consumer<Collection<VirtualFile>> persistFunction) {
         Collection<VirtualFile> previousConfigLayerRoots = Lists.newArrayList(facetExistRoots);
@@ -183,12 +183,12 @@ public class DetectAtgRootsAction extends AnAction {
         foundRoots.removeAll(facetExistRoots);
         persistFunction.accept(foundRoots);
         addedRoots.addAll(foundRoots);
-        atgComponentsService.notifyConfigRootsChanged(foundRoots);
+        atgIndexService.notifyConfigRootsChanged(foundRoots);
 
         if (!previousConfigLayerRoots.isEmpty() && removeRootsNonMatchedToPatterns) {
             facetExistRoots.removeAll(previousConfigLayerRoots);
             removedRoots.addAll(previousConfigLayerRoots);
-            atgComponentsService.notifyConfigRootsChanged(previousConfigLayerRoots);
+            atgIndexService.notifyConfigRootsChanged(previousConfigLayerRoots);
         }
     }
 }

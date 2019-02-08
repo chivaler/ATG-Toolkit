@@ -12,7 +12,7 @@ import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.Constants;
-import org.idea.plugin.atg.index.AtgComponentsService;
+import org.idea.plugin.atg.index.AtgIndexService;
 import org.idea.plugin.atg.module.AtgModuleFacet;
 import org.jetbrains.annotations.NotNull;
 
@@ -87,7 +87,7 @@ public class UnmarkAtgConfigLayerRootAction extends MarkRootActionBase {
                 ModuleRootManager.getInstance(module).getModifiableModel().commit();
                 project.save();
             });
-            AtgComponentsService componentsService = ServiceManager.getService(project, AtgComponentsService.class);
+            AtgIndexService componentsService = ServiceManager.getService(project, AtgIndexService.class);
             componentsService.notifyConfigRootsChanged(configRootsToRemove);
             componentsService.notifyConfigRootsChanged(configLayerRootsToRemove);
         }

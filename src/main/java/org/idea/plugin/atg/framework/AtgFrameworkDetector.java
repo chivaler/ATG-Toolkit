@@ -23,7 +23,7 @@ import com.intellij.util.indexing.FileContent;
 import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.config.AtgConfigHelper;
 import org.idea.plugin.atg.config.AtgToolkitConfig;
-import org.idea.plugin.atg.index.AtgComponentsService;
+import org.idea.plugin.atg.index.AtgIndexService;
 import org.idea.plugin.atg.module.AtgModuleFacet;
 import org.idea.plugin.atg.module.AtgModuleFacetConfiguration;
 import org.idea.plugin.atg.module.AtgModuleFacetType;
@@ -94,9 +94,9 @@ public class AtgFrameworkDetector extends FacetBasedFrameworkDetector<AtgModuleF
         configuration.getConfigLayerRoots().keySet().removeAll(excludeConfigLayerRoots);
         configuration.getWebRoots().removeAll(excludeWebRoots);
 
-        AtgComponentsService atgComponentsService = ServiceManager.getService(model.getProject(), AtgComponentsService.class);
-        atgComponentsService.notifyConfigRootsChanged(configuration.getConfigRoots());
-        atgComponentsService.notifyConfigRootsChanged(configuration.getConfigLayerRoots().keySet());
+        AtgIndexService atgIndexService = ServiceManager.getService(model.getProject(), AtgIndexService.class);
+        atgIndexService.notifyConfigRootsChanged(configuration.getConfigRoots());
+        atgIndexService.notifyConfigRootsChanged(configuration.getConfigLayerRoots().keySet());
     }
 
     @NotNull

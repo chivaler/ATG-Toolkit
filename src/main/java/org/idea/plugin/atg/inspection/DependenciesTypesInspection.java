@@ -13,7 +13,7 @@ import com.intellij.psi.*;
 import com.intellij.psi.util.TypeConversionUtil;
 import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.Constants;
-import org.idea.plugin.atg.index.AtgComponentsService;
+import org.idea.plugin.atg.index.AtgIndexService;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -59,7 +59,7 @@ public class DependenciesTypesInspection extends LocalInspectionTool {
                                     ? dependencyStr.substring(0, dependencyStr.indexOf('.'))
                                     : dependencyStr;
                             String dependencyField = dependencyStr.contains(".") ? dependencyStr.substring(dependencyStr.indexOf('.') + 1) : "";
-                            AtgComponentsService componentsService = ServiceManager.getService(holder.getProject(), AtgComponentsService.class);
+                            AtgIndexService componentsService = ServiceManager.getService(holder.getProject(), AtgIndexService.class);
                             Collection<PropertiesFileImpl> dependencyLayers = componentsService.getComponentsByName(dependencyComponentName);
                             if (!dependencyLayers.isEmpty()) {
                                 PropertiesFileImpl dependency = dependencyLayers.iterator().next();

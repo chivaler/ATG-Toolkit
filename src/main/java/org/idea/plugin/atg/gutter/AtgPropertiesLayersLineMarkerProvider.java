@@ -10,7 +10,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.Constants;
-import org.idea.plugin.atg.index.AtgComponentsService;
+import org.idea.plugin.atg.index.AtgIndexService;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -26,7 +26,7 @@ public class AtgPropertiesLayersLineMarkerProvider extends RelatedItemLineMarker
             if (psiFile instanceof PropertiesFileImpl) {
                 Optional<String> componentName = AtgComponentUtil.getComponentCanonicalName((PropertiesFileImpl) psiFile);
                 if (componentName.isPresent()) {
-                    AtgComponentsService componentsService = ServiceManager.getService(element.getProject(), AtgComponentsService.class);
+                    AtgIndexService componentsService = ServiceManager.getService(element.getProject(), AtgIndexService.class);
                     Collection<PropertiesFileImpl> componentsWithSameName = componentsService.getComponentsByName(componentName.get());
                     componentsWithSameName.remove(psiFile);
                     if (!componentsWithSameName.isEmpty()) {

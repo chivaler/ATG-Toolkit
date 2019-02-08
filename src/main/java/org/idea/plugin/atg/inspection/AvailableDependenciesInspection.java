@@ -14,7 +14,7 @@ import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.PsiFile;
 import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.Constants;
-import org.idea.plugin.atg.index.AtgComponentsService;
+import org.idea.plugin.atg.index.AtgIndexService;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -54,7 +54,7 @@ public class AvailableDependenciesInspection extends LocalInspectionTool {
                         }
                         beanName = beanName.replaceAll("/+$", "");
                         Project project = element.getProject();
-                        AtgComponentsService componentsService = ServiceManager.getService(project, AtgComponentsService.class);
+                        AtgIndexService componentsService = ServiceManager.getService(project, AtgIndexService.class);
                         Collection<PropertiesFileImpl> dependencyLayers = componentsService.getComponentsByName(beanName);
                         if (dependencyLayers.isEmpty()) {
                             Boolean treatAsDependecy = AtgComponentUtil.getSetterForProperty((PropertyImpl) element.getParent()).

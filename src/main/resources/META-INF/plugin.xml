@@ -64,7 +64,7 @@
         <projectConfigurable parentId="language" instance="org.idea.plugin.atg.config.AtgToolkitConfigurable"
                              displayName="ATG Toolkit"/>
         <projectService serviceImplementation="org.idea.plugin.atg.config.AtgToolkitConfig"/>
-        <projectService serviceImplementation="org.idea.plugin.atg.index.AtgComponentsService"/>
+        <projectService serviceImplementation="org.idea.plugin.atg.index.AtgIndexService"/>
 
         <completion.contributor language="Properties"
                                 implementationClass="org.idea.plugin.atg.completion.ComponentPropertiesCompletionContributor"

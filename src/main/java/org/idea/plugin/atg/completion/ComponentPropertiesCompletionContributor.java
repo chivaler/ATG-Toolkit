@@ -17,7 +17,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.util.ProcessingContext;
 import org.apache.commons.lang.StringUtils;
 import org.idea.plugin.atg.Constants;
-import org.idea.plugin.atg.index.AtgComponentsService;
+import org.idea.plugin.atg.index.AtgIndexService;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -108,7 +108,7 @@ public class ComponentPropertiesCompletionContributor extends CompletionContribu
                 if (key != null && key.endsWith("^")) {
                     String value = ((PropertyImpl) position).getValue();
                     Project project = position.getProject();
-                    AtgComponentsService componentsService = ServiceManager.getService(project, AtgComponentsService.class);
+                    AtgIndexService componentsService = ServiceManager.getService(project, AtgIndexService.class);
                     if (value != null && value.contains(".")) {
                         String componentName = value.substring(0, value.indexOf('.'));
                         Collection<PropertiesFileImpl> applicableComponents = componentsService.getComponentsByName(componentName);

@@ -11,7 +11,7 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
 import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.Constants;
-import org.idea.plugin.atg.index.AtgComponentsService;
+import org.idea.plugin.atg.index.AtgIndexService;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -53,7 +53,7 @@ public class AvailableGetterInspection extends LocalInspectionTool {
                             String linkedPropertyName = beanName.substring(indexOfDot + 1);
                             beanName = beanName.contains(".") ? beanName.substring(0, indexOfDot) : value;
                             Project project = holder.getProject();
-                            AtgComponentsService componentsService = ServiceManager.getService(project, AtgComponentsService.class);
+                            AtgIndexService componentsService = ServiceManager.getService(project, AtgIndexService.class);
                             Collection<PropertiesFileImpl> dependencyLayers = componentsService.getComponentsByName(beanName);
                             if (!dependencyLayers.isEmpty()) {
                                 PropertiesFileImpl dependency = dependencyLayers.iterator().next();

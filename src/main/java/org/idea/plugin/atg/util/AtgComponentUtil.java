@@ -32,7 +32,7 @@ import org.apache.commons.lang.StringUtils;
 import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.config.AtgConfigHelper;
 import org.idea.plugin.atg.config.AtgToolkitConfig;
-import org.idea.plugin.atg.index.AtgComponentsService;
+import org.idea.plugin.atg.index.AtgIndexService;
 import org.idea.plugin.atg.index.ComponentWrapper;
 import org.idea.plugin.atg.module.AtgModuleFacet;
 import org.idea.plugin.atg.module.AtgModuleFacetConfiguration;
@@ -71,7 +71,7 @@ public class AtgComponentUtil {
                 return Optional.of(propertyClassName.getValue());
             } else {
                 Project project = propertyFile.getProject();
-                AtgComponentsService componentsService = ServiceManager.getService(project, AtgComponentsService.class);
+                AtgIndexService componentsService = ServiceManager.getService(project, AtgIndexService.class);
                 Collection<PropertiesFileImpl> applicableLayers = searchInAllLayers
                         ? componentsService.getComponentsByName(componentName.get())
                         : Collections.emptyList();
@@ -123,7 +123,7 @@ public class AtgComponentUtil {
 
     @NotNull
     public static Set<String> getComponentScope(@NotNull String beanName, @NotNull Project project) {
-        AtgComponentsService componentsService = ServiceManager.getService(project, AtgComponentsService.class);
+        AtgIndexService componentsService = ServiceManager.getService(project, AtgIndexService.class);
         Set<String> derivedValues = componentsService.getComponentDerivedPropertyWithBasedOns(beanName, ComponentWrapper::getScope);
         return derivedValues.isEmpty() ? Sets.newHashSet(Constants.Scope.GLOBAL) : derivedValues;
     }
@@ -131,7 +131,7 @@ public class AtgComponentUtil {
     @NotNull
     public static Set<String> getComponentClassesStr(@Nullable String beanName, @NotNull Project project) {
         if (StringUtils.isBlank(beanName)) return new HashSet<>();
-        return ServiceManager.getService(project, AtgComponentsService.class).
+        return ServiceManager.getService(project, AtgIndexService.class).
                 getComponentDerivedPropertyWithBasedOns(beanName, ComponentWrapper::getJavaClass);
     }
 
@@ -340,7 +340,7 @@ public class AtgComponentUtil {
         Collection<PsiClass> classAndInheritors = ClassInheritorsSearch.search(srcClass, scope, true, true, false)
                 .findAll();
         classAndInheritors.add(srcClass);
-        AtgComponentsService componentsService = ServiceManager.getService(srcClass.getProject(), AtgComponentsService.class);
+        AtgIndexService componentsService = ServiceManager.getService(srcClass.getProject(), AtgIndexService.class);
         return componentsService.suggestComponentNamesByClass(classAndInheritors);
     }
 
@@ -349,7 +349,7 @@ public class AtgComponentUtil {
         if (srcClass == null) {
             return Collections.emptyList();
         }
-        AtgComponentsService componentsService = ServiceManager.getService(srcClass.getProject(), AtgComponentsService.class);
+        AtgIndexService componentsService = ServiceManager.getService(srcClass.getProject(), AtgIndexService.class);
         return suggestComponentNamesByClassWithInheritors(srcClass)
                 .stream()
                 .map(componentsService::getComponentsByName)
@@ -359,7 +359,7 @@ public class AtgComponentUtil {
 
     @NotNull
     public static Collection<PropertiesFileImpl> suggestComponentsByClasses(@NotNull Collection<PsiClass> srcClasses, @NotNull Project project) {
-        AtgComponentsService componentsService = ServiceManager.getService(project, AtgComponentsService.class);
+        AtgIndexService componentsService = ServiceManager.getService(project, AtgIndexService.class);
         return componentsService.suggestComponentNamesByClass(srcClasses).stream()
                 .map(componentsService::getComponentsByName)
                 .flatMap(Collection::stream)

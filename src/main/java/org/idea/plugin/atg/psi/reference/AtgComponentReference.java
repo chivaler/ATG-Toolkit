@@ -10,7 +10,7 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlText;
-import org.idea.plugin.atg.index.AtgComponentsService;
+import org.idea.plugin.atg.index.AtgIndexService;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -44,7 +44,7 @@ public class AtgComponentReference extends PsiPolyVariantReferenceBase<PsiElemen
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
         Project project = myElement.getProject();
-        AtgComponentsService componentsService = ServiceManager.getService(project, AtgComponentsService.class);
+        AtgIndexService componentsService = ServiceManager.getService(project, AtgIndexService.class);
         Collection<PsiFile> applicableComponents;
         if (componentName.endsWith(".xml")) {
             applicableComponents = Lists.newArrayList(componentsService.getXmlsByName(componentName));

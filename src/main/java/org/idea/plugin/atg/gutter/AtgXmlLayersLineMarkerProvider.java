@@ -10,7 +10,7 @@ import com.intellij.psi.impl.source.xml.XmlFileImpl;
 import com.intellij.psi.xml.XmlTag;
 import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.Constants;
-import org.idea.plugin.atg.index.AtgComponentsService;
+import org.idea.plugin.atg.index.AtgIndexService;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,7 +27,7 @@ public class AtgXmlLayersLineMarkerProvider extends RelatedItemLineMarkerProvide
             if (psiFile instanceof XmlFileImpl) {
                 Optional<String> xmlName = AtgComponentUtil.getXmlRelativePath((XmlFileImpl) psiFile);
                 if (xmlName.isPresent()) {
-                    AtgComponentsService componentsService = ServiceManager.getService(element.getProject(), AtgComponentsService.class);
+                    AtgIndexService componentsService = ServiceManager.getService(element.getProject(), AtgIndexService.class);
                     List<XmlFileImpl> xmlFilesWithSameName = componentsService.getXmlsByName(xmlName.get());
                     xmlFilesWithSameName.remove(psiFile);
                     if (!xmlFilesWithSameName.isEmpty()) {

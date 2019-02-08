@@ -10,7 +10,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
-import org.idea.plugin.atg.index.AtgComponentsService;
+import org.idea.plugin.atg.index.AtgIndexService;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,7 +31,7 @@ public class AtgComponentFieldReference extends PsiPolyVariantReferenceBase<PsiE
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
         Project project = myElement.getProject();
-        AtgComponentsService componentsService = ServiceManager.getService(project, AtgComponentsService.class);
+        AtgIndexService componentsService = ServiceManager.getService(project, AtgIndexService.class);
         return componentsService.getComponentsByName(beanName).stream()
                 .map(psiFile -> Lists.newArrayList(psiFile.findPropertyByKey(propertyKey), psiFile.findPropertyByKey(propertyKey + "^")))
                 .flatMap(Collection::stream)

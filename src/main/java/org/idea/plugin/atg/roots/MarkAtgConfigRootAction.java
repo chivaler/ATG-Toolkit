@@ -15,7 +15,7 @@ import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.Constants;
-import org.idea.plugin.atg.index.AtgComponentsService;
+import org.idea.plugin.atg.index.AtgIndexService;
 import org.idea.plugin.atg.module.AtgModuleFacet;
 import org.jetbrains.annotations.NotNull;
 
@@ -80,7 +80,7 @@ public class MarkAtgConfigRootAction extends MarkRootActionBase {
                 model.commit();
                 project.save();
             });
-            ServiceManager.getService(project, AtgComponentsService.class).notifyConfigRootsChanged(changedRoots);
+            ServiceManager.getService(project, AtgIndexService.class).notifyConfigRootsChanged(changedRoots);
         } else {
             model.dispose();
         }
