@@ -170,6 +170,9 @@
         <component>
             <implementation-class>org.idea.plugin.atg.roots.AtgEnvironmentRegistrar</implementation-class>
         </component>
+        <component>
+            <implementation-class>org.idea.plugin.atg.module.AtgFacetChangesListenerRegistrar</implementation-class>
+        </component>
     </project-components>
 
 </idea-plugin>

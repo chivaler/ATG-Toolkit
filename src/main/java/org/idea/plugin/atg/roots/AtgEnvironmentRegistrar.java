@@ -3,25 +3,20 @@ package org.idea.plugin.atg.roots;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.application.PathMacros;
-import com.intellij.openapi.components.ProjectComponent;
+import com.intellij.openapi.components.AbstractProjectComponent;
 import com.intellij.openapi.project.Project;
 import org.apache.commons.lang.StringUtils;
 import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.Constants;
 
-public class AtgEnvironmentRegistrar implements ProjectComponent {
-    private Project project;
+public class AtgEnvironmentRegistrar extends AbstractProjectComponent {
 
     public AtgEnvironmentRegistrar(Project project) {
-        this.project = project;
+        super(project);
     }
 
     @Override
-    public void initComponent() {
-        registerPathVariable();
-    }
-
-    private void registerPathVariable() {
+    public void projectOpened() {
         String systemAtgHome = System.getenv(Constants.ATG_HOME);
         PathMacros macros = PathMacros.getInstance();
         String atgHomeMacroValue = macros.getValue(Constants.ATG_HOME);
@@ -32,9 +27,8 @@ public class AtgEnvironmentRegistrar implements ProjectComponent {
                 new Notification(Constants.NOTIFICATION_GROUP_ID,
                         AtgToolkitBundle.message("inspection.atgHome.title"),
                         AtgToolkitBundle.message("inspection.atgHome.notPresent.text"),
-                        NotificationType.INFORMATION).notify(project);
+                        NotificationType.INFORMATION).notify(myProject);
             }
-
         }
     }
 }
