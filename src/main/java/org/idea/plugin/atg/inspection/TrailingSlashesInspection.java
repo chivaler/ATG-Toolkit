@@ -32,10 +32,10 @@ public class TrailingSlashesInspection extends LocalInspectionTool {
             public void visitElement(PsiElement element) {
                 if (element instanceof PropertyValueImpl && element.getParent() instanceof PropertyImpl) {
                     String value = ((PropertyValueImpl) element).getText();
-                    Boolean treatAsDependecy = AtgComponentUtil.getSetterForProperty((PropertyImpl) element.getParent()).
+                    Boolean treatAsDependency = AtgComponentUtil.getSetterForProperty((PropertyImpl) element.getParent()).
                             map(AtgComponentUtil::treatAsDependencySetter).
                             orElse(false);
-                    if (treatAsDependecy) {
+                    if (treatAsDependency) {
                         Matcher matcher = Constants.SUSPECTED_COMPONENT_NAME_REGEX.matcher(value);
                         while (matcher.find()) {
                             String beanName = matcher.group(0);

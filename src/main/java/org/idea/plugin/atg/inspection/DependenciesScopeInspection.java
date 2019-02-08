@@ -2,8 +2,10 @@ package org.idea.plugin.atg.inspection;
 
 import com.google.common.collect.Lists;
 import com.intellij.codeInspection.LocalInspectionTool;
+import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
+import com.intellij.lang.properties.psi.impl.PropertyImpl;
 import com.intellij.lang.properties.psi.impl.PropertyValueImpl;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
@@ -29,7 +31,7 @@ public class DependenciesScopeInspection extends LocalInspectionTool {
         }
 
         List<String> restrictedScopesForDependency;
-        Set<String> parentScope = AtgComponentUtil.getComponentScope((PropertiesFileImpl) holderFile);
+        Set<String> parentScope = AtgComponentUtil.getComponentScopes((PropertiesFileImpl) holderFile);
         if (parentScope.contains(Constants.Scope.GLOBAL)) {
             restrictedScopesForDependency = Lists.newArrayList(Constants.Scope.SESSION, Constants.Scope.WINDOW, Constants.Scope.REQUEST);
         } else if (parentScope.contains(Constants.Scope.SESSION)) {
@@ -48,11 +50,15 @@ public class DependenciesScopeInspection extends LocalInspectionTool {
                         String beanName = matcher.group(0);
                         int start = matcher.start(0);
                         beanName = beanName.contains(".") ? beanName.substring(0, beanName.indexOf('.')) : value;
-                        Set<String> componentScopes = AtgComponentUtil.getComponentScope(beanName, holder.getProject());
+                        Set<String> componentScopes = AtgComponentUtil.getComponentScopes(beanName, holder.getProject());
                         if (componentScopes.stream().
                                 anyMatch(restrictedScopesForDependency::contains)) {
-                            holder.registerProblem(element, TextRange.from(start, beanName.length()),
-                                    AtgToolkitBundle.message("inspection.dependenciesScope.text", componentScopes));
+                            boolean treatAsDependency = AtgComponentUtil.getSetterForProperty((PropertyImpl) element.getParent()).
+                                    map(AtgComponentUtil::treatAsDependencySetter).
+                                    orElse(false);
+                            ProblemHighlightType problemHighlightType =  treatAsDependency ? ProblemHighlightType.GENERIC_ERROR_OR_WARNING : ProblemHighlightType.WEAK_WARNING;
+                                holder.registerProblem(element, AtgToolkitBundle.message("inspection.dependenciesScope.text", componentScopes),
+                                        problemHighlightType, TextRange.from(start, beanName.length()));
                         }
                     }
                 }

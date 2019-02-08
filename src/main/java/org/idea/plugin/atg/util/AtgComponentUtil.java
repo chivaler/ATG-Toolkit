@@ -108,7 +108,7 @@ public class AtgComponentUtil {
     }
 
     @NotNull
-    public static Set<String> getComponentScope(@NotNull PropertiesFileImpl propertyFile) {
+    public static Set<String> getComponentScopes(@NotNull PropertiesFileImpl propertyFile) {
         IProperty propertyScope = propertyFile.findPropertyByKey(Constants.Keywords.Properties.SCOPE_PROPERTY);
         Optional<String> supposedScope = propertyScope != null ? Optional.ofNullable(propertyScope.getValue()) : Optional.empty();
         if (supposedScope.isPresent() && Constants.Keywords.Properties.AVAILABLE_SCOPES.contains(supposedScope.get())) {
@@ -118,11 +118,11 @@ public class AtgComponentUtil {
         Optional<String> beanName = getComponentCanonicalName(propertyFile);
         if (!beanName.isPresent()) return Sets.newHashSet(Constants.Scope.GLOBAL);
 
-        return getComponentScope(beanName.get(), propertyFile.getProject());
+        return getComponentScopes(beanName.get(), propertyFile.getProject());
     }
 
     @NotNull
-    public static Set<String> getComponentScope(@NotNull String beanName, @NotNull Project project) {
+    public static Set<String> getComponentScopes(@NotNull String beanName, @NotNull Project project) {
         AtgIndexService componentsService = ServiceManager.getService(project, AtgIndexService.class);
         Set<String> derivedValues = componentsService.getComponentDerivedPropertyWithBasedOns(beanName, ComponentWrapper::getScope);
         return derivedValues.isEmpty() ? Sets.newHashSet(Constants.Scope.GLOBAL) : derivedValues;
