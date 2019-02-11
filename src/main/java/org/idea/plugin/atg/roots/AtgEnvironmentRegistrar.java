@@ -3,16 +3,17 @@ package org.idea.plugin.atg.roots;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.application.PathMacros;
-import com.intellij.openapi.components.AbstractProjectComponent;
+import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.project.Project;
 import org.apache.commons.lang.StringUtils;
 import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.Constants;
 
-public class AtgEnvironmentRegistrar extends AbstractProjectComponent {
+public class AtgEnvironmentRegistrar implements ProjectComponent {
+    private final Project project;
 
     public AtgEnvironmentRegistrar(Project project) {
-        super(project);
+        this.project = project;
     }
 
     @Override
@@ -27,7 +28,7 @@ public class AtgEnvironmentRegistrar extends AbstractProjectComponent {
                 new Notification(Constants.NOTIFICATION_GROUP_ID,
                         AtgToolkitBundle.message("inspection.atgHome.title"),
                         AtgToolkitBundle.message("inspection.atgHome.notPresent.text"),
-                        NotificationType.INFORMATION).notify(myProject);
+                        NotificationType.INFORMATION).notify(project);
             }
         }
     }
