@@ -42,6 +42,7 @@ public class AtgModuleFacetConfiguration implements FacetConfiguration, Persiste
                 .forEach(r -> result.configRoots.add(r.getUrl()));
         configLayerRoots.entrySet().stream()
                 .filter(Objects::nonNull)
+                .filter(entry -> entry.getKey() != null)
                 .forEach(entry -> result.configLayerRoots.put(entry.getKey().getUrl(), entry.getValue()));
         webRoots.stream()
                 .filter(Objects::nonNull)
