@@ -34,7 +34,7 @@ public class AtgPropertiesLayersLineMarkerProvider extends RelatedItemLineMarker
                                 NavigationGutterIconBuilder.create(Constants.Icons.COMPONENT_ICON).
                                         setTargets(componentsWithSameName).
                                         setTooltipText(AtgToolkitBundle.message("goto.component.layers.description", componentName.get()));
-                        result.add(builder.createLineMarkerInfo(element));
+                        result.add(builder.createLineMarkerInfo(psiFile));
                     }
                 }
 

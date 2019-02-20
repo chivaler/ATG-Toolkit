@@ -57,10 +57,10 @@ public class AvailableDependenciesInspection extends LocalInspectionTool {
                         AtgIndexService componentsService = ServiceManager.getService(project, AtgIndexService.class);
                         Collection<PropertiesFileImpl> dependencyLayers = componentsService.getComponentsByName(beanName);
                         if (dependencyLayers.isEmpty()) {
-                            Boolean treatAsDependecy = AtgComponentUtil.getSetterForProperty((PropertyImpl) element.getParent()).
+                            Boolean treatAsDependency = AtgComponentUtil.getSetterForProperty((PropertyImpl) element.getParent()).
                                     map(AtgComponentUtil::treatAsDependencySetter).
                                     orElse(false);
-                            if (treatAsDependecy) {
+                            if (treatAsDependency) {
                                 holder.registerProblem(element,
                                         new TextRange(startInParent, startInParent + beanName.length()),
                                         AtgToolkitBundle.message("inspection.dependenciesAbsent.text", beanName));
