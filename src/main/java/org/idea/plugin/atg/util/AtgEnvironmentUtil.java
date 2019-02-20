@@ -173,11 +173,14 @@ public class AtgEnvironmentUtil {
         Optional<ManifestFile> manifestFile = suggestManifestFileForModule(atgModuleName, project);
         if (manifestFile.isPresent()) {
             LOG.debug("Resolving jars for " + atgModuleName);
-            String[] configs = new String[0];
-            Header configPathHeader = manifestFile.get().getHeader(header);
-            if (configPathHeader != null && configPathHeader.getHeaderValue() != null) {
-                configs = configPathHeader.getHeaderValue().getUnwrappedText().split("\\s");
-            }
+            String[] configs = manifestFile.get().getHeaders()
+                    .stream()
+                    .filter(h -> header.equals(h.getName()))
+                    .map(Header::getHeaderValue)
+                    .filter(Objects::nonNull)
+                    .findAny()
+                    .map(h -> h.getUnwrappedText().split("\\s"))
+                    .orElse(new String[0]);
 
             VirtualFile moduleRoot = manifestFile.get().getVirtualFile().getParent().getParent();
             return Arrays.stream(configs)
