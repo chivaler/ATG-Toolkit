@@ -17,7 +17,6 @@ intellij {
     plugins 'properties'
     pluginName 'atg-toolkit'
     downloadSources true
-    sandboxDirectory "/home/atg/.idea/idea-sandbox"
     updateSinceUntilBuild false
 }
 
