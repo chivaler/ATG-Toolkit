@@ -48,8 +48,7 @@ public class AtgEnvironmentUtil {
 
     public static void parseAtgHome(@NotNull final Project project) {
         moduleAliases = new HashMap<>();
-        String macroAtgHome = PathMacros.getInstance().getValue(Constants.ATG_HOME);
-        String atgHome = macroAtgHome != null ? macroAtgHome : System.getenv(Constants.ATG_HOME);
+        String atgHome = PathMacros.getInstance().getValue(Constants.ATG_HOME);
         if (StringUtils.isNotBlank(atgHome)) {
             VirtualFile atgHomeVirtualDir = StandardFileSystems.local().findFileByPath(atgHome);
             if (atgHomeVirtualDir != null) {
