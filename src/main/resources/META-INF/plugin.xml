@@ -148,8 +148,10 @@
     <actions>
 
         <action id="DetectAtgRoots" class="org.idea.plugin.atg.config.DetectAtgRootsAction"
-                description="Detect ATG configuration roots"/>
+                text="Detect ATG roots in project"
+                description="Detect ATG configuration roots" />
         <action id="AttachAtgDependencies" class="org.idea.plugin.atg.config.AttachAtgDependenciesAction"
+                text="Attach ATG OOTB dependencies"
                 description="Attach ATG dependencies"/>
 
         <action id="GoToAtgComponents" class="org.idea.plugin.atg.navigation.GoToComponentCodeAction"
