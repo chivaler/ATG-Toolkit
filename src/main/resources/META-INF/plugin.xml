@@ -48,6 +48,8 @@
             Attach of OOTB modules can be invoked as action<br>
             Increased performance by using of indexes for retrieving XMLs<br>
             DependenciesScope check spitted to Error/Warning depending of whether component is injected, or just its path<br>
+        1.1 Removed warning at IDEA startup if ATG_HOME is undefined<br>
+            If ATG_HOME Path Variable is absent, it's trying to copy from DYNAMO_ROOT, DYNAMO_HOME(by trimming of /home), ATG_HOME environment variables, if any present<>
     ]]>
 
     </change-notes>

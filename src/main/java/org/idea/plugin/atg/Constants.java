@@ -32,6 +32,8 @@ public class Constants {
     public static final String ATG_CONFIG_LIBRARY_PREFIX = "ATGConfig" + ATG_LIBRARY_SEPARATOR;
     public static final String ATG_CLASSES_LIBRARY_PREFIX = "ATG" + ATG_LIBRARY_SEPARATOR;
     public static final String ATG_HOME = "ATG_HOME";
+    public static final String DYNAMO_ROOT = "DYNAMO_ROOT";
+    public static final String DYNAMO_HOME = "DYNAMO_HOME";
 
     public static class Icons {
         public static final Icon FACET_ICON = AllIcons.General.GearPlain;
