@@ -56,7 +56,6 @@ public class PipelineLinkReference extends PsiPolyVariantReferenceBase<XmlAttrib
         if (seekingChainName == null) return ResolveResult.EMPTY_ARRAY;
 
         Project project = containingFile.getProject();
-        PsiManager psiManager = PsiManager.getInstance(project);
         Set<XmlFile> xmlFilesWithSamePath = new HashSet<>();
         xmlFilesWithSamePath.add((XmlFile) containingFile);
         AtgIndexService componentsService = ServiceManager.getService(project, AtgIndexService.class);
@@ -65,7 +64,6 @@ public class PipelineLinkReference extends PsiPolyVariantReferenceBase<XmlAttrib
         return xmlFilesWithSamePath.stream()
                 .map(f -> findPipelineLinkByName(seekingLinkName, seekingChainName, f))
                 .filter(Objects::nonNull)
-                .filter(f -> !psiManager.areElementsEquivalent(f, getElement()))
                 .map(attr -> new PsiElementResolveResult(attr, true))
                 .toArray(ResolveResult[]::new);
     }
