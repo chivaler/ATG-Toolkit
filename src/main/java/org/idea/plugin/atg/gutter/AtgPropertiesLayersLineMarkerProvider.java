@@ -21,23 +21,19 @@ public class AtgPropertiesLayersLineMarkerProvider extends RelatedItemLineMarker
 
     @Override
     protected void collectNavigationMarkers(@NotNull PsiElement element, @NotNull Collection<? super RelatedItemLineMarkerInfo> result) {
-        if (element instanceof PropertiesList) {
-            PsiFile psiFile = element.getContainingFile();
-            if (psiFile instanceof PropertiesFileImpl) {
-                Optional<String> componentName = AtgComponentUtil.getComponentCanonicalName((PropertiesFileImpl) psiFile);
-                if (componentName.isPresent()) {
-                    AtgIndexService componentsService = ServiceManager.getService(element.getProject(), AtgIndexService.class);
-                    Collection<PropertiesFileImpl> componentsWithSameName = componentsService.getComponentsByName(componentName.get());
-                    componentsWithSameName.remove(psiFile);
-                    if (!componentsWithSameName.isEmpty()) {
-                        NavigationGutterIconBuilder<PsiElement> builder =
-                                NavigationGutterIconBuilder.create(Constants.Icons.COMPONENT_ICON).
-                                        setTargets(componentsWithSameName).
-                                        setTooltipText(AtgToolkitBundle.message("goto.component.layers.description", componentName.get()));
-                        result.add(builder.createLineMarkerInfo(psiFile));
-                    }
+        if (element instanceof PropertiesFileImpl) {
+            Optional<String> componentName = AtgComponentUtil.getComponentCanonicalName((PropertiesFileImpl) element);
+            if (componentName.isPresent()) {
+                AtgIndexService componentsService = ServiceManager.getService(element.getProject(), AtgIndexService.class);
+                Collection<PropertiesFileImpl> componentsWithSameName = componentsService.getComponentsByName(componentName.get());
+                componentsWithSameName.remove(element);
+                if (!componentsWithSameName.isEmpty()) {
+                    NavigationGutterIconBuilder<PsiElement> builder =
+                            NavigationGutterIconBuilder.create(Constants.Icons.COMPONENT_ICON).
+                                    setTargets(componentsWithSameName).
+                                    setTooltipText(AtgToolkitBundle.message("goto.component.layers.description", componentName.get()));
+                    result.add(builder.createLineMarkerInfo(element));
                 }
-
             }
         }
     }
