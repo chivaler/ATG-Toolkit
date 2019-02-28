@@ -3,8 +3,6 @@ package org.idea.plugin.atg.util;
 import com.intellij.facet.Facet;
 import com.intellij.facet.FacetManager;
 import com.intellij.facet.ProjectFacetManager;
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationType;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PathMacros;
@@ -24,19 +22,24 @@ import com.intellij.openapi.vfs.JarFileSystem;
 import com.intellij.openapi.vfs.StandardFileSystems;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.FileViewProvider;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import org.apache.commons.lang.StringUtils;
 import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.Constants;
-import org.idea.plugin.atg.config.AtgToolkitConfig;
+import org.idea.plugin.atg.Constants.Keywords.Manifest;
 import org.idea.plugin.atg.module.AtgModuleFacet;
 import org.idea.plugin.atg.module.AtgModuleFacetConfiguration;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.lang.manifest.parser.ManifestParserDefinition;
 import org.jetbrains.lang.manifest.psi.Header;
+import org.jetbrains.lang.manifest.psi.HeaderValue;
 import org.jetbrains.lang.manifest.psi.ManifestFile;
 
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 public class AtgEnvironmentUtil {
@@ -49,115 +52,105 @@ public class AtgEnvironmentUtil {
     public static void parseAtgHome(@NotNull final Project project) {
         moduleAliases = new HashMap<>();
         String atgHome = PathMacros.getInstance().getValue(Constants.ATG_HOME);
-        if (StringUtils.isNotBlank(atgHome)) {
-            VirtualFile atgHomeVirtualDir = StandardFileSystems.local().findFileByPath(atgHome);
-            if (atgHomeVirtualDir != null) {
-                for (VirtualFile rootChild : atgHomeVirtualDir.getChildren()) {
-                    if (rootChild.isDirectory()) {
-                        VirtualFile metaInfFolder = rootChild.findChild("META-INF");
-                        if (metaInfFolder != null) {
-                            VirtualFile manifestFile = metaInfFolder.findChild("MANIFEST.MF");
-                            PsiFile manifestPsiFile = null;
-                            if (manifestFile != null) {
-                                manifestPsiFile = PsiManager.getInstance(project).findFile(manifestFile);
-                            }
-                            if (manifestPsiFile instanceof ManifestFile) {
-                                String relativeModulePath = VfsUtilCore.getRelativeLocation(rootChild, atgHomeVirtualDir);
-                                if (relativeModulePath != null) {
-                                    String moduleName = relativeModulePath.replace("/", ".");
-                                    ManifestFile manifestPsiFileImpl = (ManifestFile) manifestPsiFile;
-                                    Header atgInstallUnit = manifestPsiFileImpl.getHeader(Constants.Keywords.Manifest.ATG_INSTALL_UNIT);
-                                    if (atgInstallUnit != null && atgInstallUnit.getHeaderValue() != null) {
-                                        String atgInstallUnitStr = atgInstallUnit.getHeaderValue().getUnwrappedText();
-                                        if (StringUtils.isNotBlank(atgInstallUnitStr)) {
-                                            moduleAliases.put(atgInstallUnitStr, moduleName);
-                                        }
-                                    }
-                                }
-                            }
-                        }
+        VirtualFile atgHomeVirtualDir = StandardFileSystems.local().findFileByPath(atgHome);
+        if (atgHomeVirtualDir == null) return;
+
+        for (VirtualFile rootChild : atgHomeVirtualDir.getChildren()) {
+            if (rootChild.isDirectory()) {
+                String relativeModulePath = VfsUtilCore.getRelativeLocation(rootChild, atgHomeVirtualDir);
+                VirtualFile manifestFile = VfsUtilCore.findRelativeFile("META-INF/MANIFEST.MF", rootChild);
+                if (manifestFile != null && relativeModulePath != null) {
+                    ManifestFile manifestPsiFile = getPsiForManifestFile(project, manifestFile);
+                    if (manifestPsiFile != null) {
+                        manifestPsiFile.getHeaders().stream()
+                                .filter(h -> Manifest.ATG_INSTALL_UNIT.equals(h.getName()))
+                                .map(Header::getHeaderValue)
+                                .filter(Objects::nonNull)
+                                .map(HeaderValue::getUnwrappedText)
+                                .filter(StringUtils::isNotBlank)
+                                .findAny()
+                                .ifPresent(atgInstallUnitStr -> moduleAliases.put(atgInstallUnitStr, relativeModulePath + "/"));
                     }
                 }
-            } else {
-                LOG.warn("ATG_HOME folder wasn't found");
-                new Notification(Constants.NOTIFICATION_GROUP_ID,
-                        AtgToolkitBundle.message("inspection.atgHome.title"),
-                        AtgToolkitBundle.message("inspection.atgHome.wrong.text", atgHome),
-                        NotificationType.ERROR).notify(project);
             }
-        } else {
-            LOG.warn("ATG_HOME path variable isn't set");
-            new Notification(Constants.NOTIFICATION_GROUP_ID,
-                    AtgToolkitBundle.message("inspection.atgHome.title"),
-                    AtgToolkitBundle.message("inspection.atgHome.notSet.text"),
-                    NotificationType.ERROR).notify(project);
         }
     }
 
-    @NotNull
-    public static Optional<ManifestFile> suggestManifestFileForModule(@NotNull final String atgModuleName, @NotNull final Project project) {
-        String macroAtgHome = PathMacros.getInstance().getValue(Constants.ATG_HOME);
-        String atgHome = macroAtgHome != null ? macroAtgHome : System.getenv(Constants.ATG_HOME);
-
-        String atgModuleRelativePath = atgModuleName.replace('.', '/');
-        String atgModuleMostParent = atgModuleName.contains(".") ? atgModuleName.substring(0, atgModuleName.indexOf('.')) : atgModuleName;
-        Optional<String> first = moduleAliases.entrySet().stream()
-                .filter(a -> atgModuleMostParent.equals(a.getKey()))
-                .map(Map.Entry::getValue)
-                .findFirst();
-        atgModuleRelativePath = first.isPresent() ? first.get() + '/' + atgModuleRelativePath : atgModuleRelativePath;
-
+    @Nullable
+    static ManifestFile suggestManifestFileForModule(@NotNull final String atgModuleName,
+                                                     @NotNull final Project project) {
+        String atgHome = PathMacros.getInstance().getValue(Constants.ATG_HOME);
         VirtualFile atgHomeVirtualDir = StandardFileSystems.local().findFileByPath(atgHome);
-        if (atgHomeVirtualDir != null && atgHomeVirtualDir.isDirectory()) {
-            VirtualFile manifestFile = VfsUtilCore.findRelativeFile(atgModuleRelativePath + "/META-INF/MANIFEST.MF", atgHomeVirtualDir);
-            PsiFile manifestPsiFile = null;
-            if (manifestFile != null) {
-                manifestPsiFile = PsiManager.getInstance(project).findFile(manifestFile);
-                LOG.debug("Parsing Manifest of " + atgModuleRelativePath);
-            }
-            if (manifestPsiFile instanceof ManifestFile) return Optional.of((ManifestFile) manifestPsiFile);
+
+        String atgModuleMostParentModule = atgModuleName.contains(".") ?
+                atgModuleName.substring(0, atgModuleName.indexOf('.')) :
+                atgModuleName;
+
+        String alias = moduleAliases.entrySet().stream()
+                .filter(a -> atgModuleMostParentModule.equals(a.getKey()))
+                .map(Map.Entry::getValue)
+                .findFirst()
+                .orElse("");
+        String manifestRelativePath = alias + atgModuleName.replace('.', '/') + "/META-INF/MANIFEST.MF";
+
+        VirtualFile vFile = VfsUtilCore.findRelativeFile(manifestRelativePath, atgHomeVirtualDir);
+        return getPsiForManifestFile(project, vFile);
+    }
+
+    @Nullable
+    private static ManifestFile getPsiForManifestFile(@NotNull Project project, @Nullable VirtualFile vFile) {
+        if (vFile == null || !vFile.isValid()) {
+            return null;
         }
 
-        return Optional.empty();
+        PsiManager psiManager = PsiManager.getInstance(project);
+        PsiFile manifestPsiFile = psiManager.findFile(vFile);
+        if (manifestPsiFile instanceof ManifestFile) return (ManifestFile) manifestPsiFile;
+
+        FileViewProvider viewProvider = psiManager.findViewProvider(vFile);
+        if (viewProvider == null) {
+            return null;
+        }
+        return (ManifestFile) new ManifestParserDefinition().createFile(viewProvider);
     }
 
     @NotNull
-    public static List<String> getRequiredModules(@NotNull final String atgModuleName, @NotNull final Project project) {
-        Optional<ManifestFile> manifestFile = suggestManifestFileForModule(atgModuleName, project);
-        if (manifestFile.isPresent()) {
-            LOG.debug("Reading Manifest for " + atgModuleName);
-            //TODO Require-if-present
-            Header requiredHeader = manifestFile.get().getHeader(Constants.Keywords.Manifest.ATG_REQUIRED);
-            if (requiredHeader != null && requiredHeader.getHeaderValue() != null) {
-                return Arrays.stream(requiredHeader.getHeaderValue().getUnwrappedText().split("\\s"))
-                        .filter(StringUtils::isNotBlank)
-                        .collect(Collectors.toList());
-            }
-            return Collections.emptyList();
-        } else {
-            LOG.warn("Manifest for module " + atgModuleName + " wasn't found");
+    public static List<String> getRequiredModulesFromManifest(@NotNull final ManifestFile manifestFile) {
+        //TODO Require-if-present
+        Header requiredHeader = manifestFile.getHeader(Manifest.ATG_REQUIRED);
+        if (requiredHeader != null && requiredHeader.getHeaderValue() != null) {
+            return Arrays.stream(requiredHeader.getHeaderValue()
+                    .getUnwrappedText()
+                    .split("\\s"))
+                    .filter(StringUtils::isNotBlank)
+                    .collect(Collectors.toList());
         }
-
         return Collections.emptyList();
 
     }
 
     @NotNull
-    public static List<String> getAllRequiredModules(@NotNull final Project project, @NotNull String...
-            loadingModules) {
+    public static List<String> getAllRequiredModules(@NotNull final Project project,
+                                                     @NotNull final List<String> modulesWithoutManifests,
+                                                     @NotNull final String... loadingModules) {
         List<String> requiredList = new ArrayList<>();
         Deque<String> resolvingQueue = new LinkedList<>(Arrays.asList(loadingModules));
 
         while (!resolvingQueue.isEmpty()) {
             String nextName = resolvingQueue.removeFirst();
             if (!requiredList.contains(nextName)) {
-                List<String> requiredModulesForNextModule = getRequiredModules(nextName, project);
-                if (requiredList.containsAll(requiredModulesForNextModule)) {
-                    requiredList.add(nextName);
+                ManifestFile manifestFile = suggestManifestFileForModule(nextName, project);
+                if (manifestFile == null) {
+                    modulesWithoutManifests.add(nextName);
                 } else {
-                    resolvingQueue.addFirst(nextName);
-                    for (String dependency : requiredModulesForNextModule) {
-                        resolvingQueue.addFirst(dependency);
+                    List<String> requiredModulesForNextModule = getRequiredModulesFromManifest(manifestFile);
+                    if (requiredList.containsAll(requiredModulesForNextModule)) {
+                        requiredList.add(nextName);
+                    } else {
+                        resolvingQueue.addFirst(nextName);
+                        for (String dependency : requiredModulesForNextModule) {
+                            resolvingQueue.addFirst(dependency);
+                        }
                     }
                 }
             }
@@ -167,85 +160,84 @@ public class AtgEnvironmentUtil {
     }
 
     @NotNull
-    public static List<VirtualFile> getJarsForHeader(@NotNull final String atgModuleName,
-                                                     @NotNull final Project project, @NotNull String header) {
-        Optional<ManifestFile> manifestFile = suggestManifestFileForModule(atgModuleName, project);
-        if (manifestFile.isPresent()) {
-            LOG.debug("Resolving jars for " + atgModuleName);
-            String[] configs = manifestFile.get().getHeaders()
-                    .stream()
-                    .filter(h -> header.equals(h.getName()))
-                    .map(Header::getHeaderValue)
-                    .filter(Objects::nonNull)
-                    .findAny()
-                    .map(h -> h.getUnwrappedText().split("\\s"))
-                    .orElse(new String[0]);
+    public static List<VirtualFile> getJarsForHeader(@NotNull final String header,
+                                                     @NotNull final ManifestFile manifestFile) {
+        VirtualFile moduleRoot = manifestFile.getVirtualFile().getParent().getParent();
+        String[] configs = manifestFile.getHeaders()
+                .stream()
+                .filter(h -> header.equals(h.getName()))
+                .map(Header::getHeaderValue)
+                .filter(Objects::nonNull)
+                .findAny()
+                .map(h -> h.getUnwrappedText().split("\\s"))
+                .orElse(new String[0]);
 
-            VirtualFile moduleRoot = manifestFile.get().getVirtualFile().getParent().getParent();
-            return Arrays.stream(configs)
-                    .filter(StringUtils::isNotBlank)
-                    .map(c -> VfsUtilCore.findRelativeFile(c, moduleRoot))
-                    .filter(Objects::nonNull)
-                    .filter(VirtualFile::exists)
-                    .collect(Collectors.toList());
-        }
-        return Collections.emptyList();
+        return Arrays.stream(configs)
+                .filter(StringUtils::isNotBlank)
+                .map(c -> VfsUtilCore.findRelativeFile(c, moduleRoot))
+                .filter(Objects::nonNull)
+                .filter(VirtualFile::exists)
+                .collect(Collectors.toList());
     }
 
-    public static void addDependenciesToModule(@NotNull final Module module, LibraryTable.ModifiableModel projectLibraryModifiableModel) {
+    public static void addDependenciesToModule(@NotNull final Module module,
+                                               @NotNull final LibraryTable.ModifiableModel projectLibraryModifiableModel,
+                                               boolean attachConfigsOfAtgDependencies,
+                                               boolean attachClassPathOfAtgDependencies,
+                                               @NotNull final List<String> modulesWithoutManifests) {
         AtgModuleFacet atgModuleFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
         if (atgModuleFacet != null) {
             String atgModuleName = atgModuleFacet.getConfiguration().getAtgModuleName();
             if (StringUtils.isNotBlank(atgModuleName)) {
                 Project project = module.getProject();
-                List<String> requiredAtgModules = getAllRequiredModules(project, atgModuleName);
-                requiredAtgModules.remove(atgModuleName);
-                Set<String> presentModulesInProject = ProjectFacetManager.getInstance(project).getFacets(Constants.FACET_TYPE_ID).stream()
-                        .map(Facet::getConfiguration)
-                        .map(AtgModuleFacetConfiguration::getAtgModuleName)
-                        .filter(StringUtils::isNotBlank)
-                        .collect(Collectors.toSet());
-
                 ModifiableRootModel modifiableModel = ModuleRootManager.getInstance(module).getModifiableModel();
 
-                for (String prefix : new String[]{Constants.ATG_CONFIG_LIBRARY_PREFIX, Constants.ATG_CLASSES_LIBRARY_PREFIX}) {
-                    Arrays.stream(modifiableModel.getOrderEntries())
-                            .filter(LibraryOrderEntry.class::isInstance)
-                            .map(f -> (LibraryOrderEntry) f)
-                            .filter(f -> f.getLibraryName() != null && f.getLibraryName().startsWith(prefix))
-                            .filter(f -> !requiredAtgModules.contains(f.getLibraryName().replace(prefix, "")))
-                            .peek(f -> LOG.debug("Removing " + f.getLibraryName() + " from module " + module.getName() + " as it's not present in ATG-Required in Manifest"))
-                            .forEach(f -> runWriteAction(() -> modifiableModel.removeOrderEntry(f)));
-                }
+                Set<String> presentModulesInProject = ProjectFacetManager.getInstance(project)
+                        .getFacets(Constants.FACET_TYPE_ID).stream().map(Facet::getConfiguration)
+                        .map(AtgModuleFacetConfiguration::getAtgModuleName).filter(StringUtils::isNotBlank)
+                        .collect(Collectors.toSet());
 
-                requiredAtgModules.forEach(m -> {
-                    if (!presentModulesInProject.contains(m)) {
-                        if (AtgToolkitConfig.getInstance(project).isAttachConfigsOfAtgDependencies()) {
-                            List<VirtualFile> configJars = getJarsForHeader(m, project, Constants.Keywords.Manifest.ATG_CONFIG_PATH);
-                            addDependenciesToModule(module, m, configJars, modifiableModel, projectLibraryModifiableModel, Constants.ATG_CONFIG_LIBRARY_PREFIX);
+                List<String> requiredModules = getAllRequiredModules(project, modulesWithoutManifests, atgModuleName);
+                requiredModules.removeAll(presentModulesInProject);
+
+                for (String requiredAtgModule : requiredModules) {
+                    ManifestFile manifestFile = suggestManifestFileForModule(requiredAtgModule, project);
+                    if (manifestFile != null) {
+                        if (attachConfigsOfAtgDependencies) {
+                            //TODO Add configLayers from jar as well as as configs
+                            List<VirtualFile> configJars = getJarsForHeader(Manifest.ATG_CONFIG_PATH, manifestFile);
+                            addDependenciesToModule(requiredAtgModule, configJars, modifiableModel,
+                                    projectLibraryModifiableModel, Constants.ATG_CONFIG_LIBRARY_PREFIX);
                         }
-                        if (AtgToolkitConfig.getInstance(project).isAttachClassPathOfAtgDependencies()) {
-                            List<VirtualFile> classPathJars = getJarsForHeader(m, project, Constants.Keywords.Manifest.ATG_CLASS_PATH);
-                            addDependenciesToModule(module, m, classPathJars, modifiableModel, projectLibraryModifiableModel, Constants.ATG_CLASSES_LIBRARY_PREFIX);
+                        if (attachClassPathOfAtgDependencies) {
+                            List<VirtualFile> configJars = getJarsForHeader(Manifest.ATG_CLASS_PATH, manifestFile);
+                            addDependenciesToModule(requiredAtgModule, configJars, modifiableModel,
+                                    projectLibraryModifiableModel, Constants.ATG_CLASSES_LIBRARY_PREFIX);
+
                         }
+                    } else {
+                        modulesWithoutManifests.add(requiredAtgModule);
                     }
-                });
-
+                }
                 runWriteAction(modifiableModel::commit);
             }
         } else {
-            LOG.info("Module " + module.getName() + " hasn't configured AtgModuleName. Couldn't identify Manifest for module. Skipping addition of dependencies");
+            LOG.info("Module " + module.getName()
+                    + " hasn't configured AtgModuleName. Couldn't identify Manifest for module. Skipping addition of dependencies");
         }
     }
 
-    public static void addDependenciesToModule(@NotNull Module module,
-                                               @NotNull String atgModuleName,
-                                               @NotNull List<VirtualFile> jarFiles,
-                                               @NotNull ModifiableRootModel modifiableModel,
-                                               @NotNull LibraryTable.ModifiableModel projectLibraryModifiableModel,
-                                               @NotNull String prefix) {
-        LOG.debug("Adding dependencies to " + module.getName());
-        Library atgDependencyLibrary = getOrCreateLibrary(atgModuleName, jarFiles, projectLibraryModifiableModel, prefix);
+
+    static void addDependenciesToModule(@NotNull final String atgModuleName,
+                                        @NotNull final List<VirtualFile> jarFiles,
+                                        @NotNull final ModifiableRootModel modifiableModel,
+                                        @NotNull final LibraryTable.ModifiableModel projectLibraryModifiableModel,
+                                        @NotNull final String prefix) {
+        String libraryName = prefix + atgModuleName;
+        Library existingLibrary = projectLibraryModifiableModel.getLibraryByName(libraryName);
+
+        Library atgDependencyLibrary = existingLibrary != null ? existingLibrary :
+                createLibraryWithJars(libraryName, atgModuleName, jarFiles, projectLibraryModifiableModel);
 
         boolean dependencyAlreadyInModule = Arrays.stream(modifiableModel.getOrderEntries())
                 .filter(LibraryOrderEntry.class::isInstance)
@@ -257,63 +249,59 @@ public class AtgEnvironmentUtil {
     }
 
     @NotNull
-    public static Library getOrCreateLibrary(@NotNull String atgModuleName, @NotNull List<VirtualFile> jarFiles, @NotNull LibraryTable.ModifiableModel projectLibraryModifiableModel, @NotNull String prefix) {
-        String libraryName = prefix + atgModuleName;
-        Library existingLibrary = projectLibraryModifiableModel.getLibraryByName(libraryName);
+    static Library createLibraryWithJars(@NotNull final String libraryName,
+                                         @NotNull final String atgModuleName,
+                                         @NotNull final List<VirtualFile> jarFiles,
+                                         @NotNull final LibraryTable.ModifiableModel projectLibraryModifiableModel) {
+        Library library = projectLibraryModifiableModel.createLibrary(libraryName);
+        Library.ModifiableModel libraryModel = library.getModifiableModel();
 
-        if (existingLibrary == null) {
-            Library library = projectLibraryModifiableModel.createLibrary(libraryName);
-            Library.ModifiableModel libraryModel = library.getModifiableModel();
+        jarFiles.stream()
+                .map(jar -> new GetRootForLibrary().apply(jar, atgModuleName))
+                .filter(Objects::nonNull)
+                .forEach(jar -> libraryModel.addRoot(jar, OrderRootType.CLASSES));
 
-            for (VirtualFile jarFile : jarFiles) {
-                if (!jarFile.isDirectory()) {
-                    VirtualFile jarConfig = JarFileSystem.getInstance().getRootByLocal(jarFile);
-                    if (jarConfig != null) {
-                        jarFile = jarConfig;
-                    } else {
-                        LOG.warn("Wrong config root:" + jarFile.getName() + " found in MANIFEST.MF of:" + atgModuleName);
-                        continue;
-                    }
-                }
-                libraryModel.addRoot(jarFile, OrderRootType.CLASSES);
-            }
-
-            runWriteAction(libraryModel::commit);
-            return library;
-        } else {
-            return existingLibrary;
-        }
+        runWriteAction(libraryModel::commit);
+        return library;
     }
 
-    public static void addAtgDependenciesForAllModules(@NotNull Project project, ProgressIndicator indicator) {
+    public static void addAtgDependenciesForAllModules(@NotNull final Project project,
+                                                       @NotNull final ProgressIndicator indicator,
+                                                       boolean attachConfigsOfAtgDependencies,
+                                                       boolean attachClassPathOfAtgDependencies,
+                                                       @NotNull final List<String> modulesWithoutManifests) {
         indicator.setText(AtgToolkitBundle.message("action.update.dependencies.parsingDynamoRoot.text"));
         parseAtgHome(project);
+        LibraryTable.ModifiableModel projectLibraryModifiableModel = ProjectLibraryTable.getInstance(project)
+                .getModifiableModel();
         Module[] allModules = ModuleManager.getInstance(project).getModules();
         indicator.setText(AtgToolkitBundle.message("action.update.dependencies.attach.text"));
         int currentModuleNumber = 0;
-        LibraryTable.ModifiableModel projectLibraryModifiableModel = ProjectLibraryTable.getInstance(project).getModifiableModel();
         for (Module module : allModules) {
             indicator.setFraction(currentModuleNumber++ / (double) allModules.length);
             indicator.setText2(AtgToolkitBundle.message("action.update.dependencies.attach.text2", module.getName()));
-            addDependenciesToModule(module, projectLibraryModifiableModel);
+            addDependenciesToModule(module, projectLibraryModifiableModel, attachConfigsOfAtgDependencies,
+                    attachClassPathOfAtgDependencies, modulesWithoutManifests);
         }
         runWriteAction(projectLibraryModifiableModel::commit);
     }
 
-    public static void removeAtgDependenciesForAllModules(@NotNull Project project, ProgressIndicator indicator) {
+    public static void removeAtgDependenciesForAllModules(@NotNull final Project project,
+                                                          @NotNull final ProgressIndicator indicator) {
         LibraryTable.ModifiableModel projectLibraryModifiableModel = ProjectLibraryTable.getInstance(project).getModifiableModel();
-        if (!AtgToolkitConfig.getInstance(project).isAttachConfigsOfAtgDependencies()) {
-            indicator.setText(AtgToolkitBundle.message("action.update.dependencies.removeConfigs.text"));
-            removeAtgDependenciesForAllModules(project, projectLibraryModifiableModel, indicator, Constants.ATG_CONFIG_LIBRARY_PREFIX);
-        }
-        if (!AtgToolkitConfig.getInstance(project).isAttachClassPathOfAtgDependencies()) {
-            indicator.setText(AtgToolkitBundle.message("action.update.dependencies.removeClasses.text"));
-            removeAtgDependenciesForAllModules(project, projectLibraryModifiableModel, indicator, Constants.ATG_CLASSES_LIBRARY_PREFIX);
-        }
+        indicator.setText(AtgToolkitBundle.message("action.update.dependencies.removeConfigs.text"));
+        removeAtgDependenciesForAllModules(project, projectLibraryModifiableModel, indicator,
+                Constants.ATG_CONFIG_LIBRARY_PREFIX);
+        indicator.setText(AtgToolkitBundle.message("action.update.dependencies.removeClasses.text"));
+        removeAtgDependenciesForAllModules(project, projectLibraryModifiableModel, indicator,
+                Constants.ATG_CLASSES_LIBRARY_PREFIX);
         runWriteAction(projectLibraryModifiableModel::commit);
     }
 
-    public static void removeAtgDependenciesForAllModules(@NotNull Project project, @NotNull LibraryTable.ModifiableModel projectLibraryModifiableModel, ProgressIndicator indicator, @NotNull String libraryPrefix) {
+    static void removeAtgDependenciesForAllModules(@NotNull final Project project,
+                                                   @NotNull final LibraryTable.ModifiableModel projectLibraryModifiableModel,
+                                                   @NotNull final ProgressIndicator indicator,
+                                                   @NotNull final String libraryPrefix) {
         Module[] allModules = ModuleManager.getInstance(project).getModules();
         int currentModuleNumber = 0;
         for (Module module : allModules) {
@@ -351,5 +339,22 @@ public class AtgEnvironmentUtil {
             application.invokeLater(() -> application.runWriteAction(runnable));
         }
     }
+
+private static class GetRootForLibrary implements BiFunction<VirtualFile, String, VirtualFile> {
+
+    @Override
+    @Nullable
+    public VirtualFile apply(@NotNull final VirtualFile jarReference,
+                             @NotNull final String atgModuleName) {
+        if (jarReference.isDirectory()) return jarReference;
+
+        String jarReferenceName = jarReference.getName();
+        VirtualFile jarConfig = JarFileSystem.getInstance().getRootByLocal(jarReference);
+        if (jarConfig == null) {
+            LOG.warn("Wrong config root:" + jarReferenceName + " found in MANIFEST.MF of:" + atgModuleName);
+        }
+        return jarConfig;
+    }
+}
 
 }
