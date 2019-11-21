@@ -146,6 +146,7 @@
         <framework.detector implementation="org.idea.plugin.atg.framework.AtgFrameworkDetector"/>
         <iconProvider implementation="org.idea.plugin.atg.module.AtgIconProvider" id="atgFolders" order="first"/>
 
+        <defaultLiveTemplatesProvider implementation="org.idea.plugin.atg.template.live.LiveTemplateProvider"/>
     </extensions>
 
     <actions>
