@@ -62,6 +62,14 @@ public class Constants {
 
     public static class Keywords {
 
+        public static class Actor {
+            public static final String NAME = "name";
+            public static final String ACTOR = "actor";
+            public static final String COMPONENT = "component";
+            public static final String DROPLET = "droplet";
+            public static final String FORM = "form";
+        }
+
         public static class Manifest {
             public static final String ATG_CONFIG_PATH = "ATG-Config-Path";
             public static final String ATG_CLASS_PATH = "ATG-Class-Path";
