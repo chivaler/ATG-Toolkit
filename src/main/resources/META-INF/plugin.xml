@@ -81,6 +81,8 @@
                                   implementation="org.idea.plugin.atg.psi.reference.contribution.RepositoryXmlContributor"/>
         <psi.referenceContributor language="XML"
                                   implementation="org.idea.plugin.atg.psi.reference.contribution.PatchBayXmlContributor"/>
+        <psi.referenceContributor language="XML"
+                                  implementation="org.idea.plugin.atg.psi.reference.contribution.ActorXmlContributor"/>
         <psi.referenceContributor language="Properties"
                                   implementation="org.idea.plugin.atg.psi.reference.contribution.AtgReferenceContributor"/>
 
