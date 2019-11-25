@@ -9,7 +9,6 @@ import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.ProcessingContext;
 import com.jgoodies.common.base.Strings;
 import org.idea.plugin.atg.Constants;
-import org.idea.plugin.atg.Constants.Keywords.Actor;
 import org.idea.plugin.atg.Constants.Keywords.Repository;
 import org.idea.plugin.atg.psi.provider.XmlAttributeComponentNamesProvider;
 import org.idea.plugin.atg.psi.provider.XmlAttributeJavaClassProvider;
@@ -39,14 +38,6 @@ public class RepositoryXmlContributor extends PsiReferenceContributor {
                                 .withParent(XmlPatterns.xmlTag().withName(Repository.PROPERTY)
                                         .andOr(XmlPatterns.xmlTag().withParent(XmlPatterns.xmlTag().withName(Repository.ITEM_DESCRIPTOR)),
                                                 XmlPatterns.xmlTag().withSuperParent(2, XmlPatterns.xmlTag().withName(Repository.ITEM_DESCRIPTOR)))
-                                ))
-                        .and(XmlPatterns.xmlAttributeValue().withValue(StandardPatterns.string().startsWith("/"))),
-                new XmlAttributeComponentNamesProvider());
-
-        registrar.registerReferenceProvider(XmlPatterns.xmlAttributeValue()
-                        .withParent(XmlPatterns.xmlAttribute().withName(Actor.NAME)
-                                .withParent(XmlPatterns.xmlTag()
-                                        .withName(Actor.ACTOR, Actor.COMPONENT, Actor.DROPLET, Actor.FORM)
                                 ))
                         .and(XmlPatterns.xmlAttributeValue().withValue(StandardPatterns.string().startsWith("/"))),
                 new XmlAttributeComponentNamesProvider());
