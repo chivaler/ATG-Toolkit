@@ -3,11 +3,9 @@ package org.idea.plugin.atg.usage.implicit;
 import com.intellij.codeInsight.daemon.ImplicitUsageProvider;
 import com.intellij.lang.properties.IProperty;
 import com.intellij.lang.properties.psi.PropertiesFile;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ProjectFileIndex;
-import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.MethodSignature;
@@ -16,10 +14,9 @@ import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.indexing.FileBasedIndex;
 import org.apache.commons.lang.StringUtils;
 import org.idea.plugin.atg.filter.ExcludedDirectoryVirtualFileFilter;
+import org.idea.plugin.atg.index.AtgIndexService;
 import org.idea.plugin.atg.index.XmlActorIndexExtension;
-import org.idea.plugin.atg.iterator.PropertiesContentIterator;
 import org.idea.plugin.atg.visitor.XmlPsiRecursiveElementVisitor;
-
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -58,27 +55,22 @@ public class ActorImplicitUsageProvider implements ImplicitUsageProvider {
                     .flatMap(nameOfFile -> FileBasedIndex.getInstance()
                             .getValues(XmlActorIndexExtension.NAME, nameOfFile, GlobalSearchScope.allScope(project)).stream())
                     .collect(Collectors.toList());
-            List<String> componentPaths;
-            ProjectFileIndex projectFileIndex = ProjectRootManager.getInstance(project).getFileIndex();
+            Set<String> componentNames;
             if (((PsiMethod) element).getName().startsWith(PREFIX_HANDLE)) {
-                componentPaths = findComponentNameWithXmlTag(pathToFiles, XML_TAG_FORM, project, inspectMethod);
+                componentNames = findComponentNameWithXmlTag(pathToFiles, XML_TAG_FORM, project, inspectMethod);
             } else {
-                componentPaths = findComponentNameWithXmlTag(pathToFiles, XML_TAG_COMPONENT, project, inspectMethod);
+                componentNames = findComponentNameWithXmlTag(pathToFiles, XML_TAG_COMPONENT, project, inspectMethod);
             }
 
-            // TODO refactor get property files from index
-            result = componentPaths.stream().anyMatch(componentPath -> {
-                List<VirtualFile> propertiesVirtualFiles = new ArrayList<>();
-                PropertiesContentIterator propertiesContentIterator =
-                        new PropertiesContentIterator(componentPath, propertiesVirtualFiles);
-                projectFileIndex.iterateContent(propertiesContentIterator);
-                return isUsageInComponent(propertiesVirtualFiles, PROPERTY_CLASS, project, inspectMethod);
-            });
+            AtgIndexService componentsService = ServiceManager.getService(project, AtgIndexService.class);
+            result = componentNames.stream()
+                    .flatMap(componentName -> componentsService.getComponentsByName(componentName).stream())
+                    .anyMatch(componentPath -> isUsageInComponent(componentPath, PROPERTY_CLASS, inspectMethod));
         }
         return result;
     }
 
-    private String getNucleusComponent(PsiElement[] componentChild, PsiMethod method, XmlTag parentTag) {
+    private String getNucleusComponentName(PsiElement[] componentChild, PsiMethod method, XmlTag parentTag) {
         String result = null;
 
         Optional<XmlAttribute> xmlMethodName = Arrays.stream(componentChild)
@@ -122,18 +114,11 @@ public class ActorImplicitUsageProvider implements ImplicitUsageProvider {
         return result;
     }
 
-    private boolean isUsageInComponent(List<VirtualFile> propertiesVirtualFiles,
+    private boolean isUsageInComponent(PropertiesFile propertiesFile,
                                        String propertyName,
-                                       Project project,
                                        PsiMethod inspectMethod) {
-        PsiManager psiManager = PsiManager.getInstance(project);
-        return propertiesVirtualFiles.stream()
-                .map(psiManager::findFile)
-                .filter(Objects::nonNull)
-                .map(propPsiFile -> (PropertiesFile) propPsiFile.getOriginalElement())
-                .map(propPsiFile -> propPsiFile.findPropertyByKey(propertyName))
-                .filter(Objects::nonNull)
-                .anyMatch(property -> isSameJavaClass(property, inspectMethod));
+        IProperty property = propertiesFile.findPropertyByKey(propertyName);
+        return property != null && isSameJavaClass(property, inspectMethod);
     }
 
     private boolean isSameJavaClass(IProperty property, PsiMethod inspectMethod) {
@@ -150,10 +135,10 @@ public class ActorImplicitUsageProvider implements ImplicitUsageProvider {
                 : xmlAttribute.getValue();
     }
 
-    private List<String> findComponentNameWithXmlTag(List<String> pathToFiles,
-                                                     String xmlTag,
-                                                     Project project,
-                                                     PsiMethod inspectMethod) {
+    private Set<String> findComponentNameWithXmlTag(List<String> pathToFiles,
+                                                    String xmlTag,
+                                                    Project project,
+                                                    PsiMethod inspectMethod) {
         PsiManager psiManager = PsiManager.getInstance(project);
         List<PsiElement> xmlTags = new ArrayList<>();
         XmlPsiRecursiveElementVisitor xmlPsiRecursiveElementVisitor = new XmlPsiRecursiveElementVisitor(xmlTag, xmlTags);
@@ -168,9 +153,9 @@ public class ActorImplicitUsageProvider implements ImplicitUsageProvider {
                 .peek(xmlPsiRecursiveElementVisitor::visitElement)
                 .flatMap(psiElement -> xmlTags.stream())
                 .map(xmlComponent ->
-                        getNucleusComponent(xmlComponent.getChildren(), inspectMethod, ((XmlTag) xmlComponent)))
+                        getNucleusComponentName(xmlComponent.getChildren(), inspectMethod, ((XmlTag) xmlComponent)))
                 .filter(StringUtils::isNotEmpty)
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
     }
 
 }
