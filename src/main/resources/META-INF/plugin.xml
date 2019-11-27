@@ -110,6 +110,11 @@
                          groupKey="inspection.group.display.name" enabledByDefault="true"
                          level="WARNING"
                          implementationClass="org.idea.plugin.atg.inspection.AvailableSetterInspection"/>
+        <localInspection language="Properties" shortName="DuplicatedProperty"
+                         key="inspection.duplicatedProperty.text"
+                         groupKey="inspection.group.display.name" enabledByDefault="true"
+                         level="WEAK WARNING"
+                         implementationClass="org.idea.plugin.atg.inspection.DuplicatedPropertyInspection"/>
         <localInspection language="XML" shortName="ItemDescriptorAvailableAttribute"
                          key="inspection.availableSetter.title"
                          groupKey="inspection.group.display.name" enabledByDefault="true"
