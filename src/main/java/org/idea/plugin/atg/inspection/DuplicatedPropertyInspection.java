@@ -15,7 +15,7 @@ import org.idea.plugin.atg.index.AtgIndexService;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -56,7 +56,7 @@ public class DuplicatedPropertyInspection extends LocalInspectionTool {
         Optional<String> componentName = AtgComponentUtil.getComponentCanonicalName(propertiesFile);
         return componentName
                 .map(indexService::getComponentsByName)
-                .orElse(new ArrayList<>());
+                .orElse(Collections.emptyList());
     }
 
     private boolean isDuplicatedProperty(@NotNull PropertyImpl property,
