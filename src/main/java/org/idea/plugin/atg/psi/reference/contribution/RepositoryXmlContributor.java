@@ -74,6 +74,13 @@ public class RepositoryXmlContributor extends PsiReferenceContributor {
                                         .andOr(XmlPatterns.xmlTag().withParent(XmlPatterns.xmlTag().withName(Repository.ITEM_DESCRIPTOR)),
                                                 XmlPatterns.xmlTag().withSuperParent(2, XmlPatterns.xmlTag().withName(Repository.ITEM_DESCRIPTOR))))),
                 new ItemDescriptorReferenceProvider());
+
+        registrar.registerReferenceProvider(XmlPatterns.xmlAttributeValue()
+                        .withParent(XmlPatterns.xmlAttribute().withName(Repository.ITEM_TYPE)
+                                .withParent(XmlPatterns.xmlTag().withName(Repository.PROPERTY)
+                                        .andOr(XmlPatterns.xmlTag().withParent(XmlPatterns.xmlTag().withName(Repository.ITEM_DESCRIPTOR)),
+                                                XmlPatterns.xmlTag().withSuperParent(2, XmlPatterns.xmlTag().withName(Repository.ITEM_DESCRIPTOR))))),
+                new ItemDescriptorReferenceProvider());
     }
 
     static class ItemDescriptorReferenceProvider extends PsiReferenceProvider {
