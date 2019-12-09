@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE pipelinemanager PUBLIC "-//Art Technology Group, Inc.//DTD Dynamo Pipeline Manager//EN"
+        "http://www.atg.com/dtds/pipelinemanager/pipelinemanager_1.0.dtd">
+<pipelinemanager>
+    <pipelinechain name="RENAME_NAME" xml-combine="append" headlink="RENAME_HEADLINK">
+        <pipelinelink name="RENAME_HEADLINK" transaction="TX_MANDATORY">
+            <processor jndi=""/>
+            <transition returnvalue="1" link=""/>
+        </pipelinelink>
+    </pipelinechain>
+</pipelinemanager>

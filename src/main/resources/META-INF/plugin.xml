@@ -157,6 +157,9 @@
         <defaultLiveTemplatesProvider implementation="org.idea.plugin.atg.template.live.LiveTemplateProvider"/>
         <implicitUsageProvider implementation="org.idea.plugin.atg.usage.implicit.ActorImplicitUsageProvider"/>
 
+        <internalFileTemplate name="Repository File" />
+        <internalFileTemplate name="Actor File" />
+        <internalFileTemplate name="Pipeline File" />
     </extensions>
 
     <actions>
@@ -182,6 +185,10 @@
             <action id="UnmarkAtgRoot" class="org.idea.plugin.atg.roots.UnmarkAtgConfigLayerRootAction"/>
             <add-to-group group-id="MarkRootGroup" anchor="after" relative-to-action="MarkSourceRootGroup"/>
         </group>
+
+        <action id="CreateNewAtgFileFile" class="org.idea.plugin.atg.action.NewAtgFileAction" text="New ATG File" description="Create a new ATG file">
+            <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewFromTemplate"/>
+        </action>
 
     </actions>
 

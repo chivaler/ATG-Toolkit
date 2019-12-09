@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE gsa-template PUBLIC "-//Art Technology Group, Inc.//DTD General SQL Adapter//EN" "http://www.atg.com/dtds/gsa/gsa_1.0.dtd">
+<gsa-template>
+
+    <header>
+        <name></name>
+        <author></author>
+    </header>
+
+    <item-descriptor name="" id-separator=":" cache-mode="simple" item-expire-timeout="" item-cache-size="" item-cache-timeout="">
+        <!-- Add your definition here -->
+    </item-descriptor>
+
+</gsa-template>

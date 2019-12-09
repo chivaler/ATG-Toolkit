@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<actor-template default-chain-id="getInfo"
+                xsi:noNamespaceSchemaLocation="http://www.atg.com/xsds/actorChain_1.0.xsd"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <actor-chain id="id" transaction="TX_SUPPORTS">
+        <component id="componentId" name="handler" method="method" method-return-var="method-return-var">
+            <input name="name" class-name="className" value="value"/>
+            <output id="id" name="name" value="value"/>
+        </component>
+    </actor-chain>
+</actor-template>
