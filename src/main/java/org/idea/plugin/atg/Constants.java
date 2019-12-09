@@ -88,6 +88,7 @@ public class Constants {
             public static final String BEAN = "bean";
             public static final String PROPERTY_TYPE = "property-type";
             public static final String COMPONENT_ITEM_TYPE = "component-item-type";
+            public static final String ITEM_TYPE = "item-type";
             public static final String EDITOR_CLASS = "editor-class";
             public static final String REPOSITORY = "repository";
         }
