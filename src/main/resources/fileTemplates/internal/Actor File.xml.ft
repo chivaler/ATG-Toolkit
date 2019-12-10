@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<actor-template xsi:noNamespaceSchemaLocation="http://www.atg.com/xsds/actorChain_1.0.xsd"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <actor-chain id="id" transaction="TX_SUPPORTS">
+        <!-- Add your definition here -->
+
+        <!--
+        <component id="id" name="handlerName" method="method" method-return-var="returnVar">
+            <input name="name" class-name="className" value="value"/>
+            <output id="id" name="name" value="value"/>
+        </component>
+        -->
+
+        <!--
+         <actor id="id" name="actorName" chain-id="chainId" return-model-var="returnVar">
+             <input name="name" class-name="className" value="value"/>
+             <output id="id" name="name" value="value"/>
+         </actor>
+        -->
+
+    </actor-chain>
+</actor-template>
