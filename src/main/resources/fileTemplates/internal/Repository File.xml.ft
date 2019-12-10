@@ -7,7 +7,7 @@
         <author></author>
     </header>
 
-    <item-descriptor name="" id-separator=":" cache-mode="simple" item-expire-timeout="" item-cache-size="" item-cache-timeout="">
+    <item-descriptor name="name" id-separator=":" cache-mode="simple" item-expire-timeout="" item-cache-size="" item-cache-timeout="">
         <!-- Add your definition here -->
     </item-descriptor>
 

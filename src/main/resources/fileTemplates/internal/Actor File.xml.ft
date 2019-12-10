@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<actor-template default-chain-id="getInfo"
+<actor-template default-chain-id="chainId"
                 xsi:noNamespaceSchemaLocation="http://www.atg.com/xsds/actorChain_1.0.xsd"
                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
@@ -15,12 +15,10 @@
         -->
 
         <!--
-         <actor-chain id="id" transaction="TX_SUPPORTS">
-             <actor id="id" name="actorName" chain-id="error" return-model-var="returnVar">
-                 <input name="name" class-name="className" value="value"/>
-            <output id="id" name="name" value="value"/>
-             </actor>
-         </actor-chain>
+         <actor id="id" name="actorName" chain-id="chainId" return-model-var="returnVar">
+             <input name="name" class-name="className" value="value"/>
+             <output id="id" name="name" value="value"/>
+         </actor>
         -->
 
     </actor-chain>
