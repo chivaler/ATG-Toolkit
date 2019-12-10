@@ -13,14 +13,10 @@ public class AtgCompletionPropertyAutoPopupHandler extends CompletionAutoPopupHa
     @NotNull
     @Override
     public Result checkAutoPopup(char charTyped, Project project, Editor editor, PsiFile file) {
-        return needStopped(charTyped, project, editor, file) ? Result.STOP : Result.CONTINUE;
-    }
-
-    private boolean needStopped(char charTyped, Project project, Editor editor, PsiFile file) {
-        boolean result = false;
+        Result result = Result.CONTINUE;
         if (file instanceof PropertiesFileImpl && charTyped == '=') {
             AutoPopupController.getInstance(project).scheduleAutoPopup(editor);
-            result = true;
+            result = Result.STOP;
         }
         return result;
     }
