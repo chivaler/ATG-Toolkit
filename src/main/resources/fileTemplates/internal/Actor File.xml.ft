@@ -5,9 +5,23 @@
                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     <actor-chain id="id" transaction="TX_SUPPORTS">
-        <component id="componentId" name="handler" method="method" method-return-var="method-return-var">
+        <!-- Add your definition here -->
+
+        <!--
+        <component id="id" name="handlerName" method="method" method-return-var="returnVar">
             <input name="name" class-name="className" value="value"/>
             <output id="id" name="name" value="value"/>
         </component>
+        -->
+
+        <!--
+         <actor-chain id="id" transaction="TX_SUPPORTS">
+             <actor id="id" name="actorName" chain-id="error" return-model-var="returnVar">
+                 <input name="name" class-name="className" value="value"/>
+            <output id="id" name="name" value="value"/>
+             </actor>
+         </actor-chain>
+        -->
+
     </actor-chain>
 </actor-template>
