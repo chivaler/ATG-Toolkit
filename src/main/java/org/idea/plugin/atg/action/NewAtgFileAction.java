@@ -18,6 +18,7 @@ import com.intellij.psi.PsiDirectory;
 import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.module.AtgModuleFacet;
+import org.idea.plugin.atg.module.AtgModuleFacetConfiguration;
 
 import java.util.Arrays;
 
@@ -67,14 +68,24 @@ public class NewAtgFileAction extends CreateFileFromTemplateAction {
     }
 
     private boolean checkConfigRoot(VirtualFile current, ProjectFileIndex projectFileIndex) {
-        Module currentModule = projectFileIndex.getModuleForFile(current);
-        VirtualFile rootDir = projectFileIndex.getSourceRootForFile(current);
+        Module currentModule = null;
+        if (current != null){
+            currentModule = projectFileIndex.getModuleForFile(current);
+        }
 
-        AtgModuleFacet atgFacet = FacetManager.getInstance(currentModule).getFacetByType(Constants.FACET_TYPE_ID);
+        AtgModuleFacet atgFacet = null;
+        if (currentModule != null) {
+            atgFacet = FacetManager.getInstance(currentModule).getFacetByType(Constants.FACET_TYPE_ID);
+        }
+        VirtualFile rootDir = projectFileIndex.getContentRootForFile(current);
+        return atgFacet != null && rootDir != null && isConfigRootDir(current, rootDir, atgFacet);
+    }
 
-        boolean isConfigDir = atgFacet.getConfiguration().getConfigRoots().contains(current);
-        return !isConfigDir && !current.equals(rootDir)
-                ? checkConfigRoot(current.getParent(), projectFileIndex)
+    private boolean isConfigRootDir(VirtualFile current, VirtualFile rootDir, AtgModuleFacet atgFacet) {
+        AtgModuleFacetConfiguration configuration = atgFacet.getConfiguration();
+        boolean isConfigDir = configuration.getConfigRoots().stream().anyMatch(dir -> dir.equals(current));
+        return  !isConfigDir && !current.equals(rootDir)
+                ? isConfigRootDir(current.getParent(), rootDir, atgFacet)
                 : isConfigDir;
     }
 }
