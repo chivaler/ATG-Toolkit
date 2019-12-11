@@ -5,7 +5,6 @@ import com.intellij.ide.IdeView;
 import com.intellij.ide.actions.CreateFileFromTemplateAction;
 import com.intellij.ide.actions.CreateFileFromTemplateDialog;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.actionSystem.Presentation;
@@ -18,8 +17,11 @@ import com.intellij.psi.PsiDirectory;
 import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.module.AtgModuleFacet;
+import org.idea.plugin.atg.module.AtgModuleFacetConfiguration;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * @author gress on 09.12.2019
@@ -33,9 +35,9 @@ public class NewAtgFileAction extends CreateFileFromTemplateAction {
     @Override
     protected void buildDialog(Project project, PsiDirectory directory, CreateFileFromTemplateDialog.Builder builder) {
         builder.setTitle(AtgToolkitBundle.message("new.atg.file.action.dialog.title"))
-                .addKind("Action file", StdFileTypes.XML.getIcon(), "Actor File.xml")
-                .addKind("Repository file", StdFileTypes.XML.getIcon(), "Repository File.xml")
-                .addKind("Pipeline file", StdFileTypes.XML.getIcon(), "Pipeline File.xml");
+               .addKind("Action file", StdFileTypes.XML.getIcon(), "Actor File.xml")
+               .addKind("Repository file", StdFileTypes.XML.getIcon(), "Repository File.xml")
+               .addKind("Pipeline file", StdFileTypes.XML.getIcon(), "Pipeline File.xml");
     }
 
     @Override
@@ -55,26 +57,40 @@ public class NewAtgFileAction extends CreateFileFromTemplateAction {
     @Override
     protected boolean isAvailable(final DataContext dataContext) {
         boolean available = false;
-
         final IdeView view = LangDataKeys.IDE_VIEW.getData(dataContext);
-        final Project project = CommonDataKeys.PROJECT.getData(dataContext);
-        ProjectFileIndex projectFileIndex = ProjectFileIndex.getInstance(project);
 
-        if (project != null && view != null && view.getDirectories().length > 0) {
-            available = Arrays.stream(view.getDirectories()).anyMatch(psiDirectory -> checkConfigRoot(psiDirectory.getVirtualFile(), projectFileIndex));
+        if (view != null && view.getDirectories().length > 0) {
+            available = Arrays.stream(view.getDirectories())
+                              .anyMatch(this::isUnderConfigDir);
         }
         return available;
     }
 
-    private boolean checkConfigRoot(VirtualFile current, ProjectFileIndex projectFileIndex) {
+    private boolean isUnderConfigDir(PsiDirectory psiDirectory) {
+        ProjectFileIndex projectFileIndex = ProjectFileIndex.getInstance(psiDirectory.getProject());
+        VirtualFile current = psiDirectory.getVirtualFile();
         Module currentModule = projectFileIndex.getModuleForFile(current);
-        VirtualFile rootDir = projectFileIndex.getSourceRootForFile(current);
 
-        AtgModuleFacet atgFacet = FacetManager.getInstance(currentModule).getFacetByType(Constants.FACET_TYPE_ID);
+        AtgModuleFacet atgFacet = currentModule != null
+                                  ? FacetManager.getInstance(currentModule).getFacetByType(Constants.FACET_TYPE_ID)
+                                  : null;
+        AtgModuleFacetConfiguration configuration = atgFacet != null
+                                                    ? atgFacet.getConfiguration()
+                                                    : null;
+        Collection<VirtualFile> configRoots = configuration != null
+                                              ? configuration.getConfigRoots()
+                                              : Collections.emptyList();
 
-        boolean isConfigDir = atgFacet.getConfiguration().getConfigRoots().contains(current);
-        return !isConfigDir && !current.equals(rootDir)
-                ? checkConfigRoot(current.getParent(), projectFileIndex)
-                : isConfigDir;
+        final VirtualFile contentRootForFile = projectFileIndex.getContentRootForFile(current);
+        return !configRoots.isEmpty() && isInConfigRootDir(current, contentRootForFile, configRoots);
+    }
+
+    private boolean isInConfigRootDir(VirtualFile current, VirtualFile contentRootForFile, Collection<VirtualFile> configRoots) {
+        boolean isInConfigDir = configRoots.stream()
+                                           .anyMatch(current::equals);
+
+        return !isInConfigDir && !current.equals(contentRootForFile)
+               ? isInConfigRootDir(current.getParent(), contentRootForFile, configRoots)
+               : isInConfigDir;
     }
 }
