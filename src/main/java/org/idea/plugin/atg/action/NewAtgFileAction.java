@@ -4,7 +4,6 @@ import com.intellij.facet.FacetManager;
 import com.intellij.ide.IdeView;
 import com.intellij.ide.actions.CreateFileFromTemplateAction;
 import com.intellij.ide.actions.CreateFileFromTemplateDialog;
-import com.intellij.ide.projectView.impl.ProjectRootsUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.LangDataKeys;
@@ -82,15 +81,16 @@ public class NewAtgFileAction extends CreateFileFromTemplateAction {
                                               ? configuration.getConfigRoots()
                                               : Collections.emptyList();
 
-        return !configRoots.isEmpty() && isInConfigRootDir(current, psiDirectory.getProject(), configRoots);
+        final VirtualFile contentRootForFile = projectFileIndex.getContentRootForFile(current);
+        return !configRoots.isEmpty() && isInConfigRootDir(current, contentRootForFile, configRoots);
     }
 
-    private boolean isInConfigRootDir(VirtualFile current, Project project, Collection<VirtualFile> configRoots) {
+    private boolean isInConfigRootDir(VirtualFile current, VirtualFile contentRootForFile, Collection<VirtualFile> configRoots) {
         boolean isInConfigDir = configRoots.stream()
-                                           .anyMatch(dir -> dir.equals(current));
+                                           .anyMatch(current::equals);
 
-        return !isInConfigDir && !ProjectRootsUtil.isModuleContentRoot(current, project)
-               ? isInConfigRootDir(current.getParent(), project, configRoots)
+        return !isInConfigDir && !current.equals(contentRootForFile)
+               ? isInConfigRootDir(current.getParent(), contentRootForFile, configRoots)
                : isInConfigDir;
     }
 }
