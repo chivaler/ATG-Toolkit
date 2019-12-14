@@ -69,7 +69,7 @@ public class JspUltimateReferenceContributor extends PsiReferenceContributor {
                         if (bean != null) {
                             XmlAttributeValue beanValue = bean.getValueElement();
                             if (beanValue != null) {
-                                String beanName = beanValue.getValue() != null ? beanValue.getValue() : "";
+                                String beanName = beanValue.getValue();
                                 String shortBeanName = beanName.contains("/") ? beanName.substring(beanName.lastIndexOf('/') + 1) : beanName;
                                 importedBeans.put(shortBeanName, beanName);
                             }

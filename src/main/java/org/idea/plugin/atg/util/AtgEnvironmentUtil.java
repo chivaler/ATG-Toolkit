@@ -15,9 +15,9 @@ import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.OrderRootType;
-import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
+import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
 import com.intellij.openapi.vfs.JarFileSystem;
 import com.intellij.openapi.vfs.StandardFileSystems;
 import com.intellij.openapi.vfs.VfsUtilCore;
@@ -272,7 +272,7 @@ public class AtgEnvironmentUtil {
                                                        @NotNull final List<String> modulesWithoutManifests) {
         indicator.setText(AtgToolkitBundle.message("action.update.dependencies.parsingDynamoRoot.text"));
         parseAtgHome(project);
-        LibraryTable.ModifiableModel projectLibraryModifiableModel = ProjectLibraryTable.getInstance(project)
+        LibraryTable.ModifiableModel projectLibraryModifiableModel = LibraryTablesRegistrar.getInstance().getLibraryTable(project)
                 .getModifiableModel();
         Module[] allModules = ModuleManager.getInstance(project).getModules();
         indicator.setText(AtgToolkitBundle.message("action.update.dependencies.attach.text"));
@@ -288,7 +288,7 @@ public class AtgEnvironmentUtil {
 
     public static void removeAtgDependenciesForAllModules(@NotNull final Project project,
                                                           @NotNull final ProgressIndicator indicator) {
-        LibraryTable.ModifiableModel projectLibraryModifiableModel = ProjectLibraryTable.getInstance(project).getModifiableModel();
+        LibraryTable.ModifiableModel projectLibraryModifiableModel = LibraryTablesRegistrar.getInstance().getLibraryTable(project).getModifiableModel();
         indicator.setText(AtgToolkitBundle.message("action.update.dependencies.removeConfigs.text"));
         removeAtgDependenciesForAllModules(project, projectLibraryModifiableModel, indicator,
                 Constants.ATG_CONFIG_LIBRARY_PREFIX);

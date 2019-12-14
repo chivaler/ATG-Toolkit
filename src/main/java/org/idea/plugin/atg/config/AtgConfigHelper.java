@@ -78,7 +78,7 @@ public class AtgConfigHelper {
 
     private static Map<VirtualFile, String> collectWebRoots(@NotNull final VirtualFile contentEntryRoot,@NotNull final Project project) {
         Map<VirtualFile, String> result = new HashMap<>();
-        VfsUtilCore.visitChildrenRecursively(contentEntryRoot, new VirtualFileVisitor() {
+        VfsUtilCore.visitChildrenRecursively(contentEntryRoot, new VirtualFileVisitor<Void>() {
             @Override
             public boolean visitFile(@NotNull VirtualFile root) {
                 Optional<Pair<VirtualFile, String>> webRoot = suggestWebRootForRoot(root, project);
@@ -127,7 +127,7 @@ public class AtgConfigHelper {
 
     public static List<VirtualFile> collectRootsMatchedPatterns(final VirtualFile contentEntryRoot, final List<Pattern> patterns) {
         List<VirtualFile> result = new ArrayList<>();
-        VfsUtilCore.visitChildrenRecursively(contentEntryRoot, new VirtualFileVisitor() {
+        VfsUtilCore.visitChildrenRecursively(contentEntryRoot, new VirtualFileVisitor<Void>() {
             @Override
             public boolean visitFile(@NotNull VirtualFile file) {
                 if (file.isDirectory() && file.getCanonicalPath() != null) {

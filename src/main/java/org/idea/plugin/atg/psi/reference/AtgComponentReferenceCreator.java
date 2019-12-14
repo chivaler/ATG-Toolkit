@@ -18,7 +18,7 @@ public class AtgComponentReferenceCreator {
                                                       @Nullable PsiFile originalFile,
                                                       @NotNull Map<String, String> importedClasses) {
         List<PsiReference> result = new ArrayList<>();
-        String fullText = element.getValue() != null ? element.getValue() : "";
+        String fullText = element.getValue();
 
         String shortBeanName = fullText;
         String firstField = "";

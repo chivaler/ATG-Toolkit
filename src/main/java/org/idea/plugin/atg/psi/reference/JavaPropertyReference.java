@@ -31,8 +31,7 @@ public class JavaPropertyReference extends PsiReferenceBase<PsiElement> {
     @Override
     public PsiElement resolve() {
         return Arrays.stream(srcClass.getAllFields())
-                .filter(f -> f.getName() != null
-                        && (f.getName().endsWith(propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1))
+                .filter(f ->(f.getName().endsWith(propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1))
                         || f.getName().endsWith(propertyName.substring(0, 1).toLowerCase() + propertyName.substring(1)))
                         && f.getName().length() - propertyName.length() <= 1)
                 .findFirst().orElse(null);

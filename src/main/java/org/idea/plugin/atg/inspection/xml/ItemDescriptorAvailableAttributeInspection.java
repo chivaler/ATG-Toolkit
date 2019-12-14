@@ -41,7 +41,7 @@ public class ItemDescriptorAvailableAttributeInspection extends LocalInspectionT
                     if (element instanceof XmlAttributeValue) {
                         XmlAttributeValue valueElement = (XmlAttributeValue) element;
                         String keyName = valueElement.getValue();
-                        if (keyName != null && !Constants.IGNORED_ATTRIBUTES_NAMES_FOR_DESCRIPTOR.contains(keyName)) {
+                        if (!Constants.IGNORED_ATTRIBUTES_NAMES_FOR_DESCRIPTOR.contains(keyName)) {
                             if (itemDescriptorAttributeNamePattern.accepts(valueElement)) {
                                 XmlTag propertyTag = (XmlTag) element.getParent().getParent().getParent();
                                 if (propertyTag != null) {

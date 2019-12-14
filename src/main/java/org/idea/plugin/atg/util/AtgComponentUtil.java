@@ -17,8 +17,9 @@ import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.ProjectFileIndex;
-import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
+import com.intellij.openapi.roots.libraries.LibraryTable;
+import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
 import com.intellij.openapi.vfs.JarFileSystem;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -165,7 +166,8 @@ public class AtgComponentUtil {
                                                                    boolean includeConfigLayers) {
         List<Library> libraries;
         if (module == null) {
-            libraries = Arrays.stream(ProjectLibraryTable.getInstance(project).getLibraries())
+            LibraryTable instance = LibraryTablesRegistrar.getInstance().getLibraryTable(project);
+            libraries = Arrays.stream(instance.getLibraries())
                     .collect(Collectors.toList());
         } else {
             libraries = Arrays.stream(ModuleRootManager.getInstance(module).getOrderEntries())
