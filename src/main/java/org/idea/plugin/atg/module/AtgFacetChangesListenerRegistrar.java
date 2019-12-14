@@ -7,6 +7,7 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import org.idea.plugin.atg.Constants;
 import org.idea.plugin.atg.index.AtgIndexService;
+import org.jetbrains.annotations.NotNull;
 
 public class AtgFacetChangesListenerRegistrar implements ProjectComponent {
     private final Project project;
@@ -21,7 +22,7 @@ public class AtgFacetChangesListenerRegistrar implements ProjectComponent {
     public void projectOpened() {
         facetListenersRegistry.registerListener(Constants.FACET_TYPE_ID, new ProjectWideFacetAdapter<AtgModuleFacet>() {
             @Override
-            public void facetRemoved(AtgModuleFacet atgModuleFacet) {
+            public void facetRemoved(@NotNull AtgModuleFacet atgModuleFacet) {
                 AtgModuleFacetConfiguration configuration = atgModuleFacet.getConfiguration();
                 AtgIndexService indexService = ServiceManager.getService(project, AtgIndexService.class);
                 indexService.notifyConfigRootsChanged(configuration.getConfigLayerRoots().keySet());

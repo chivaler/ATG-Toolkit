@@ -79,7 +79,7 @@ public class AtgModuleFacetEditor extends FacetEditorTab {
         return Constants.HelpTopics.MODULE_FACET_EDITOR;
     }
 
-    private class MyPanel<T> extends AddEditDeleteListPanel<T> {
+    private static class MyPanel<T> extends AddEditDeleteListPanel<T> {
 
         public MyPanel(String title, List<T> initialList) {
             super(title, initialList);

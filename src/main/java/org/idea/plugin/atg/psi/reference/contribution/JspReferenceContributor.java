@@ -58,7 +58,7 @@ public class JspReferenceContributor extends PsiReferenceContributor {
                     if (bean != null) {
                         XmlAttributeValue beanValue = bean.getValueElement();
                         if (beanValue != null) {
-                            String beanName = beanValue.getValue() != null ? beanValue.getValue() : "";
+                            String beanName = beanValue.getValue();
                             String shortBeanName = beanName.contains("/") ? beanName.substring(beanName.lastIndexOf('/') + 1) : beanName;
                             activeImports.put(shortBeanName, beanName);
                         }
@@ -95,7 +95,7 @@ public class JspReferenceContributor extends PsiReferenceContributor {
                     XmlAttribute includeFile = xmlTag.getAttribute(Constants.Keywords.PAGE_ATTRIBUTE);
                     if (includeFile != null) {
                         XmlAttributeValue pageValue = includeFile.getValueElement();
-                        if (pageValue != null && pageValue.getValue() != null) {
+                        if (pageValue != null) {
                             TextRange valueTextRange = pageValue.getValueTextRange();
                             createdReferences.add(new JspFileReference(pageValue, originalFile, valueTextRange));
                         }
@@ -106,7 +106,7 @@ public class JspReferenceContributor extends PsiReferenceContributor {
                     XmlAttribute includeFile = xmlTag.getAttribute(Constants.Keywords.SRC_ATTRIBUTE);
                     if (includeFile != null) {
                         XmlAttributeValue pageValue = includeFile.getValueElement();
-                        if (pageValue != null && pageValue.getValue() != null) {
+                        if (pageValue != null) {
                             TextRange valueTextRange = pageValue.getValueTextRange();
                             createdReferences.add(new WebContextResourceReference(pageValue, originalFile, valueTextRange));
                         }

@@ -65,7 +65,7 @@ public class MarkAtgConfigLayerRootAction extends MarkRootActionBase {
                 }
 
                 Map<VirtualFile, String> configLayerRoots = atgFacet.getConfiguration().getConfigLayerRoots();
-                if (!configLayerRoots.keySet().contains(file)) {
+                if (!configLayerRoots.containsKey(file)) {
                     configLayerRoots.put(file, "");
                     changedRoots.add(file);
                 }

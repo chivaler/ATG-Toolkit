@@ -41,7 +41,7 @@ public class ComponentPropertiesCompletionContributor extends CompletionContribu
     static class SuggestDependenciesByClassCompletionProvider extends CompletionProvider<CompletionParameters> {
         @Override
         protected void addCompletions(@NotNull CompletionParameters parameters,
-                                      ProcessingContext context,
+                                      @NotNull ProcessingContext context,
                                       @NotNull CompletionResultSet result) {
             PsiElement position = parameters.getPosition().getContext();
             if (position instanceof PropertyImpl) {
@@ -65,7 +65,7 @@ public class ComponentPropertiesCompletionContributor extends CompletionContribu
     static class SuggestMissingPropertiesCompletionProvider extends CompletionProvider<CompletionParameters> {
         @Override
         protected void addCompletions(@NotNull CompletionParameters parameters,
-                                      ProcessingContext context,
+                                      @NotNull ProcessingContext context,
                                       @NotNull CompletionResultSet result) {
             PsiElement position = parameters.getPosition().getContext();
             if (position instanceof PropertyImpl) {
@@ -100,7 +100,7 @@ public class ComponentPropertiesCompletionContributor extends CompletionContribu
 
         @Override
         protected void addCompletions(@NotNull CompletionParameters parameters,
-                                      ProcessingContext context,
+                                      @NotNull ProcessingContext context,
                                       @NotNull CompletionResultSet result) {
             PsiElement position = parameters.getPosition().getContext();
             if (position instanceof PropertyImpl) {

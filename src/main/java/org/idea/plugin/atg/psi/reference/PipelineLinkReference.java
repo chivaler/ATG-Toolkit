@@ -37,7 +37,6 @@ public class PipelineLinkReference extends PsiPolyVariantReferenceBase<XmlAttrib
         String seekingLinkName = getElement().getValue();
         PsiElement pipelineChainTag;
 
-        if (seekingLinkName == null) return ResolveResult.EMPTY_ARRAY;
         PsiElement attribute = getElement().getParent();
         if (attribute instanceof XmlAttribute && "headlink".equals(((XmlAttribute) attribute).getName())) {
             pipelineChainTag = attribute.getParent();

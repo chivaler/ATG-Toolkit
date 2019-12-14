@@ -18,14 +18,17 @@ public class ComponentWrapper {
         this.basedOn = basedOn;
     }
 
+    @Nullable
     public String getScope() {
         return scope;
     }
 
+    @Nullable
     public String getJavaClass() {
         return javaClass;
     }
 
+    @Nullable
     public String getBasedOn() {
         return basedOn;
     }

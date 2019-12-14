@@ -44,7 +44,7 @@ public class UnmarkAtgConfigLayerRootAction extends MarkRootActionBase {
 
         for (VirtualFile selectedRoot : selection.mySelectedDirectories) {
             boolean configRootFound = atgFacet.getConfiguration().getConfigRoots().contains(selectedRoot);
-            boolean configLayerFound = atgFacet.getConfiguration().getConfigLayerRoots().keySet().contains(selectedRoot);
+            boolean configLayerFound = atgFacet.getConfiguration().getConfigLayerRoots().containsKey(selectedRoot);
             boolean webRootFound = atgFacet.getConfiguration().getWebRoots().contains(selectedRoot);
             if (configRootFound || configLayerFound || webRootFound) return true;
         }

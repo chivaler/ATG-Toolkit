@@ -4,7 +4,7 @@ import com.intellij.facet.Facet;
 import com.intellij.facet.FacetManager;
 import com.intellij.facet.FacetType;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleUtil;
+import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.psi.PsiElement;
 import org.idea.plugin.atg.Constants;
 import org.jetbrains.annotations.NotNull;
@@ -36,7 +36,7 @@ public class AtgModuleFacet extends Facet<AtgModuleFacetConfiguration> {
     }
 
     /**
-     * Gets the StrutsFacet for the module containing the given PsiElement.
+     * Gets the AtgFacet for the module containing the given PsiElement.
      *
      * @param element Element to check.
      *
@@ -44,7 +44,7 @@ public class AtgModuleFacet extends Facet<AtgModuleFacetConfiguration> {
      */
     @Nullable
     public static AtgModuleFacet getInstance(@NotNull final PsiElement element) {
-        final Module module = ModuleUtil.findModuleForPsiElement(element);
+        final Module module = ModuleUtilCore.findModuleForPsiElement(element);
         return module != null ? getInstance(module) : null;
     }
 
