@@ -5,7 +5,7 @@ buildscript {
 }
 
 plugins {
-    id "org.jetbrains.intellij" version "0.4.2"
+    id "org.jetbrains.intellij" version "0.4.15"
 }
 
 apply plugin: 'idea'
@@ -13,8 +13,8 @@ apply plugin: 'org.jetbrains.intellij'
 apply plugin: 'java'
 
 intellij {
-    version 'IC-2018.1'
-    plugins 'properties'
+    version 'IC-2019.3'
+    plugins 'java', 'properties'
     pluginName 'atg-toolkit'
     downloadSources true
     updateSinceUntilBuild false

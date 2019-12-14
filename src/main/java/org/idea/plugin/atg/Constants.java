@@ -45,18 +45,22 @@ public class Constants {
         private static final float LAYERED_ICON_SCALE_FACTOR = 0.75F;
 
         static {
+            Icon artifactIcon = AllIcons.Nodes.Artifact instanceof ScalableIcon ? ((ScalableIcon) AllIcons.Nodes.Artifact).scale(LAYERED_ICON_SCALE_FACTOR) : AllIcons.Nodes.Artifact;
+            Icon projectIcon = AllIcons.Welcome.CreateNewProject instanceof ScalableIcon ? ((ScalableIcon) AllIcons.Welcome.CreateNewProject).scale(0.5f) : AllIcons.Welcome.CreateNewProject;
+            Icon webIcon = AllIcons.General.Web instanceof ScalableIcon ? ((ScalableIcon) AllIcons.General.Web).scale(LAYERED_ICON_SCALE_FACTOR) : AllIcons.General.Web;
+
             CONFIG_ROOT_ICON = new LayeredIcon(2);
             CONFIG_ROOT_ICON.setIcon(PlatformIcons.FOLDER_ICON, 0);
-            CONFIG_ROOT_ICON.setIcon(((ScalableIcon) AllIcons.Nodes.Artifact).scale(LAYERED_ICON_SCALE_FACTOR), 1, SwingConstants.SOUTH_EAST);
+            CONFIG_ROOT_ICON.setIcon(artifactIcon, 1, SwingConstants.SOUTH_EAST);
 
             CONFIG_LAYER_ROOT_ICON = new LayeredIcon(3);
             CONFIG_LAYER_ROOT_ICON.setIcon(PlatformIcons.FOLDER_ICON, 0);
-            CONFIG_LAYER_ROOT_ICON.setIcon(((ScalableIcon) AllIcons.Nodes.Artifact).scale(LAYERED_ICON_SCALE_FACTOR), 1, SwingConstants.SOUTH_EAST);
-            CONFIG_LAYER_ROOT_ICON.setIcon(((ScalableIcon) AllIcons.Welcome.CreateNewProject).scale(0.5f), 2, SwingConstants.NORTH_WEST);
+            CONFIG_LAYER_ROOT_ICON.setIcon(artifactIcon, 1, SwingConstants.SOUTH_EAST);
+            CONFIG_LAYER_ROOT_ICON.setIcon(projectIcon, 2, SwingConstants.NORTH_WEST);
 
             WEB_ROOT_ICON = new LayeredIcon(2);
             WEB_ROOT_ICON.setIcon(PlatformIcons.FOLDER_ICON, 0);
-            WEB_ROOT_ICON.setIcon(((ScalableIcon) AllIcons.General.Web).scale(LAYERED_ICON_SCALE_FACTOR), 1, SwingConstants.SOUTH_EAST);
+            WEB_ROOT_ICON.setIcon(webIcon, 1, SwingConstants.SOUTH_EAST);
         }
     }
 
