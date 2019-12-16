@@ -59,12 +59,12 @@
     <depends optional="true" config-file="plugin-config-ultimate.xml">com.intellij.jsp</depends>
     <depends optional="true" config-file="plugin-config-community.xml">com.intellij.modules.idea.community</depends>
 
-    <idea-version since-build="181.3007.14"/>
+    <idea-version since-build="193.2723"/>
     <resource-bundle>org.idea.plugin.atg.AtgToolkitBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
         <intentionAction>
-            <className>org.idea.plugin.atg.CreateATGComponentIntentionAction</className>
+            <className>org.idea.plugin.atg.actions.CreateATGComponentIntentionAction</className>
             <category>Java/Declaration</category>
         </intentionAction>
         <projectConfigurable parentId="language" instance="org.idea.plugin.atg.config.AtgToolkitConfigurable"
@@ -171,6 +171,10 @@
             <action id="UnmarkAtgRoot" class="org.idea.plugin.atg.roots.UnmarkAtgConfigLayerRootAction"/>
             <add-to-group group-id="MarkRootGroup" anchor="after" relative-to-action="MarkSourceRootGroup"/>
         </group>
+
+        <action id="CopyNucleusPath" class="org.idea.plugin.atg.actions.CopyAtgPathProvider" text="Nucleus Component Name">
+            <add-to-group group-id="CopyExternalReferenceGroup"/>
+        </action>
 
     </actions>
 

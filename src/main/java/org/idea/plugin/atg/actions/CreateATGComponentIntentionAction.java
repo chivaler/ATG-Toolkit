@@ -1,4 +1,4 @@
-package org.idea.plugin.atg;
+package org.idea.plugin.atg.actions;
 
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
 import com.intellij.openapi.editor.Editor;
@@ -11,6 +11,8 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.IncorrectOperationException;
+import org.idea.plugin.atg.AtgToolkitBundle;
+import org.idea.plugin.atg.PropertiesGenerator;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
