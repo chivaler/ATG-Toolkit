@@ -51,6 +51,8 @@
         1.1 Removed warning at IDEA startup if ATG_HOME is undefined<br>
             If ATG_HOME Path Variable is absent, it takes value from DYNAMO_ROOT, DYNAMO_HOME(by trimming of /home) or ATG_HOME environment variables, if any present<br>
             Added notifications, if Attach OOTBs is invoked when ATG_HOME isn't set, can't be resolved, or project hasn't any ATG modules set<br>
+        1.2 Action "Create ATG component" is hideen on non-ATG projects<br>
+            Added "Copy Nucleus Component Name" inside "Copy Path..." popup
     ]]>
 
     </change-notes>
