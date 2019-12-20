@@ -12,7 +12,7 @@ public class AtgPropertyLookupElement extends LookupElement {
 
     public AtgPropertyLookupElement(@NotNull final PsiMethod setterMethod) {
         this.psiMethod = setterMethod;
-        this.lookupString = AtgComponentUtil.convertSetterToVariableName(psiMethod) + "=";
+        this.lookupString = AtgComponentUtil.convertSetterToVariableName(psiMethod);
     }
 
     public AtgPropertyLookupElement(@NotNull final PsiMethod setterMethod, @NotNull final String lookupString) {
