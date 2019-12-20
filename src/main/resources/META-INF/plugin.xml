@@ -53,6 +53,7 @@
             Added notifications, if Attach OOTBs is invoked when ATG_HOME isn't set, can't be resolved, or project hasn't any ATG modules set<br>
         1.2 Action "Create ATG component" is hideen on non-ATG projects<br>
             Added "Copy Nucleus Component Name" inside "Copy Path..." popup
+        1.3 Added ability to create xml-definition files with start tags for repository, actor, pipeline-manager
     ]]>
 
     </change-notes>
