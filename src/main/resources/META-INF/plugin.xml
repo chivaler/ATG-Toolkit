@@ -135,6 +135,11 @@
                          groupKey="inspection.group.display.name" enabledByDefault="true"
                          level="WARNING"
                          implementationClass="org.idea.plugin.atg.inspection.DependenciesTypesInspection"/>
+        <localInspection language="Properties" shortName="DuplicatedProperty"
+                         key="inspection.duplicatedProperty.text"
+                         groupKey="inspection.group.display.name" enabledByDefault="true"
+                         level="WEAK WARNING"
+                         implementationClass="org.idea.plugin.atg.inspection.DuplicatedPropertyInspection"/>
 
         <webHelpProvider implementation="org.idea.plugin.atg.util.HelpProvider"/>
 
