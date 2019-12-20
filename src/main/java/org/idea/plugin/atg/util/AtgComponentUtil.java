@@ -249,25 +249,31 @@ public class AtgComponentUtil {
             }
         } else {
             Module module = projectFileIndex.getModuleForFile(virtualFile);
-            if (module != null) {
-                AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
-                if (atgFacet != null) {
-                    AtgModuleFacetConfiguration configuration = atgFacet.getConfiguration();
-                    Collection<VirtualFile> configRoots = configuration.getConfigRoots();
-                    Set<VirtualFile> configLayersRoots = configuration.getConfigLayerRoots().keySet();
-                    return Stream.concat(configRoots.stream(), configLayersRoots.stream())
-                            .filter(Objects::nonNull)
-                            .filter(VirtualFile::isDirectory)
-                            .filter(r -> VfsUtilCore.isAncestor(r, virtualFile, true))
-                            .map(r -> VfsUtilCore.getRelativeLocation(virtualFile, r))
-                            .filter(Objects::nonNull)
-                            .map(p -> "/" + p.replace(extensionToTrim, ""))
-                            .findAny();
-                }
+            return getStreamConfigRootsForModule(module)
+                    .filter(Objects::nonNull)
+                    .filter(VirtualFile::isDirectory)
+                    .filter(r -> VfsUtilCore.isAncestor(r, virtualFile, true))
+                    .map(r -> VfsUtilCore.getRelativeLocation(virtualFile, r))
+                    .filter(Objects::nonNull)
+                    .map(p -> "/" + p.replace(extensionToTrim, ""))
+                    .findAny();
+        }
+        return Optional.empty();
+    }
+
+    @NotNull
+    public static Stream<VirtualFile> getStreamConfigRootsForModule(Module module){
+
+        if (module != null) {
+            AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
+            if (atgFacet != null) {
+                AtgModuleFacetConfiguration configuration = atgFacet.getConfiguration();
+                Collection<VirtualFile> configRoots = configuration.getConfigRoots();
+                Set<VirtualFile> configLayersRoots = configuration.getConfigLayerRoots().keySet();
+                return Stream.concat(configRoots.stream(), configLayersRoots.stream());
             }
         }
-
-        return Optional.empty();
+        return Stream.empty();
     }
 
     @NotNull
