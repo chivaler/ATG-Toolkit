@@ -100,6 +100,14 @@ public class Constants {
             public static final List<String> NUCLEUS_REFERENCES = ImmutableList.of("atg.nucleus.GenericReference", "atg.nucleus.ContextualSuffixGenericReference", "atg.nucleus.StaticMethodReference", "atg.nucleus.JNDIReference");
         }
 
+        public static class Actor {
+            public static final String NAME = "name";
+            public static final String ACTOR = "actor";
+            public static final String COMPONENT = "component";
+            public static final String DROPLET = "droplet";
+            public static final String FORM = "form";
+        }
+
         public static final String INCLUDE_TAG = "include";
         public static final String DROPLET_TAG = "droplet";
         public static final String IMPORT_BEAN_TAG = "importbean";
