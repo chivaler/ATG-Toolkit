@@ -42,6 +42,7 @@ I Assume, that plugin could require adaptations to become either more generic or
 1. Code should be formatted with default IntelliJ IDE Java/XML formatters
 1. Java Beans naming standard is preferred over using of "my" prefixes on class fields
 1. New code should avoid usages of deprecated APIs
+1. New Util/Component classes, reusable public methods, and non-trivial methods should have javadocs
 1. Avoid to use local-specific paths or OS-specific separators. Consider that plugin could be developed/used under Win/Mac/Lin systems
 1. Strive to remain `since-build` version at least as possible for better compatibility
 1. Strive to write capabilities in a generic way so they can be useful for larger number of projects

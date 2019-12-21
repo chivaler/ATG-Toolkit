@@ -1,23 +1,24 @@
 package org.idea.plugin.atg.psi.reference;
 
 import com.google.common.collect.Lists;
+import com.intellij.codeInsight.highlighting.ReadWriteAccessDetector;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.lang.properties.psi.impl.PropertyImpl;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiElementResolveResult;
-import com.intellij.psi.PsiPolyVariantReferenceBase;
-import com.intellij.psi.ResolveResult;
+import com.intellij.psi.*;
+import com.intellij.psi.search.GlobalSearchScope;
 import org.idea.plugin.atg.index.AtgIndexService;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
-public class AtgComponentFieldReference extends PsiPolyVariantReferenceBase<PsiElement> {
+public class AtgComponentFieldReference extends PsiPolyVariantReferenceBase<PsiElement>  implements AccessDefinedJavaFieldPsiReference{
     private final String beanName;
     private final String propertyKey;
 
@@ -31,12 +32,24 @@ public class AtgComponentFieldReference extends PsiPolyVariantReferenceBase<PsiE
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
         Project project = myElement.getProject();
+        GlobalSearchScope projectScope = GlobalSearchScope.projectScope(project);
         AtgIndexService componentsService = ServiceManager.getService(project, AtgIndexService.class);
-        return componentsService.getComponentsByName(beanName).stream()
+
+        Stream<PsiElement> nucleusPropertiesStream = componentsService.getComponentsByName(beanName).stream()
                 .map(psiFile -> Lists.newArrayList(psiFile.findPropertyByKey(propertyKey), psiFile.findPropertyByKey(propertyKey + "^")))
                 .flatMap(Collection::stream)
                 .filter(PropertyImpl.class::isInstance)
-                .map(element -> new PsiElementResolveResult((PropertyImpl) element, true))
+                .map(PsiElement.class::cast);
+
+        Stream<PsiField> psiFieldStream = AtgComponentUtil.getComponentClassesStr(beanName, project).stream()
+                .map(clsStr -> JavaPsiFacade.getInstance(project).findClass(clsStr, projectScope))
+                .filter(Objects::nonNull)
+                .map(cls -> JavaPropertyReference.getPsiField(cls, propertyKey))
+                .filter(Optional::isPresent)
+                .map(Optional::get);
+
+        return Stream.concat(nucleusPropertiesStream, psiFieldStream)
+                .map(PsiElementResolveResult::new)
                 .toArray(ResolveResult[]::new);
     }
 
@@ -65,5 +78,11 @@ public class AtgComponentFieldReference extends PsiPolyVariantReferenceBase<PsiE
             return null;
         }
         return super.bindToElement(element);
+    }
+
+    @NotNull
+    @Override
+    public ReadWriteAccessDetector.Access getAccessType() {
+        return ReadWriteAccessDetector.Access.Read;
     }
 }
