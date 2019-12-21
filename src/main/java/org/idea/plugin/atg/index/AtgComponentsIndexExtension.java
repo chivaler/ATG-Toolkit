@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Optional;
 
-public class AtgComponentsIndexExtension extends FileBasedIndexExtension<String, ComponentWrapper> implements PsiDependentIndex {
+public class AtgComponentsIndexExtension extends FileBasedIndexExtension<String, ComponentWrapper> {
     private static final Logger LOG = Logger.getInstance(AtgComponentsIndexExtension.class);
     private static final String NULL_SUBSTITUTE = "NULL";
 
@@ -39,9 +39,9 @@ public class AtgComponentsIndexExtension extends FileBasedIndexExtension<String,
         return inputData -> {
             try {
                 FileContentImpl fileContent = (FileContentImpl) inputData;
-                PsiFile psiFile = fileContent.getPsiFileForPsiDependentIndex();
+                PsiFile psiFile = fileContent.getPsiFile();
                 if (psiFile instanceof PropertiesFileImpl) {
-                    Optional<String> componentName = AtgComponentUtil.getComponentCanonicalName((PropertiesFileImpl)psiFile);
+                    Optional<String> componentName = AtgComponentUtil.getComponentCanonicalName((PropertiesFileImpl) psiFile);
                     if (componentName.isPresent()) {
                         IProperty classProperty = ((PropertiesFileImpl) psiFile).findPropertyByKey(Constants.Keywords.Properties.CLASS_PROPERTY);
                         String javaClass = classProperty != null ? classProperty.getUnescapedValue() : null;
