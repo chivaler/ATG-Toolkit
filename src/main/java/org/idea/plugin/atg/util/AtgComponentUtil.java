@@ -398,6 +398,7 @@ public class AtgComponentUtil {
     }
 
     @NotNull
+    //TODO replace with com.intellij.psi.util.PropertyUtilBase.isSimplePropertySetter etc
     public static String convertPropertyNameToSetter(@NotNull String var) {
         if (!"".equals(var)) {
             String propertyName = var;
