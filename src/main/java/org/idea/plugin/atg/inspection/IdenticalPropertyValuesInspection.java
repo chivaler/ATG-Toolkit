@@ -5,6 +5,7 @@ import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.concurrency.JobLauncher;
 import com.intellij.lang.properties.IProperty;
+import com.intellij.lang.properties.PropertiesBundle;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.lang.properties.psi.impl.PropertyImpl;
 import com.intellij.openapi.components.ServiceManager;
@@ -59,6 +60,10 @@ public class IdenticalPropertyValuesInspection extends LocalInspectionTool {
                     final ProgressIndicator progress = ProgressWrapper.wrap(original);
                     ProgressManager.getInstance().runProcess(() -> {
                         if (!JobLauncher.getInstance().invokeConcurrentlyUnderProgress(properties, progress, property -> {
+                            if (original != null) {
+                                if (original.isCanceled()) return false;
+                                original.setText2(PropertiesBundle.message("searching.for.property.key.progress.text", property.getUnescapedKey()));
+                            }
                             processKeyUsages(property, processedKeyToFiles, propertiesFiles, currentModule);
                             return true;
                         })) throw new ProcessCanceledException();
@@ -83,7 +88,7 @@ public class IdenticalPropertyValuesInspection extends LocalInspectionTool {
         String propertyValue = property.getValue();
         if (!processedKeyToFiles.containsKey(propertyKey) && StringUtils.isNotBlank(propertyKey) && StringUtils.isNotBlank(propertyValue)) {
             final Set<PsiFile> resultFiles = propertiesFiles.stream()
-                    .filter(propertiesFile -> hasEqualKeyValue(propertyKey, propertyValue, propertiesFile) && isDependsOnModule(currentModule, propertiesFile))
+                    .filter(propertiesFile -> hasEqualKeyValue(propertyKey, propertyValue, propertiesFile) && !propertyInChildModule(currentModule, propertiesFile))
                     .collect(Collectors.toSet());
             if (CollectionUtils.isNotEmpty(resultFiles)) {
                 processedKeyToFiles.put(propertyKey, resultFiles);
@@ -103,9 +108,9 @@ public class IdenticalPropertyValuesInspection extends LocalInspectionTool {
         return propertiesFiles;
     }
 
-    private boolean isDependsOnModule(Module currentModule, PropertiesFileImpl propertiesFile) {
+    private boolean propertyInChildModule(Module currentModule, PropertiesFileImpl propertiesFile) {
         Module module = ModuleUtilCore.findModuleForPsiElement(propertiesFile);
-        return module != null && !ModuleRootManager.getInstance(module).isDependsOn(currentModule);
+        return module != null && ModuleRootManager.getInstance(module).isDependsOn(currentModule);
     }
 
     private boolean hasEqualKeyValue(String propertyKey, String propertyValue, PropertiesFileImpl propertiesFile) {
