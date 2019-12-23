@@ -5,15 +5,17 @@ import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.concurrency.JobLauncher;
 import com.intellij.lang.properties.IProperty;
-import com.intellij.lang.properties.PropertiesBundle;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.lang.properties.psi.impl.PropertyImpl;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.util.ProgressWrapper;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
@@ -29,11 +31,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class ComponentWithIdenticalPropertiesInspection extends LocalInspectionTool {
+public class IdenticalPropertyValuesInspection extends LocalInspectionTool {
 
     private static final String INSPECTION_DUPLICATED_PROPERTY_KEY = "inspection.identicallyProperty.text";
 
@@ -47,50 +50,43 @@ public class ComponentWithIdenticalPropertiesInspection extends LocalInspectionT
 
                 if (element instanceof PropertiesFileImpl) {
                     PropertiesFileImpl propertiesFile = (PropertiesFileImpl) element;
-
                     final List<IProperty> properties = propertiesFile.getProperties();
+                    List<PropertiesFileImpl> propertiesFiles = getComponentPropertiesFiles(propertiesFile, propertiesFile.getProject());
+                    Module currentModule = ModuleUtilCore.findModuleForPsiElement(propertiesFile);
+
                     final Map<String, Set<PsiFile>> processedKeyToFiles = Collections.synchronizedMap(new HashMap<>());
                     final ProgressIndicator original = ProgressManager.getInstance().getProgressIndicator();
                     final ProgressIndicator progress = ProgressWrapper.wrap(original);
-                    List<PropertiesFileImpl> propertiesFiles = getComponentPropertiesFiles(propertiesFile, propertiesFile.getProject());
-
                     ProgressManager.getInstance().runProcess(() -> {
                         if (!JobLauncher.getInstance().invokeConcurrentlyUnderProgress(properties, progress, property -> {
-                            if (original != null) {
-                                if (original.isCanceled()) return false;
-                                original.setText2(PropertiesBundle.message("searching.for.property.key.progress.text", property.getUnescapedKey()));
-                            }
-                            processKeyUsages(processedKeyToFiles, property, propertiesFiles);
-
+                            processKeyUsages(property, processedKeyToFiles, propertiesFiles, currentModule);
                             return true;
                         })) throw new ProcessCanceledException();
                     }, progress);
 
-                    for(String key : processedKeyToFiles.keySet()){
-                        PropertyImpl propertyItem = (PropertyImpl)propertiesFile.findPropertyByKey(key);
-                        int count = processedKeyToFiles.get(key).size();
-                        holder.registerProblem(propertyItem,  AtgToolkitBundle.message(INSPECTION_DUPLICATED_PROPERTY_KEY, propertyItem.getText(), count),
-                                ProblemHighlightType.WEAK_WARNING, TextRange.allOf(propertyItem.getText()));
-                    }
+                    processedKeyToFiles.keySet().stream()
+                            .map(key -> (PropertyImpl)propertiesFile.findPropertyByKey(key))
+                            .filter(Objects::nonNull)
+                            .forEach(property -> holder.registerProblem(property, AtgToolkitBundle.message(INSPECTION_DUPLICATED_PROPERTY_KEY, property.getText()),
+                                        ProblemHighlightType.WEAK_WARNING, TextRange.allOf(property.getText()))
+                            );
                 }
             }
         };
     }
 
-    private void processKeyUsages(final Map<String, Set<PsiFile>> processedTextToFiles,
-                                  final IProperty property,
-                                  final List<PropertiesFileImpl> propertiesFiles) {
+    private void processKeyUsages(final IProperty property,
+                                  final Map<String, Set<PsiFile>> processedKeyToFiles,
+                                  final List<PropertiesFileImpl> propertiesFiles,
+                                  Module currentModule) {
         String propertyKey = property.getKey();
         String propertyValue = property.getValue();
-        if (!processedTextToFiles.containsKey(propertyKey) && StringUtils.isNotBlank(propertyKey) && StringUtils.isNotBlank(propertyValue)) {
+        if (!processedKeyToFiles.containsKey(propertyKey) && StringUtils.isNotBlank(propertyKey) && StringUtils.isNotBlank(propertyValue)) {
             final Set<PsiFile> resultFiles = propertiesFiles.stream()
-                    .filter(propertiesFile -> {
-                        IProperty fileProperty = propertiesFile.findPropertyByKey(propertyKey);
-                        return fileProperty != null && propertyValue.equals(fileProperty.getValue());
-                        })
+                    .filter(propertiesFile -> hasEqualKeyValue(propertyKey, propertyValue, propertiesFile) && isDependsOnModule(currentModule, propertiesFile))
                     .collect(Collectors.toSet());
             if (CollectionUtils.isNotEmpty(resultFiles)) {
-                processedTextToFiles.put(propertyKey, resultFiles);
+                processedKeyToFiles.put(propertyKey, resultFiles);
             }
         }
     }
@@ -100,10 +96,20 @@ public class ComponentWithIdenticalPropertiesInspection extends LocalInspectionT
                                                                  @NotNull Project project) {
         AtgIndexService indexService = ServiceManager.getService(project, AtgIndexService.class);
         Optional<String> componentName = AtgComponentUtil.getComponentCanonicalName(propertiesFile);
-        return componentName
+        List<PropertiesFileImpl> propertiesFiles = componentName
                 .map(indexService::getComponentsByName)
                 .orElse(Collections.emptyList());
+        propertiesFiles.remove(propertiesFile);
+        return propertiesFiles;
+    }
+
+    private boolean isDependsOnModule(Module currentModule, PropertiesFileImpl propertiesFile) {
+        Module module = ModuleUtilCore.findModuleForPsiElement(propertiesFile);
+        return module != null && !ModuleRootManager.getInstance(module).isDependsOn(currentModule);
+    }
+
+    private boolean hasEqualKeyValue(String propertyKey, String propertyValue, PropertiesFileImpl propertiesFile) {
+        IProperty fileProperty = propertiesFile.findPropertyByKey(propertyKey);
+        return fileProperty != null && propertyValue.equals(fileProperty.getValue());
     }
 }
-
-

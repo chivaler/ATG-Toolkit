@@ -135,11 +135,11 @@
                          groupKey="inspection.group.display.name" enabledByDefault="true"
                          level="WARNING"
                          implementationClass="org.idea.plugin.atg.inspection.DependenciesTypesInspection"/>
-        <localInspection language="Properties" shortName="ComponentWithIdenticalProperties"
+        <localInspection language="Properties" shortName="IdenticalPropertyValues"
                          key="inspection.identicallyProperty.title"
                          groupKey="inspection.group.display.name" enabledByDefault="true"
                          level="WEAK WARNING"
-                         implementationClass="org.idea.plugin.atg.inspection.ComponentWithIdenticalPropertiesInspection"/>
+                         implementationClass="org.idea.plugin.atg.inspection.IdenticalPropertyValuesInspection"/>
 
         <webHelpProvider implementation="org.idea.plugin.atg.util.HelpProvider"/>
 
