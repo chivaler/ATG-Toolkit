@@ -1,6 +1,7 @@
 package org.idea.plugin.atg.psi.reference.contribution;
 
 import com.intellij.codeInsight.completion.CompletionUtilCore;
+import com.intellij.codeInsight.highlighting.ReadWriteAccessDetector.Access;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.lang.properties.psi.impl.PropertyImpl;
 import com.intellij.lang.properties.psi.impl.PropertyKeyImpl;
@@ -43,8 +44,7 @@ public class AtgReferenceContributor extends PsiReferenceContributor {
         @NotNull
         @Override
         public PsiReference[] getReferencesByElement(@NotNull PsiElement element,
-                                                     @NotNull ProcessingContext
-                                                             context) {
+                                                     @NotNull ProcessingContext context) {
             PropertiesFileImpl propertiesFile = PsiTreeUtil.getTopmostParentOfType(element, PropertiesFileImpl.class);
             if (propertiesFile != null && AtgComponentUtil.getComponentCanonicalName(propertiesFile).isPresent()) {
                 PropertyKeyImpl propertyKey = (PropertyKeyImpl) element;
@@ -53,12 +53,18 @@ public class AtgReferenceContributor extends PsiReferenceContributor {
                     PropertiesFileImpl properties = PsiTreeUtil.getTopmostParentOfType(element, PropertiesFileImpl.class);
                     Optional<PsiClass> componentClass = AtgComponentUtil.getSupposedComponentClass(properties);
                     if (componentClass.isPresent()) {
+                        Access accessType = Access.Write;
                         int offsetForRange = 0;
-                        if (key.endsWith("^") || key.endsWith("+") || key.endsWith("-")) {
+                        if (key.endsWith("^")) {
                             offsetForRange++;
                         }
+                        if (key.endsWith("+") || key.endsWith("-")) {
+                            offsetForRange++;
+                            accessType = Access.ReadWrite;
+                        }
                         return new PsiReference[]{
-                                new JavaPropertyReference(propertyKey, componentClass.get(), new TextRange(0, key.length() - offsetForRange))
+                                new JavaPropertyReference(propertyKey, componentClass.get(),
+                                        new TextRange(0, key.length() - offsetForRange), accessType)
                         };
                     }
                 }
