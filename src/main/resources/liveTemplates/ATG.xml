@@ -1,0 +1,15 @@
+<templateSet group="ATG">
+    <template name="trytd" value="try (atg.dtm.AutoCloseTransactionDemarcation td =&#10;             new AutoCloseTransactionDemarcation($SELECTION$$TRANSACTION_MANAGER$$END$, atg.dtm.TransactionDemarcation.REQUIRED)) {&#10;    // TODO: your code goes here&#10;    td.setSuccess(true);&#10;} catch (atg.dtm.TransactionDemarcationException e) {&#10;    throw e;&#10;}" description="Auto-closed transaction template" toReformat="true" toShortenFQNames="true">
+        <variable name="TRANSACTION_MANAGER" expression="" defaultValue="&quot;transactionManager&quot;" alwaysStopAt="true" />
+        <context>
+            <option name="JAVA_CODE" value="true" />
+        </context>
+    </template>
+    <template name="trypm" value="// TODO: Move to constants block (consider using shortcut CTRL+ALT+C)&#10;final String monitoredClass = &quot;$CURRENT_CLASS_NAME$&quot;;&#10;final String monitoredMethod = &quot;$CURRENT_METHOD_NAME$&quot;;&#10;try {&#10;    atg.service.perfmonitor.PerformanceMonitor.startOperation(monitoredClass, monitoredMethod);&#10;    // TODO: Your code goes here&#10;} finally {&#10;    atg.service.perfmonitor.PerformanceMonitor.endOperation(monitoredClass, monitoredMethod);&#10;}&#10;        " description="Perfomance monitor transaction template" toReformat="true" toShortenFQNames="true">
+        <variable name="CURRENT_CLASS_NAME" expression="className()" defaultValue="" alwaysStopAt="true" />
+        <variable name="CURRENT_METHOD_NAME" expression="methodName()" defaultValue="" alwaysStopAt="true" />
+        <context>
+            <option name="JAVA_CODE" value="true" />
+        </context>
+    </template>
+</templateSet>

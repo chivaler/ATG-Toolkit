@@ -156,6 +156,9 @@
 
         <typedHandler implementation="org.idea.plugin.atg.editorActions.AtgCompletionPropertyAutoPopupHandler" id="atgCompletionAutoPopup"
                       order="first"/>
+
+        <defaultLiveTemplatesProvider implementation="org.idea.plugin.atg.template.live.LiveTemplateProvider"/>
+
     </extensions>
 
     <actions>
