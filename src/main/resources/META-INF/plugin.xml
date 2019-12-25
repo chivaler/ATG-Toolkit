@@ -54,7 +54,6 @@
         1.2 Action "Create ATG component" is hidden on non-ATG projects<br>
             Added "Copy Nucleus Component Name" inside "Copy Path..." popup
         1.3 FindUsages shows usages of field, setters, getters including fields with m-prefixes
-        1.4 Added ability to create xml-definition files with start tags for repository, actor, pipeline-manager
     ]]>
 
     </change-notes>
@@ -157,6 +156,9 @@
 
         <typedHandler implementation="org.idea.plugin.atg.editorActions.AtgCompletionPropertyAutoPopupHandler" id="atgCompletionAutoPopup"
                       order="first"/>
+
+        <defaultLiveTemplatesProvider implementation="org.idea.plugin.atg.template.live.LiveTemplateProvider"/>
+
 
         <internalFileTemplate name="Repository File" />
         <internalFileTemplate name="Actor File" />
