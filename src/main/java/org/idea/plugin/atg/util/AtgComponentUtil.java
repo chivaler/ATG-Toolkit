@@ -248,32 +248,29 @@ public class AtgComponentUtil {
                 return Optional.of(path.substring(separatorIndex + 1).replace(extensionToTrim, ""));
             }
         } else {
-            Module module = projectFileIndex.getModuleForFile(virtualFile);
-            return getStreamConfigRootsForModule(module)
-                    .filter(Objects::nonNull)
-                    .filter(VirtualFile::isDirectory)
-                    .filter(r -> VfsUtilCore.isAncestor(r, virtualFile, true))
+            return getConfigRootForFile(projectFileIndex, virtualFile)
                     .map(r -> VfsUtilCore.getRelativeLocation(virtualFile, r))
-                    .filter(Objects::nonNull)
-                    .map(p -> "/" + p.replace(extensionToTrim, ""))
-                    .findAny();
+                    .map(p -> "/" + p.replace(extensionToTrim, ""));
         }
         return Optional.empty();
     }
 
-    @NotNull
-    public static Stream<VirtualFile> getStreamConfigRootsForModule(Module module){
-
+    public static Optional<VirtualFile> getConfigRootForFile(ProjectFileIndex projectFileIndex, VirtualFile virtualFile){
+        Module module = projectFileIndex.getModuleForFile(virtualFile);
         if (module != null) {
             AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
             if (atgFacet != null) {
                 AtgModuleFacetConfiguration configuration = atgFacet.getConfiguration();
                 Collection<VirtualFile> configRoots = configuration.getConfigRoots();
                 Set<VirtualFile> configLayersRoots = configuration.getConfigLayerRoots().keySet();
-                return Stream.concat(configRoots.stream(), configLayersRoots.stream());
+                return Stream.concat(configRoots.stream(), configLayersRoots.stream())
+                        .filter(Objects::nonNull)
+                        .filter(VirtualFile::isDirectory)
+                        .filter(r -> VfsUtilCore.isAncestor(r, virtualFile, true))
+                        .findAny();
             }
         }
-        return Stream.empty();
+        return Optional.empty();
     }
 
     @NotNull
