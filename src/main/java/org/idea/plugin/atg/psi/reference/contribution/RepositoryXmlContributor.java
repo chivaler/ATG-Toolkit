@@ -58,15 +58,9 @@ public class RepositoryXmlContributor extends PsiReferenceContributor {
                 new PropertyDescriptorAttributesProvider());
 
         registrar.registerReferenceProvider(XmlPatterns.xmlAttributeValue()
-                        .withParent(XmlPatterns.xmlAttribute().withName(Repository.NAME)
+                        .withParent(XmlPatterns.xmlAttribute().withName(Repository.NAME, Repository.SUPER_TYPE)
                                 .withParent(XmlPatterns.xmlTag().withName(Repository.ITEM_DESCRIPTOR))),
                 new ItemDescriptorReferenceProvider());
-
-        registrar.registerReferenceProvider(XmlPatterns.xmlAttributeValue()
-                        .withParent(XmlPatterns.xmlAttribute().withName(Repository.SUPER_TYPE)
-                                .withParent(XmlPatterns.xmlTag().withName(Repository.ITEM_DESCRIPTOR))),
-                new ItemDescriptorReferenceProvider());
-
 
         registrar.registerReferenceProvider(XmlPatterns.xmlAttributeValue()
                         .withParent(XmlPatterns.xmlAttribute().withName(Repository.COMPONENT_ITEM_TYPE, Repository.ITEM_TYPE)
@@ -74,6 +68,8 @@ public class RepositoryXmlContributor extends PsiReferenceContributor {
                                         .andOr(XmlPatterns.xmlTag().withParent(XmlPatterns.xmlTag().withName(Repository.ITEM_DESCRIPTOR)),
                                                 XmlPatterns.xmlTag().withSuperParent(2, XmlPatterns.xmlTag().withName(Repository.ITEM_DESCRIPTOR))))),
                 new ItemDescriptorReferenceProvider());
+        //TODO Consider Repository sibling tag for item-type resolve
+        //TODO inspection whether item desc is present there
     }
 
     static class ItemDescriptorReferenceProvider extends PsiReferenceProvider {

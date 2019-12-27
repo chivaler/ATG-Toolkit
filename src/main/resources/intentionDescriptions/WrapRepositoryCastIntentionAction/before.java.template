@@ -1,0 +1,2 @@
+@SuppressWarnings("unchecked")
+...(Map<String, Boolean>)pSkuItem.getPropertyValue(PropertyNames.SKU_DETAILS);

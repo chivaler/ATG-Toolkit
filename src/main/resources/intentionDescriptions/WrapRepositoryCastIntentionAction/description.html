@@ -1,0 +1,16 @@
+<html>
+<body>
+Wraps getProperty call into null-safe generic call
+Next class/method should be present in codebase:
+<code>
+    public static  &lt;T&gt; T getProperty(final RepositoryItem repositoryItem, final String propertyName) {
+      T value = null;
+      if(repositoryItem != null) {
+        value = (T)repositoryItem.getPropertyValue(propertyName);
+      }
+      return value;
+    }
+</code>
+
+</body>
+</html>
