@@ -14,10 +14,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Processor;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import static com.intellij.psi.util.PsiUtilCore.getProjectInReadAction;
 import static org.idea.plugin.atg.util.AtgComponentUtil.suggestComponentNamesByClassWithInheritors;
@@ -46,10 +43,12 @@ public class AtgReferencesSearcher extends QueryExecutorBase<PsiReference, Refer
         ).isEmpty()) return;
 
         DumbService.getInstance(getProjectInReadAction(element)).runReadActionInSmartMode(() ->
-                suggestAliasesForAtgNamedPsiElement(element).forEach(name -> {
-                    ProgressManager.checkCanceled();
-                    p.getOptimizer().searchWord(name, scope, UsageSearchContext.IN_FOREIGN_LANGUAGES, true, element);
-                }));
+                suggestAliasesForAtgNamedPsiElement(element).stream()
+                        .filter(Objects::nonNull)
+                        .forEach(name -> {
+                            ProgressManager.checkCanceled();
+                            p.getOptimizer().searchWord(name, scope, UsageSearchContext.IN_FOREIGN_LANGUAGES, true, element);
+                        }));
     }
 
     /**
@@ -73,8 +72,8 @@ public class AtgReferencesSearcher extends QueryExecutorBase<PsiReference, Refer
             }
         } else if (element instanceof PsiMethod) {
             //TODO probably need to cover preXXX/postXXX/handleXXX method names for FormHandlers as well
-            String propertyNameFromMethodName = PropertyUtilBase.getPropertyName((PsiMember) element);
-            aliases.add(propertyNameFromMethodName);
+            Optional.ofNullable(PropertyUtilBase.getPropertyName((PsiMember) element))
+                    .ifPresent(aliases::add);
         }
         return aliases;
     }
