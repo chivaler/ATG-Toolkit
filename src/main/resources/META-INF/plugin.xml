@@ -159,6 +159,11 @@
 
         <defaultLiveTemplatesProvider implementation="org.idea.plugin.atg.template.live.LiveTemplateProvider"/>
 
+
+        <internalFileTemplate name="Repository File" />
+        <internalFileTemplate name="Actor File" />
+        <internalFileTemplate name="Pipeline File" />
+
     </extensions>
 
     <actions>
@@ -187,6 +192,10 @@
 
         <action id="CopyNucleusPath" class="org.idea.plugin.atg.actions.CopyAtgPathProvider" text="Nucleus Component Name">
             <add-to-group group-id="CopyExternalReferenceGroup"/>
+        </action>
+
+        <action id="CreateNewAtgFile" class="org.idea.plugin.atg.actions.NewAtgFileAction" text="New ATG File" description="Create a new ATG file">
+            <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewFromTemplate"/>
         </action>
 
     </actions>
