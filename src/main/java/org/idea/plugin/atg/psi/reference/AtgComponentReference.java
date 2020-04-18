@@ -10,6 +10,7 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlText;
+import com.intellij.psi.xml.XmlToken;
 import org.idea.plugin.atg.index.AtgIndexService;
 import org.idea.plugin.atg.util.AtgComponentUtil;
 import org.jetbrains.annotations.NotNull;
@@ -33,6 +34,11 @@ public class AtgComponentReference extends PsiPolyVariantReferenceBase<PsiElemen
     public AtgComponentReference(@NotNull XmlText element) {
         super(element);
         componentName = element.getValue().trim();
+    }
+
+    public AtgComponentReference(@NotNull XmlToken element) {
+        super(element);
+        componentName = ((XmlText)element.getParent()).getValue().trim();
     }
 
     public AtgComponentReference(@NotNull String componentName, @NotNull TextRange textRange, @NotNull PsiElement element) {

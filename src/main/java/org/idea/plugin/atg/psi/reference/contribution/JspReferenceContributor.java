@@ -49,7 +49,7 @@ public class JspReferenceContributor extends PsiReferenceContributor {
         }
 
         @Override
-        public void visitElement(PsiElement element) {
+        public void visitElement(@NotNull PsiElement element) {
             if (element instanceof XmlTag) {
                 XmlTag xmlTag = (XmlTag) element;
                 String tagName = xmlTag.getLocalName();

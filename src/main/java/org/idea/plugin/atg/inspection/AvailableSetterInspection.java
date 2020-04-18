@@ -24,7 +24,7 @@ public class AvailableSetterInspection extends LocalInspectionTool {
 
         return new PsiElementVisitor() {
             @Override
-            public void visitElement(PsiElement element) {
+            public void visitElement(@NotNull PsiElement element) {
                 if (element instanceof PropertyImpl) {
                     PropertyImpl propertyElement = (PropertyImpl) element;
                     if (propertyElement.getKey() != null && !propertyElement.getKey().startsWith("$")) {

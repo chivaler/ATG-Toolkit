@@ -37,7 +37,7 @@ public class ItemDescriptorAvailableAttributeInspection extends LocalInspectionT
             Optional<String> xmlRelativePath = AtgComponentUtil.getXmlRelativePath((XmlFile) psiFile);
             if (xmlRelativePath.isPresent()) return new PsiElementVisitor() {
                 @Override
-                public void visitElement(PsiElement element) {
+                public void visitElement(@NotNull PsiElement element) {
                     if (element instanceof XmlAttributeValue) {
                         XmlAttributeValue valueElement = (XmlAttributeValue) element;
                         String keyName = valueElement.getValue();

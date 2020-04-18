@@ -14,6 +14,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import org.idea.plugin.atg.AtgToolkitBundle;
 import org.idea.plugin.atg.util.AtgComponentUtil;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 
@@ -35,7 +36,7 @@ public class NewAtgFileAction extends CreateFileFromTemplateAction {
     }
 
     @Override
-    protected String getActionName(PsiDirectory directory, String newName, String templateName) {
+    protected String getActionName(PsiDirectory directory, @NotNull String newName, String templateName) {
         return AtgToolkitBundle.message("new.atg.file.action");
     }
 

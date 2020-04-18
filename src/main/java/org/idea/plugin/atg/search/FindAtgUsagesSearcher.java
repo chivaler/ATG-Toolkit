@@ -33,7 +33,7 @@ public class FindAtgUsagesSearcher extends CustomUsageSearcher {
 
     @Override
     public void processElementUsages(@NotNull PsiElement element,
-                                     @NotNull Processor<Usage> processor,
+                                     @NotNull Processor<? super Usage> processor,
                                      @NotNull FindUsagesOptions options) {
         //Skip given search extension for those classes which has no defined Nucleus components, and particularly all non-ATG projects
         if (ReadAction.compute(() ->
@@ -62,7 +62,7 @@ public class FindAtgUsagesSearcher extends CustomUsageSearcher {
      * @param seekingField                   If search is against setter/getter - appropriate field search should be invoked instead
      * @param accessTypeOfReferencesToIgnore If search is against setter/getter - JavaReferences of opposite accesstype should be skipped
      */
-    private void searchByReferencesToJavaField(@NotNull Processor<Usage> processor,
+    private void searchByReferencesToJavaField(@NotNull Processor<? super Usage> processor,
                                                @NotNull FindUsagesOptions options,
                                                @NotNull PsiField seekingField,
                                                @NotNull Project project,

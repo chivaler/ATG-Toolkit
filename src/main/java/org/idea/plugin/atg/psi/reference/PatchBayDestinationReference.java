@@ -7,6 +7,7 @@ import com.intellij.psi.*;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlText;
+import com.intellij.psi.xml.XmlToken;
 import org.apache.commons.lang.StringUtils;
 import org.idea.plugin.atg.index.AtgIndexService;
 import org.idea.plugin.atg.util.AtgComponentUtil;
@@ -14,9 +15,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public class PatchBayDestinationReference extends PsiPolyVariantReferenceBase<XmlText> {
+public class PatchBayDestinationReference extends PsiPolyVariantReferenceBase<XmlToken> {
 
-    public PatchBayDestinationReference(@NotNull XmlText element) {
+    public PatchBayDestinationReference(@NotNull XmlToken element) {
         super(element);
     }
 
@@ -32,7 +33,7 @@ public class PatchBayDestinationReference extends PsiPolyVariantReferenceBase<Xm
         PsiFile containingFile = getElement().getContainingFile();
         if (!(containingFile instanceof XmlFile)) return ResolveResult.EMPTY_ARRAY;
 
-        String destinationName = getElement().getText().trim();
+        String destinationName = getElement().getParent().getText().trim();
         if (StringUtils.isBlank(destinationName)) return ResolveResult.EMPTY_ARRAY;
 
         Set<XmlFile> xmlFilesWithSamePath = new HashSet<>();

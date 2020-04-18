@@ -29,7 +29,7 @@ public class TrailingSlashesInspection extends LocalInspectionTool {
 
         return new PsiElementVisitor() {
             @Override
-            public void visitElement(PsiElement element) {
+            public void visitElement(@NotNull PsiElement element) {
                 if (element instanceof PropertyValueImpl && element.getParent() instanceof PropertyImpl) {
                     String value = ((PropertyValueImpl) element).getText();
                     Boolean treatAsDependency = AtgComponentUtil.getSetterForProperty((PropertyImpl) element.getParent()).

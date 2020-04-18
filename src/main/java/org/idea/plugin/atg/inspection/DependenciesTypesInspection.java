@@ -24,6 +24,7 @@ public class DependenciesTypesInspection extends LocalInspectionTool {
 
     private static boolean shouldCheckClassCast(@NotNull PsiMethod m) {
         JvmType parameterType = m.getParameters()[0].getType();
+        if (parameterType instanceof PsiArrayType) return false;
         if (!(parameterType instanceof PsiClassType)) return true;
         PsiClass psiClassForParameterType = ((PsiClassType) parameterType).resolve();
         if (psiClassForParameterType instanceof PsiTypeParameter) return false;
@@ -46,7 +47,7 @@ public class DependenciesTypesInspection extends LocalInspectionTool {
 
         return new PsiElementVisitor() {
             @Override
-            public void visitElement(PsiElement element) {
+            public void visitElement(@NotNull PsiElement element) {
                 if (element instanceof PropertyImpl) {
                     PropertyImpl propertyElement = (PropertyImpl) element;
                     if (propertyElement.getKey() != null && !propertyElement.getKey().startsWith("$")) {
@@ -64,6 +65,9 @@ public class DependenciesTypesInspection extends LocalInspectionTool {
                             if (!dependencyLayers.isEmpty()) {
                                 PropertiesFileImpl dependency = dependencyLayers.iterator().next();
                                 JvmType jvmTypeSetterMethod = AtgComponentUtil.getJvmTypeForSetterMethod(setterForProperty.get());
+                                if (jvmTypeSetterMethod instanceof  PsiArrayType) {
+                                    jvmTypeSetterMethod = ((PsiArrayType) jvmTypeSetterMethod).getDeepComponentType();
+                                }
                                 Optional<PsiClass> dependencyClass = AtgComponentUtil.getSupposedComponentClass(dependency);
                                 if (jvmTypeSetterMethod instanceof PsiType && dependencyClass.isPresent() && !Constants.Keywords.Java.NUCLEUS_REFERENCES.contains(dependencyClass.get().getQualifiedName())) {
                                     PsiClass setterClass = jvmTypeSetterMethod instanceof PsiClassType ? ((PsiClassType) jvmTypeSetterMethod).resolve() : null;

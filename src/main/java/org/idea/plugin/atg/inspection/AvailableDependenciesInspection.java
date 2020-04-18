@@ -33,7 +33,7 @@ public class AvailableDependenciesInspection extends LocalInspectionTool {
 
         return new PsiElementVisitor() {
             @Override
-            public void visitElement(PsiElement element) {
+            public void visitElement(@NotNull PsiElement element) {
                 if (element instanceof PropertyValueImpl) {
                     String value = ((PropertyValueImpl) element).getText();
                     Matcher matcher = Constants.SUSPECTED_COMPONENT_NAME_REGEX.matcher(value);

@@ -24,7 +24,7 @@ public class ComponentClassInspection extends LocalInspectionTool {
 
         return new PsiElementVisitor() {
             @Override
-            public void visitElement(PsiElement element) {
+            public void visitElement(@NotNull PsiElement element) {
                 if (element instanceof PropertyValueImpl) {
                     PsiElement parent = element.getParent();
                     if (parent instanceof PropertyImpl) {

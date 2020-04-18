@@ -55,6 +55,8 @@
             Added "Copy Nucleus Component Name" inside "Copy Path..." popup
         1.3 FindUsages shows usages of field, setters, getters including fields with m-prefixes
             Added ATG XML templates for pipelines, actors, repositories
+        1.4 Fixed dynamoMessagingSystem.xml parsing due in IDEA 2019.1+
+            Removed incorrect warning for arrays type check in properties
     ]]>
 
     </change-notes>

@@ -4,10 +4,11 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.*;
 import com.intellij.psi.xml.XmlText;
+import com.intellij.psi.xml.XmlToken;
 import com.intellij.psi.xml.XmlTokenType;
 import com.intellij.util.ProcessingContext;
 import com.jgoodies.common.base.Strings;
-import org.idea.plugin.atg.psi.provider.XmlTextComponentNamesProvider;
+import org.idea.plugin.atg.psi.reference.AtgComponentReference;
 import org.idea.plugin.atg.psi.reference.PatchBayDestinationReference;
 import org.jetbrains.annotations.NotNull;
 
@@ -47,6 +48,18 @@ public class PatchBayXmlContributor extends PsiReferenceContributor {
                                                                         .withParent(XmlPatterns.xmlTag().withName("dynamo-message-system")))))))),
                 new PatchBayDestinationProvider());
 
+//        registrar.registerReferenceProvider(
+//                PlatformPatterns.psiElement(XmlTokenType.XML_DATA_CHARACTERS).withParent(
+//                        XmlPatterns.xmlText().withParent(
+//                                XmlPatterns.xmlTag().withName("failure-output-port")
+//                                        .withParent(XmlPatterns.xmlTag().withName("redelivery")
+//                                                .withParent(XmlPatterns.xmlTag().withName("input-destination")
+//                                                        .withParent(XmlPatterns.xmlTag().withName("input-port")
+//                                                                .withParent(XmlPatterns.xmlTag().withName("message-sink", "message-filter")
+//                                                                        .withParent(XmlPatterns.xmlTag().withName("patchbay")
+//                                                                                .withParent(XmlPatterns.xmlTag().withName("dynamo-message-system"))))))))),
+//                new PatchBayPortProvider());
+
 
 //        registrar.registerReferenceProvider(
 //                PlatformPatterns.psiElement(XmlTokenType.XML_DATA_CHARACTERS).withParent(
@@ -61,7 +74,7 @@ public class PatchBayXmlContributor extends PsiReferenceContributor {
         //TODO search for providers
     }
 
-    static class PatchBayDestinationProvider extends PsiReferenceProvider {
+    private static class PatchBayDestinationProvider extends PsiReferenceProvider {
         @NotNull
         @Override
         public PsiReference[] getReferencesByElement(@NotNull PsiElement element,
@@ -70,8 +83,23 @@ public class PatchBayXmlContributor extends PsiReferenceContributor {
 
             List<PsiReference> results = new ArrayList<>();
             XmlText textElement = (XmlText) element.getParent();
-            if (Strings.isNotBlank(textElement.getText())) {
-                results.add(new PatchBayDestinationReference(textElement));
+            if (element instanceof XmlToken && Strings.isNotBlank(textElement.getText())) {
+                results.add(new PatchBayDestinationReference((XmlToken) element));
+            }
+            return results.toArray(PsiReference.EMPTY_ARRAY);
+        }
+    }
+
+    private static class XmlTextComponentNamesProvider extends PsiReferenceProvider {
+        @NotNull
+        @Override
+        public PsiReference[] getReferencesByElement(@NotNull PsiElement element,
+                                                     @NotNull ProcessingContext
+                                                             context) {
+            List<PsiReference> results = new ArrayList<>();
+            XmlText textElement = (XmlText) element.getParent();
+            if (element instanceof XmlToken && Strings.isNotBlank(textElement.getValue())) {
+                results.add(new AtgComponentReference((XmlToken) element));
             }
             return results.toArray(PsiReference.EMPTY_ARRAY);
         }
