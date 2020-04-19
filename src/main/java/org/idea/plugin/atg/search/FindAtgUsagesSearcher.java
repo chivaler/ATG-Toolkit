@@ -41,9 +41,9 @@ public class FindAtgUsagesSearcher extends CustomUsageSearcher {
         ).isEmpty()) return;
 
         Project project = PsiUtilCore.getProjectInReadAction(element);
-        if (options instanceof JavaVariableFindUsagesOptions && element instanceof PsiField) {
+        if (element instanceof PsiField) {
             searchByReferencesToJavaField(processor, options, (PsiField) element, project, null);
-        } else if (options instanceof JavaMethodFindUsagesOptions && element instanceof PsiMethod) {
+        } else if (element instanceof PsiMethod) {
             PsiMethod seekingMethod = (PsiMethod) element;
             Access skippedAccessType = ReadAction.compute(() -> {
                 if (PropertyUtilBase.isSimplePropertySetter(seekingMethod)) return Access.Read;
