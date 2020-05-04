@@ -29,4 +29,4 @@ publishPlugin {
 }
 
 group 'org.idea.plugin.atg'
-version '1.4' // Plugin version
+version '1.5' // Plugin version

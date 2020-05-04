@@ -10,36 +10,17 @@
     ]]></description>
 
     <change-notes><![CDATA[
-        0.1 Created intention on a non-abstract java class "Create ATG component"<br>
-        0.2 Created plugin settings page.<br>
-            Configurable excluded classes for collecting setters<br>
-        0.3 Rework of guessing components based on classes<br>
-        0.4 Go to components action "Alt+P"<br>
-            Guess of missing properties in files<br>
-            Guess of dependencies values based on dependencies classes<br>
-            Added references for components and properties<br>
-        0.5 Renaming/moving of components affects all links to them<br>
-            Classes of components/properties are shown in suggestions lookup<br>
-        0.6 Configuration roots changed from implicitly guessed to explicitly chosen<br>
-            Module configurations are stored in AtgFacet<br>
-            Framework detection of AtgFacets<br>
-            MarkAs actions for configuration roots, web roots and configuration layers root<br>
-            Added navigation in XML configurations of repositories, pipelines and JMS<br>
-            Added navigation in DSP/JSP for IdeaCommunity: bean, beanvalue, page, src attributes<br>
-            Help linked to GitHub WIKI<br>
-            Added MVP of ATG dependency injection. OOTB configs and classes could be attached to the project. See <a href="https://github.com/chivaler/ATG-Toolkit/wiki/Dependency-management">WIKI</a> for details<br>
-        0.7 Fix for reference to property of a component<br>
-        0.8 Breadcrumbs to show name attribute for XML tags<br>
-            Icon on the gutter for Java class to navigate to components based on the class<br>
-            Icon on the gutter for Properties and XMLs when another layers available<br>
-            Inspections to verify presence of used classes, components, setters, getters and their types cast<br>
-        0.9 JSP References works in IDEA Ultimate<br>
-        0.10 Removed the warning if ATG_HOME value differs from system one's
-            Improved navigation in repository Xmls. Click on item-descriptor's name or property-name suggest all its overrides<br>
-            Added warnings for ATG component create action if invoked in non-ATG module, or without configRoot set<br>
-        0.11 Increased performance by using of indexes for retrieving components by name<br>
-        0.12 Improved performance  and UI freeze fix  when dependencies is being attached<br>
-            Fixed for defects, and inspections improvements<br>
+        1.5 Fixed UI freezes on VCS actions
+        1.4 Fixed dynamoMessagingSystem.xml parsing due to changes in IDEA 2019.1+<br>
+            Fixed search for fields with lombok returned no result in properties<br>
+            Removed incorrect warning for arrays type check in properties<br>
+        1.3 FindUsages shows usages of field, setters, getters including fields with m-prefixes<br>
+            Added ATG XML templates for pipelines, actors, repositories<br>
+        1.2 Action "Create ATG component" is hidden on non-ATG projects<br>
+            Added "Copy Nucleus Component Name" inside "Copy Path..." popup<br>
+        1.1 Removed warning at IDEA startup if ATG_HOME is undefined<br>
+            If ATG_HOME Path Variable is absent, it takes value from DYNAMO_ROOT, DYNAMO_HOME(by trimming of /home) or ATG_HOME environment variables, if any present<br>
+            Added notifications, if Attach OOTBs is invoked when ATG_HOME isn't set, can't be resolved, or project hasn't any ATG modules set<br>
         1.0 Removed <i>Beta</i> from plugin name :)<br>
             Fixed NPE occurred in background of modal windows<br>
             Fixed defects, that roots added by Framework Detector weren't adding to index of components<br>
@@ -48,16 +29,36 @@
             Attach of OOTB modules can be invoked as action<br>
             Increased performance by using of indexes for retrieving XMLs<br>
             DependenciesScope check spitted to Error/Warning depending of whether component is injected, or just its path<br>
-        1.1 Removed warning at IDEA startup if ATG_HOME is undefined<br>
-            If ATG_HOME Path Variable is absent, it takes value from DYNAMO_ROOT, DYNAMO_HOME(by trimming of /home) or ATG_HOME environment variables, if any present<br>
-            Added notifications, if Attach OOTBs is invoked when ATG_HOME isn't set, can't be resolved, or project hasn't any ATG modules set<br>
-        1.2 Action "Create ATG component" is hidden on non-ATG projects<br>
-            Added "Copy Nucleus Component Name" inside "Copy Path..." popup
-        1.3 FindUsages shows usages of field, setters, getters including fields with m-prefixes
-            Added ATG XML templates for pipelines, actors, repositories
-        1.4 Fixed dynamoMessagingSystem.xml parsing due in IDEA 2019.1+
-            Fixed search for fields with lombok returned no result in properties
-            Removed incorrect warning for arrays type check in properties
+        0.12 Improved performance  and UI freeze fix  when dependencies is being attached<br>
+            Fixed for defects, and inspections improvements<br>
+        0.11 Increased performance by using of indexes for retrieving components by name<br>
+        0.10 Removed the warning if ATG_HOME value differs from system one's<br>
+            Improved navigation in repository Xmls. Click on item-descriptor's name or property-name suggest all its overrides<br>
+            Added warnings for ATG component create action if invoked in non-ATG module, or without configRoot set<br>
+        0.9 JSP References works in IDEA Ultimate<br>
+        0.8 Breadcrumbs to show name attribute for XML tags<br>
+            Icon on the gutter for Java class to navigate to components based on the class<br>
+            Icon on the gutter for Properties and XMLs when another layers available<br>
+            Inspections to verify presence of used classes, components, setters, getters and their types cast<br>
+        0.7 Fix for reference to property of a component<br>
+        0.6 Configuration roots changed from implicitly guessed to explicitly chosen<br>
+            Module configurations are stored in AtgFacet<br>
+            Framework detection of AtgFacets<br>
+            MarkAs actions for configuration roots, web roots and configuration layers root<br>
+            Added navigation in XML configurations of repositories, pipelines and JMS<br>
+            Added navigation in DSP/JSP for IdeaCommunity: bean, beanvalue, page, src attributes<br>
+            Help linked to GitHub WIKI<br>
+            Added MVP of ATG dependency injection. OOTB configs and classes could be attached to the project. See <a href="https://github.com/chivaler/ATG-Toolkit/wiki/Dependency-management">WIKI</a> for details<br>
+        0.5 Renaming/moving of components affects all links to them<br>
+            Classes of components/properties are shown in suggestions lookup<br>
+        0.4 Go to components action "Alt+P"<br>
+            Guess of missing properties in files<br>
+            Guess of dependencies values based on dependencies classes<br>
+            Added references for components and properties<br>
+        0.3 Rework of guessing components based on classes<br>
+        0.2 Created plugin settings page.<br>
+            Configurable excluded classes for collecting setters<br>
+        0.1 Created intention on a non-abstract java class "Create ATG component"<br>
     ]]>
 
     </change-notes>
@@ -66,7 +67,7 @@
     <depends optional="true" config-file="plugin-config-ultimate.xml">com.intellij.jsp</depends>
     <depends optional="true" config-file="plugin-config-community.xml">com.intellij.modules.idea.community</depends>
 
-    <idea-version since-build="193.2723"/>
+    <idea-version since-build="193.5233.12"/>
     <resource-bundle>org.idea.plugin.atg.AtgToolkitBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -74,7 +75,7 @@
             <className>org.idea.plugin.atg.actions.CreateATGComponentIntentionAction</className>
             <category>Java/Declaration</category>
         </intentionAction>
-        <intentionAction >
+        <intentionAction>
             <className>org.idea.plugin.atg.actions.WrapRepositoryCastIntentionAction</className>
             <category>Java/Refactoring</category>
         </intentionAction>
@@ -162,15 +163,16 @@
         <customUsageSearcher implementation="org.idea.plugin.atg.search.FindAtgUsagesSearcher"/>
         <referencesSearch implementation="org.idea.plugin.atg.search.AtgReferencesSearcher"/>
 
-        <typedHandler implementation="org.idea.plugin.atg.editorActions.AtgCompletionPropertyAutoPopupHandler" id="atgCompletionAutoPopup"
+        <typedHandler implementation="org.idea.plugin.atg.editorActions.AtgCompletionPropertyAutoPopupHandler"
+                      id="atgCompletionAutoPopup"
                       order="first"/>
 
         <defaultLiveTemplatesProvider implementation="org.idea.plugin.atg.template.live.LiveTemplateProvider"/>
 
 
-        <internalFileTemplate name="Repository File" />
-        <internalFileTemplate name="Actor File" />
-        <internalFileTemplate name="Pipeline File" />
+        <internalFileTemplate name="Repository File"/>
+        <internalFileTemplate name="Actor File"/>
+        <internalFileTemplate name="Pipeline File"/>
 
     </extensions>
 
@@ -178,7 +180,7 @@
 
         <action id="DetectAtgRoots" class="org.idea.plugin.atg.config.DetectAtgRootsAction"
                 text="Detect ATG roots in project"
-                description="Detect ATG configuration roots" />
+                description="Detect ATG configuration roots"/>
         <action id="AttachAtgDependencies" class="org.idea.plugin.atg.config.AttachAtgDependenciesAction"
                 text="Attach ATG OOTB dependencies"
                 description="Attach ATG dependencies"/>
@@ -198,11 +200,13 @@
             <add-to-group group-id="MarkRootGroup" anchor="after" relative-to-action="MarkSourceRootGroup"/>
         </group>
 
-        <action id="CopyNucleusPath" class="org.idea.plugin.atg.actions.CopyAtgPathProvider" text="Nucleus Component Name">
+        <action id="CopyNucleusPath" class="org.idea.plugin.atg.actions.CopyAtgPathProvider"
+                text="Nucleus Component Name">
             <add-to-group group-id="CopyExternalReferenceGroup"/>
         </action>
 
-        <action id="CreateNewAtgFile" class="org.idea.plugin.atg.actions.NewAtgFileAction" text="New ATG File" description="Create a new ATG file">
+        <action id="CreateNewAtgFile" class="org.idea.plugin.atg.actions.NewAtgFileAction" text="New ATG File"
+                description="Create a new ATG file">
             <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewFromTemplate"/>
         </action>
 

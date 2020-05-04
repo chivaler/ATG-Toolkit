@@ -1,9 +1,7 @@
 package org.idea.plugin.atg.search;
 
 import com.intellij.openapi.application.QueryExecutorBase;
-import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.project.DumbService;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.SearchScope;
@@ -16,7 +14,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-import static com.intellij.psi.util.PsiUtilCore.getProjectInReadAction;
 import static org.idea.plugin.atg.util.AtgComponentUtil.suggestComponentNamesByClassWithInheritors;
 
 /**
@@ -37,18 +34,18 @@ public class AtgReferencesSearcher extends QueryExecutorBase<PsiReference, Refer
         if (!(scope instanceof GlobalSearchScope)) return;
         //TODO intersect with ATG Configs only
 
-        //Skip given search extension for those classes which has no defined Nucleus components, and particularly all non-ATG projects
-        if (ReadAction.compute(() ->
-                suggestComponentNamesByClassWithInheritors(PsiTreeUtil.getTopmostParentOfType(element, PsiClass.class))
-        ).isEmpty()) return;
+        if (suggestComponentNamesByClassWithInheritors(PsiTreeUtil.getTopmostParentOfType(element, PsiClass.class)).isEmpty()) {
+            //Skip given search extension for those classes which has no defined Nucleus components, and particularly all non-ATG projects
+            return;
+        }
 
-        DumbService.getInstance(getProjectInReadAction(element)).runReadActionInSmartMode(() ->
-                suggestAliasesForAtgNamedPsiElement(element).stream()
-                        .filter(Objects::nonNull)
-                        .forEach(name -> {
+        suggestAliasesForAtgNamedPsiElement(element).stream()
+                .filter(Objects::nonNull)
+                .forEach(name -> {
                             ProgressManager.checkCanceled();
                             p.getOptimizer().searchWord(name, scope, UsageSearchContext.IN_FOREIGN_LANGUAGES, true, element);
-                        }));
+                        }
+                );
     }
 
     /**

@@ -3,8 +3,6 @@ package org.idea.plugin.atg.search;
 import com.intellij.codeInsight.highlighting.ReadWriteAccessDetector.Access;
 import com.intellij.find.findUsages.CustomUsageSearcher;
 import com.intellij.find.findUsages.FindUsagesOptions;
-import com.intellij.find.findUsages.JavaMethodFindUsagesOptions;
-import com.intellij.find.findUsages.JavaVariableFindUsagesOptions;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
@@ -24,6 +22,7 @@ import org.idea.plugin.atg.psi.reference.AccessDefinedJavaFieldPsiReference;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import static com.intellij.psi.util.PsiUtilCore.getProjectInReadAction;
 import static org.idea.plugin.atg.util.AtgComponentUtil.suggestComponentNamesByClassWithInheritors;
 
 /**
@@ -35,26 +34,28 @@ public class FindAtgUsagesSearcher extends CustomUsageSearcher {
     public void processElementUsages(@NotNull PsiElement element,
                                      @NotNull Processor<? super Usage> processor,
                                      @NotNull FindUsagesOptions options) {
-        //Skip given search extension for those classes which has no defined Nucleus components, and particularly all non-ATG projects
-        if (ReadAction.compute(() ->
-                suggestComponentNamesByClassWithInheritors(PsiTreeUtil.getTopmostParentOfType(element, PsiClass.class))
-        ).isEmpty()) return;
-
-        Project project = PsiUtilCore.getProjectInReadAction(element);
-        if (element instanceof PsiField) {
-            searchByReferencesToJavaField(processor, options, (PsiField) element, project, null);
-        } else if (element instanceof PsiMethod) {
-            PsiMethod seekingMethod = (PsiMethod) element;
-            Access skippedAccessType = ReadAction.compute(() -> {
-                if (PropertyUtilBase.isSimplePropertySetter(seekingMethod)) return Access.Read;
-                if (PropertyUtilBase.isSimplePropertyGetter(seekingMethod)) return Access.Write;
-                return null;
-            });
-            PsiField accessingField = ReadAction.compute(() -> PropertyUtilBase.findPropertyFieldByMember(seekingMethod));
-            if (accessingField != null) {
-                searchByReferencesToJavaField(processor, options, accessingField, project, skippedAccessType);
+        DumbService.getInstance(getProjectInReadAction(element)).runReadActionInSmartMode(() -> {
+            if (suggestComponentNamesByClassWithInheritors(PsiTreeUtil.getTopmostParentOfType(element, PsiClass.class)).isEmpty()) {
+                //Skip given search extension for those classes which has no defined Nucleus components, and particularly all non-ATG projects
+                return;
             }
-        }
+
+            Project project = PsiUtilCore.getProjectInReadAction(element);
+            if (element instanceof PsiField) {
+                searchByReferencesToJavaField(processor, options, (PsiField) element, project, null);
+            } else if (element instanceof PsiMethod) {
+                PsiMethod seekingMethod = (PsiMethod) element;
+                Access skippedAccessType = ReadAction.compute(() -> {
+                    if (PropertyUtilBase.isSimplePropertySetter(seekingMethod)) return Access.Read;
+                    if (PropertyUtilBase.isSimplePropertyGetter(seekingMethod)) return Access.Write;
+                    return null;
+                });
+                PsiField accessingField = ReadAction.compute(() -> PropertyUtilBase.findPropertyFieldByMember(seekingMethod));
+                if (accessingField != null) {
+                    searchByReferencesToJavaField(processor, options, accessingField, project, skippedAccessType);
+                }
+            }
+        });
 
     }
 

@@ -72,7 +72,7 @@ public class AtgIndexService {
     @NotNull
     private Set<String> getComponentAndLayerBasedOns(@NotNull String bean) {
         return FileBasedIndex.getInstance().getValues(AtgComponentsIndexExtension.NAME, bean, GlobalSearchScope.allScope(project))
-                .parallelStream()
+                .stream()
                 .map(ComponentWrapper::getBasedOn)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
@@ -81,7 +81,7 @@ public class AtgIndexService {
     @NotNull
     private Set<String> getComponentIndexedProperty(@NotNull String bean, @NotNull Function<ComponentWrapper, String> propertyExtractor) {
         return FileBasedIndex.getInstance().getValues(AtgComponentsIndexExtension.NAME, bean, GlobalSearchScope.allScope(project))
-                .parallelStream()
+                .stream()
                 .map(propertyExtractor)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
@@ -90,7 +90,7 @@ public class AtgIndexService {
     @NotNull
     private Set<String> getComponentAndLayerClasses(@NotNull String bean) {
         return FileBasedIndex.getInstance().getValues(AtgComponentsIndexExtension.NAME, bean, GlobalSearchScope.allScope(project))
-                .parallelStream()
+                .stream()
                 .map(ComponentWrapper::getJavaClass)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
@@ -99,7 +99,7 @@ public class AtgIndexService {
     @NotNull
     private Set<String> getComponentAndLayerScopes(@NotNull String bean) {
         return FileBasedIndex.getInstance().getValues(AtgComponentsIndexExtension.NAME, bean, GlobalSearchScope.allScope(project))
-                .parallelStream()
+                .stream()
                 .map(ComponentWrapper::getJavaClass)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
@@ -112,7 +112,8 @@ public class AtgIndexService {
 
     @NotNull
     public List<String> getComponentPropertyValues(@NotNull String componentName, @NotNull String propertyName) {
-        return getComponentsByName(componentName).parallelStream()
+        return getComponentsByName(componentName)
+                .stream()
                 .map(f -> f.findPropertyByKey(propertyName))
                 .filter(Objects::nonNull)
                 .map(IProperty::getUnescapedValue)
@@ -129,21 +130,22 @@ public class AtgIndexService {
         if (srcClasses.isEmpty()) {
             return Collections.emptyList();
         }
-        Collection<String> srcClassesStr = srcClasses.stream().map(PsiClass::getQualifiedName).collect(Collectors.toList());
+        Collection<String> srcClassesStr = srcClasses.stream()
+                .map(PsiClass::getQualifiedName)
+                .collect(Collectors.toSet());
         FileBasedIndex fileBasedIndex = FileBasedIndex.getInstance();
         GlobalSearchScope scope = GlobalSearchScope.allScope(project);
 
         Set<String> result = Sets.newHashSet();
-        fileBasedIndex.processAllKeys(AtgComponentsIndexExtension.NAME, componentName -> {
-            ProgressManager.checkCanceled();
+        Collection<String> allComponentsNames = fileBasedIndex.getAllKeys(AtgComponentsIndexExtension.NAME, project);
+        for (String componentName : allComponentsNames) {
             fileBasedIndex.processValues(AtgComponentsIndexExtension.NAME, componentName, null, (file, componentWrapper) -> {
                 if (srcClassesStr.contains(componentWrapper.getJavaClass())) {
                     result.add(componentName);
                 }
                 return true;
             }, scope);
-            return true;
-        }, project);
+        }
 
         return result;
     }
