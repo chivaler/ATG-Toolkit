@@ -18,7 +18,7 @@ import java.util.Collections;
 public class AtgComponentJavaLineMarkerProvider extends RelatedItemLineMarkerProvider {
     //TODO show gutter icons in proper page in settings
     @Override
-    protected void collectNavigationMarkers(@NotNull PsiElement element, @NotNull Collection<? super RelatedItemLineMarkerInfo> result) {
+    protected void collectNavigationMarkers(@NotNull PsiElement element, @NotNull Collection<? super RelatedItemLineMarkerInfo<?>> result) {
         if (element instanceof PsiIdentifier && element.getParent() instanceof PsiClass) {
             PsiClass srcClass = (PsiClass) element.getParent();
             if (AtgComponentUtil.isApplicableToHaveComponents((PsiClass) element.getParent())) {

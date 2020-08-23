@@ -19,7 +19,7 @@ import java.util.Map;
 
 @ApiStatus.Experimental
 public class WrapRepositoryCastIntentionAction extends PsiElementBaseIntentionAction {
-    static Map<Project, Boolean> repsClassAvailablePerProject = new HashMap<>();
+    static final Map<Project, Boolean> repsClassAvailablePerProject = new HashMap<>();
 
     @Override
     public void invoke(@NotNull Project project, Editor editor, @NotNull PsiElement element) {

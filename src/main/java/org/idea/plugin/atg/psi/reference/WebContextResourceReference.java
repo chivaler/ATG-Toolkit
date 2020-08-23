@@ -16,7 +16,7 @@ import java.util.Objects;
 import java.util.Set;
 
 public class WebContextResourceReference extends PsiPolyVariantReferenceBase<PsiElement> {
-    private String filePath;
+    private final String filePath;
 
     public WebContextResourceReference(@NotNull XmlAttributeValue jspRefAttribute, @NotNull PsiPlainTextFile jspContainingFile, @NotNull TextRange range) {
         super(jspContainingFile, range);

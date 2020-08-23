@@ -21,7 +21,7 @@ import java.util.Optional;
 public class AtgXmlLayersLineMarkerProvider extends RelatedItemLineMarkerProvider {
 
     @Override
-    protected void collectNavigationMarkers(@NotNull PsiElement element, @NotNull Collection<? super RelatedItemLineMarkerInfo> result) {
+    protected void collectNavigationMarkers(@NotNull PsiElement element, @NotNull Collection<? super RelatedItemLineMarkerInfo<?>> result) {
         if (element instanceof XmlTag && !(element.getParent() instanceof XmlTag)) {
             PsiFile psiFile = element.getContainingFile();
             if (psiFile instanceof XmlFileImpl) {

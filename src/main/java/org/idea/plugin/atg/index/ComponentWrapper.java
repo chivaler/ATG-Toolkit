@@ -6,11 +6,11 @@ import java.util.Objects;
 
 public class ComponentWrapper {
     @Nullable
-    private String scope;
+    private final String scope;
     @Nullable
-    private String javaClass;
+    private final String javaClass;
     @Nullable
-    private String basedOn;
+    private final String basedOn;
 
     public ComponentWrapper(@Nullable String scope, @Nullable String javaClass, @Nullable String basedOn) {
         this.scope = scope;

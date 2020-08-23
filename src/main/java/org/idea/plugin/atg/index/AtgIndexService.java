@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 public class AtgIndexService {
     @NotNull
-    private Project project;
+    private final Project project;
 
     public AtgIndexService(@NotNull Project project) {
         this.project = project;

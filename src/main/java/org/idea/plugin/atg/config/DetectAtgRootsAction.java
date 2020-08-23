@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 
 public class DetectAtgRootsAction extends AnAction {
     private static final String DETECT_ROOTS_TASK = "DETECT_ROOTS_TASK";
-    private AtgModuleFacetType atgModuleFacetType = AtgModuleFacetType.getInstance();
+    private final AtgModuleFacetType atgModuleFacetType = AtgModuleFacetType.getInstance();
     private List<VirtualFile> addedRoots = Lists.newArrayList();
     private List<VirtualFile> removedRoots = Lists.newArrayList();
 

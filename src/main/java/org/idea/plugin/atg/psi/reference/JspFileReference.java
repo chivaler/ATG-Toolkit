@@ -15,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Optional;
 
 public class JspFileReference extends PsiPolyVariantReferenceBase<PsiElement> {
-    private String filePath;
+    private final String filePath;
 
     public JspFileReference(@NotNull XmlAttributeValue jspRefAttribute, @NotNull PsiPlainTextFile jspContainingFile, @NotNull TextRange range) {
         super(jspContainingFile, range);

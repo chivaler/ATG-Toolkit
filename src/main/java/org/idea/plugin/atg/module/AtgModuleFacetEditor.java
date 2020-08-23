@@ -19,9 +19,9 @@ import java.util.List;
 
 public class AtgModuleFacetEditor extends FacetEditorTab {
     private boolean modified = false;
-    private AtgModuleFacet facet;
-    private FacetEditorContext context;
-    private FacetValidatorsManager validatorsManager;
+    private final AtgModuleFacet facet;
+    private final FacetEditorContext context;
+    private final FacetValidatorsManager validatorsManager;
 
     private FileChooserDescriptor myDescriptor;
     private JPanel rootPanel;

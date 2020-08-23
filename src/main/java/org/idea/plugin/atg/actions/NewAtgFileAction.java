@@ -1,5 +1,6 @@
 package org.idea.plugin.atg.actions;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.ide.IdeView;
 import com.intellij.ide.actions.CreateFileFromTemplateAction;
 import com.intellij.ide.actions.CreateFileFromTemplateDialog;
@@ -7,7 +8,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.actionSystem.Presentation;
-import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -24,15 +24,15 @@ import java.util.Arrays;
 public class NewAtgFileAction extends CreateFileFromTemplateAction {
 
     public NewAtgFileAction() {
-        super(AtgToolkitBundle.message("new.atg.file.action"), AtgToolkitBundle.message("new.atg.file.action.dialog.description"), StdFileTypes.XML.getIcon());
+        super(AtgToolkitBundle.message("new.atg.file.action"), AtgToolkitBundle.message("new.atg.file.action.dialog.description"), AllIcons.FileTypes.Xml);
     }
 
     @Override
     protected void buildDialog(Project project, PsiDirectory directory, CreateFileFromTemplateDialog.Builder builder) {
         builder.setTitle(AtgToolkitBundle.message("new.atg.file.action.dialog.title"))
-                .addKind("ATG Actor definition", StdFileTypes.XML.getIcon(), "Actor File.xml")
-                .addKind("ATG Repository definition", StdFileTypes.XML.getIcon(), "Repository File.xml")
-                .addKind("ATG Pipeline definition", StdFileTypes.XML.getIcon(), "Pipeline File.xml");
+                .addKind("ATG Actor definition", AllIcons.FileTypes.Xml, "Actor File.xml")
+                .addKind("ATG Repository definition", AllIcons.FileTypes.Xml, "Repository File.xml")
+                .addKind("ATG Pipeline definition", AllIcons.FileTypes.Xml, "Pipeline File.xml");
     }
 
     @Override

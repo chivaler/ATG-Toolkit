@@ -19,9 +19,9 @@ import java.util.Optional;
  * Reference to Java class field from ATG/Nucleus
  */
 public class JavaPropertyReference extends PsiReferenceBase<PsiElement> implements AccessDefinedJavaFieldPsiReference {
-    private String fieldName;
-    private PsiClass srcClass;
-    private Access accessType;
+    private final String fieldName;
+    private final PsiClass srcClass;
+    private final Access accessType;
 
     public JavaPropertyReference(@NotNull PropertyKeyImpl element,
                                  @NotNull PsiClass srcClass,

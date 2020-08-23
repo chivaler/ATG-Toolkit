@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class AtgConfigHelper {
-    private static Cache<VirtualFile, String> webRootsContextCache = CacheBuilder.newBuilder()
+    private static final Cache<VirtualFile, String> webRootsContextCache = CacheBuilder.newBuilder()
             .expireAfterWrite(2, TimeUnit.MINUTES)
             .build();
 

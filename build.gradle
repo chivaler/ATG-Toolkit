@@ -13,7 +13,7 @@ apply plugin: 'org.jetbrains.intellij'
 apply plugin: 'java'
 
 intellij {
-    version 'IC-2020.1'
+    version 'IC-2020.2'
     plugins 'java', 'properties'
     pluginName 'atg-toolkit'
     downloadSources true
@@ -25,6 +25,7 @@ runIde {
 }
 
 publishPlugin {
+    token intellijPublishToken
     token intellijPublishToken
 }
 

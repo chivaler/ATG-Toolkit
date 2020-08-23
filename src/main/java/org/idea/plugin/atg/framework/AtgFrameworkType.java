@@ -11,7 +11,7 @@ import javax.swing.*;
  * Created by Igor_Pidgurskyi on 4/20/2017.
  */
 public class AtgFrameworkType extends FrameworkTypeEx {
-    private static AtgFrameworkType INSTANCE = new AtgFrameworkType();
+    private static final AtgFrameworkType INSTANCE = new AtgFrameworkType();
     public static AtgFrameworkType getInstance() {
         return INSTANCE;
     }

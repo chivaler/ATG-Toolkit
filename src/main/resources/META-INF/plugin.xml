@@ -67,7 +67,7 @@
     <depends optional="true" config-file="plugin-config-ultimate.xml">com.intellij.jsp</depends>
     <depends optional="true" config-file="plugin-config-community.xml">com.intellij.modules.idea.community</depends>
 
-    <idea-version since-build="193.5233.12"/>
+    <idea-version since-build="193.5233.108"/>
     <resource-bundle>org.idea.plugin.atg.AtgToolkitBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
