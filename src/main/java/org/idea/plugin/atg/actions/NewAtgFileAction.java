@@ -28,7 +28,7 @@ public class NewAtgFileAction extends CreateFileFromTemplateAction {
     }
 
     @Override
-    protected void buildDialog(Project project, PsiDirectory directory, CreateFileFromTemplateDialog.Builder builder) {
+    protected void buildDialog(@NotNull Project project, @NotNull PsiDirectory directory, CreateFileFromTemplateDialog.Builder builder) {
         builder.setTitle(AtgToolkitBundle.message("new.atg.file.action.dialog.title"))
                 .addKind("ATG Actor definition", AllIcons.FileTypes.Xml, "Actor File.xml")
                 .addKind("ATG Repository definition", AllIcons.FileTypes.Xml, "Repository File.xml")

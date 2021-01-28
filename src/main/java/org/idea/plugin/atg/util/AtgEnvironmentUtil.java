@@ -52,6 +52,7 @@ public class AtgEnvironmentUtil {
     public static void parseAtgHome(@NotNull final Project project) {
         moduleAliases = new HashMap<>();
         String atgHome = PathMacros.getInstance().getValue(Constants.ATG_HOME);
+        if (atgHome == null) return;
         VirtualFile atgHomeVirtualDir = StandardFileSystems.local().findFileByPath(atgHome);
         if (atgHomeVirtualDir == null) return;
 
@@ -80,7 +81,9 @@ public class AtgEnvironmentUtil {
     static ManifestFile suggestManifestFileForModule(@NotNull final String atgModuleName,
                                                      @NotNull final Project project) {
         String atgHome = PathMacros.getInstance().getValue(Constants.ATG_HOME);
+        if (atgHome == null) return null;
         VirtualFile atgHomeVirtualDir = StandardFileSystems.local().findFileByPath(atgHome);
+        if (atgHomeVirtualDir == null) return null;
 
         String atgModuleMostParentModule = atgModuleName.contains(".") ?
                 atgModuleName.substring(0, atgModuleName.indexOf('.')) :

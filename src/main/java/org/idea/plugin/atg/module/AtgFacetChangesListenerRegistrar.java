@@ -20,7 +20,7 @@ public class AtgFacetChangesListenerRegistrar implements ProjectComponent {
 
     @Override
     public void projectOpened() {
-        facetListenersRegistry.registerListener(Constants.FACET_TYPE_ID, new ProjectWideFacetAdapter<AtgModuleFacet>() {
+        facetListenersRegistry.registerListener(Constants.FACET_TYPE_ID, new ProjectWideFacetAdapter<>() {
             @Override
             public void facetRemoved(@NotNull AtgModuleFacet atgModuleFacet) {
                 AtgModuleFacetConfiguration configuration = atgModuleFacet.getConfiguration();

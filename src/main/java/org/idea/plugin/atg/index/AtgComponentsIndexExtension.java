@@ -74,7 +74,7 @@ public class AtgComponentsIndexExtension extends FileBasedIndexExtension<String,
     @NotNull
     @Override
     public DataExternalizer<ComponentWrapper> getValueExternalizer() {
-        return new DataExternalizer<ComponentWrapper>() {
+        return new DataExternalizer<>() {
             @Override
             public void save(@NotNull DataOutput out, ComponentWrapper componentWrapper) throws IOException {
                 String javaClassStr = componentWrapper.getJavaClass();

@@ -126,9 +126,9 @@ public class AtgIndexService {
     }
 
     @NotNull
-    public Collection<String> suggestComponentNamesByClass(@NotNull Collection<PsiClass> srcClasses) {
+    public Set<String> suggestComponentNamesByClass(@NotNull Collection<PsiClass> srcClasses) {
         if (srcClasses.isEmpty()) {
-            return Collections.emptyList();
+            return Collections.emptySet();
         }
         Collection<String> srcClassesStr = srcClasses.stream()
                 .map(PsiClass::getQualifiedName)

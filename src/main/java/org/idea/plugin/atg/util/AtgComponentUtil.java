@@ -337,9 +337,9 @@ public class AtgComponentUtil {
     }
 
     @NotNull
-    public static Collection<String> suggestComponentNamesByClassWithInheritors(@Nullable PsiClass srcClass) {
+    public static Set<String> suggestComponentNamesByClassWithInheritors(@Nullable PsiClass srcClass) {
         if (srcClass == null) {
-            return Collections.emptyList();
+            return Collections.emptySet();
         }
         GlobalSearchScope scope = GlobalSearchScope.allScope(srcClass.getProject());
         Collection<PsiClass> classAndInheritors = ClassInheritorsSearch.search(srcClass, scope, true, true, false)

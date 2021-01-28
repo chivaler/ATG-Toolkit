@@ -56,7 +56,7 @@ public class AtgFrameworkDetector extends FacetBasedFrameworkDetector<AtgModuleF
     @Override
     public ElementPattern<FileContent> createSuitableFilePattern() {
         return FileContentPattern.fileContent().
-                with(new PatternCondition<FileContent>("withContent") {
+                with(new PatternCondition<>("withContent") {
                     @Override
                     public boolean accepts(@NotNull FileContent fileContent, ProcessingContext context) {
                         return (new String(fileContent.getContent()).startsWith(Constants.Keywords.Properties.CLASS_PROPERTY + "="));
@@ -66,6 +66,7 @@ public class AtgFrameworkDetector extends FacetBasedFrameworkDetector<AtgModuleF
 
 
     @Override
+    @NotNull
     public FrameworkType getFrameworkType() {
         return AtgFrameworkType.getInstance();
     }

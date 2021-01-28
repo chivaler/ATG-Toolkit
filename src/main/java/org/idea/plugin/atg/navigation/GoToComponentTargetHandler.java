@@ -153,7 +153,7 @@ public class GoToComponentTargetHandler extends GotoTargetHandler {
     @NotNull
     @Override
     protected Comparator<PsiElement> createComparator(@NotNull GotoData gotoData) {
-        return new Comparator<PsiElement>() {
+        return new Comparator<>() {
             private final String sourceComponentName = (gotoData.source instanceof PropertiesFile) ? AtgComponentUtil.getComponentCanonicalName((PropertiesFileImpl) gotoData.source).orElse(null) : null;
 
             @Override

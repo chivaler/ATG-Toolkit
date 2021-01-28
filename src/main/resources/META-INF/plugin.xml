@@ -10,6 +10,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+        1.6 IDEA 2021+ support
         1.5 Fixed UI freezes on VCS actions
         1.4 Fixed dynamoMessagingSystem.xml parsing due to changes in IDEA 2019.1+<br>
             Fixed search for fields with lombok returned no result in properties<br>

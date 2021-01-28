@@ -5,6 +5,7 @@
 /.gradle
 gradlew
 gradlew.bat
+gradle.properties
 .DS_Store
 *.class
 *.log
