@@ -10,6 +10,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+        1.7 Minor fix for rare concurrent exception during indexing
         1.6 IDEA 2021+ support
         1.5 Fixed UI freezes on VCS actions
         1.4 Fixed dynamoMessagingSystem.xml parsing due to changes in IDEA 2019.1+<br>
@@ -29,7 +30,7 @@
             Added an action which seeks and marks Atg roots for whole project<br>
             Attach of OOTB modules can be invoked as action<br>
             Increased performance by using of indexes for retrieving XMLs<br>
-            DependenciesScope check spitted to Error/Warning depending of whether component is injected, or just its path<br>
+            DependenciesScope check split to Error/Warning depending of whether component is injected, or just its path<br>
         0.12 Improved performance  and UI freeze fix  when dependencies is being attached<br>
             Fixed for defects, and inspections improvements<br>
         0.11 Increased performance by using of indexes for retrieving components by name<br>

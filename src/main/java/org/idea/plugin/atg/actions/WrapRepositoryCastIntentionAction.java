@@ -14,12 +14,12 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @ApiStatus.Experimental
 public class WrapRepositoryCastIntentionAction extends PsiElementBaseIntentionAction {
-    static final Map<Project, Boolean> repsClassAvailablePerProject = new HashMap<>();
+    static final Map<Project, Boolean> repsClassAvailablePerProject = new ConcurrentHashMap<>();
 
     @Override
     public void invoke(@NotNull Project project, Editor editor, @NotNull PsiElement element) {
