@@ -45,19 +45,17 @@ public class JspUltimateReferenceContributor extends PsiReferenceContributor {
     }
 
     static class JspUltimateReferenceProvider extends PsiReferenceProvider {
-        @NotNull
         @Override
-        public PsiReference[] getReferencesByElement(@NotNull PsiElement element,
-                                                     @NotNull ProcessingContext context) {
+        public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element,
+                                                               @NotNull ProcessingContext context) {
             return AtgComponentReferenceCreator.createReferences((XmlAttributeValue) element, null, new HashMap<>()).toArray(new PsiReference[0]);
         }
     }
 
     static class JspUltimateImportedReferenceProvider extends PsiReferenceProvider {
-        @NotNull
         @Override
-        public PsiReference[] getReferencesByElement(@NotNull PsiElement element,
-                                                     @NotNull ProcessingContext context) {
+        public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element,
+                                                               @NotNull ProcessingContext context) {
             HashMap<String, String> importedBeans = new HashMap<>();
             XmlTag parentTag = (XmlTag) element.getParent().getParent();
             while (parentTag != null) {
@@ -86,8 +84,8 @@ public class JspUltimateReferenceContributor extends PsiReferenceContributor {
     static class JspIncludeReferenceProvider extends PsiReferenceProvider {
         @NotNull
         @Override
-        public PsiReference[] getReferencesByElement(@NotNull PsiElement element,
-                                                     @NotNull ProcessingContext context) {
+        public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element,
+                                                               @NotNull ProcessingContext context) {
             return new PsiReference[]{new JspFileReference((XmlAttributeValue) element)};
         }
     }
@@ -95,8 +93,8 @@ public class JspUltimateReferenceContributor extends PsiReferenceContributor {
     static class WebReferenceProvider extends PsiReferenceProvider {
         @NotNull
         @Override
-        public PsiReference[] getReferencesByElement(@NotNull PsiElement element,
-                                                     @NotNull ProcessingContext context) {
+        public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element,
+                                                               @NotNull ProcessingContext context) {
             return new PsiReference[]{new WebContextResourceReference((XmlAttributeValue) element)};
         }
     }

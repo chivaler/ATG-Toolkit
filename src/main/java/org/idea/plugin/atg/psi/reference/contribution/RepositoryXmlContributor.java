@@ -73,10 +73,9 @@ public class RepositoryXmlContributor extends PsiReferenceContributor {
     }
 
     static class ItemDescriptorReferenceProvider extends PsiReferenceProvider {
-        @NotNull
         @Override
-        public PsiReference[] getReferencesByElement(@NotNull PsiElement element,
-                                                     @NotNull ProcessingContext
+        public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element,
+                                                               @NotNull ProcessingContext
                                                              context) {
             List<PsiReference> results = new ArrayList<>();
             XmlAttributeValue valueElement = (XmlAttributeValue) element;
@@ -88,10 +87,9 @@ public class RepositoryXmlContributor extends PsiReferenceContributor {
     }
 
     static class PropertyDescriptorAttributesProvider extends PsiReferenceProvider {
-        @NotNull
         @Override
-        public PsiReference[] getReferencesByElement(@NotNull PsiElement element,
-                                                     @NotNull ProcessingContext
+        public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element,
+                                                               @NotNull ProcessingContext
                                                              context) {
             List<PsiReference> results = new ArrayList<>();
             XmlAttributeValue valueElement = (XmlAttributeValue) element;

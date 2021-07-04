@@ -13,10 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class XmlAttributeComponentNamesProvider extends PsiReferenceProvider {
-    @NotNull
     @Override
-    public PsiReference[] getReferencesByElement(@NotNull PsiElement element,
-                                                 @NotNull ProcessingContext
+    public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element,
+                                                           @NotNull ProcessingContext
                                                          context) {
         List<PsiReference> results = new ArrayList<>();
         XmlAttributeValue valueElement = (XmlAttributeValue) element;

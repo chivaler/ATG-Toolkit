@@ -54,9 +54,8 @@ public class AtgComponentFieldReference extends PsiPolyVariantReferenceBase<PsiE
     }
 
 
-    @NotNull
     @Override
-    public Object[] getVariants() {
+    public Object @NotNull [] getVariants() {
         return new String[0];
     }
 

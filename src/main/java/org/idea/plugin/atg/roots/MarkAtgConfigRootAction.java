@@ -49,7 +49,7 @@ public class MarkAtgConfigRootAction extends MarkRootActionBase {
     }
 
     @Override
-    protected void modifyRoots(@NotNull AnActionEvent e, @NotNull Module module, @NotNull VirtualFile[] files) {
+    protected void modifyRoots(@NotNull AnActionEvent e, @NotNull Module module, VirtualFile @NotNull [] files) {
         AtgModuleFacet atgFacet = FacetManager.getInstance(module).getFacetByType(Constants.FACET_TYPE_ID);
         if (atgFacet == null) return;
         Set<VirtualFile> changedRoots = new HashSet<>();

@@ -27,9 +27,8 @@ public class JspFileReference extends PsiPolyVariantReferenceBase<PsiElement> {
         this.filePath = jspRefAttribute.getValue();
     }
 
-    @NotNull
     @Override
-    public ResolveResult[] multiResolve(boolean incompleteCode) {
+    public ResolveResult @NotNull [] multiResolve(boolean incompleteCode) {
         PsiFile sourceFile = myElement.getContainingFile();
         if (!filePath.startsWith("/")) {
             VirtualFile relativeFile = VfsUtilCore.findRelativeFile(filePath, sourceFile.getVirtualFile());
@@ -62,9 +61,8 @@ public class JspFileReference extends PsiPolyVariantReferenceBase<PsiElement> {
         return new ResolveResult[0];
     }
 
-    @NotNull
     @Override
-    public Object[] getVariants() {
+    public Object @NotNull [] getVariants() {
         return new Object[0];
     }
 }

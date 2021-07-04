@@ -41,10 +41,9 @@ public class AtgReferenceContributor extends PsiReferenceContributor {
     }
 
     static class NucleusDefaultPropertiesProvider extends PsiReferenceProvider {
-        @NotNull
         @Override
-        public PsiReference[] getReferencesByElement(@NotNull PsiElement element,
-                                                     @NotNull ProcessingContext context) {
+        public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element,
+                                                               @NotNull ProcessingContext context) {
             PropertiesFileImpl propertiesFile = PsiTreeUtil.getTopmostParentOfType(element, PropertiesFileImpl.class);
             if (propertiesFile != null && AtgComponentUtil.getComponentCanonicalName(propertiesFile).isPresent()) {
                 PropertyKeyImpl propertyKey = (PropertyKeyImpl) element;
@@ -74,10 +73,9 @@ public class AtgReferenceContributor extends PsiReferenceContributor {
     }
 
     static class JavaClassByPropertyValueProvider extends PsiReferenceProvider {
-        @NotNull
         @Override
-        public PsiReference[] getReferencesByElement(@NotNull PsiElement element,
-                                                     @NotNull ProcessingContext
+        public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element,
+                                                               @NotNull ProcessingContext
                                                              context) {
             PropertiesFileImpl propertiesFile = PsiTreeUtil.getTopmostParentOfType(element, PropertiesFileImpl.class);
             if (propertiesFile != null && AtgComponentUtil.getComponentCanonicalName(propertiesFile).isPresent()) {
@@ -96,8 +94,8 @@ public class AtgReferenceContributor extends PsiReferenceContributor {
     static class ComponentByPropertyValueProvider extends PsiReferenceProvider {
         @NotNull
         @Override
-        public PsiReference[] getReferencesByElement(@NotNull PsiElement element,
-                                                     @NotNull ProcessingContext
+        public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element,
+                                                               @NotNull ProcessingContext
                                                              context) {
             PropertiesFileImpl propertiesFile = PsiTreeUtil.getTopmostParentOfType(element, PropertiesFileImpl.class);
             if (propertiesFile != null && AtgComponentUtil.getComponentCanonicalName(propertiesFile).isPresent()) {

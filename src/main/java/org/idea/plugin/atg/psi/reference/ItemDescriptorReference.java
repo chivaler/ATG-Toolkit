@@ -25,15 +25,13 @@ public class ItemDescriptorReference extends PsiPolyVariantReferenceBase<XmlAttr
         super(element);
     }
 
-    @NotNull
     @Override
-    public Object[] getVariants() {
+    public Object @NotNull [] getVariants() {
         return new String[0];
     }
 
-    @NotNull
     @Override
-    public ResolveResult[] multiResolve(boolean incompleteCode) {
+    public ResolveResult @NotNull [] multiResolve(boolean incompleteCode) {
         PsiFile containingFile = getElement().getContainingFile();
         if (!(containingFile instanceof XmlFile)) return ResolveResult.EMPTY_ARRAY;
 

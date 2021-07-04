@@ -13,10 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class XmlTextComponentNamesProvider extends PsiReferenceProvider {
-    @NotNull
     @Override
-    public PsiReference[] getReferencesByElement(@NotNull PsiElement element,
-                                                 @NotNull ProcessingContext
+    public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element,
+                                                           @NotNull ProcessingContext
                                                          context) {
         List<PsiReference> results = new ArrayList<>();
         XmlText textElement = (XmlText) element.getParent();

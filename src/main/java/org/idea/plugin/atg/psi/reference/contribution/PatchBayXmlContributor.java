@@ -75,10 +75,9 @@ public class PatchBayXmlContributor extends PsiReferenceContributor {
     }
 
     private static class PatchBayDestinationProvider extends PsiReferenceProvider {
-        @NotNull
         @Override
-        public PsiReference[] getReferencesByElement(@NotNull PsiElement element,
-                                                     @NotNull ProcessingContext
+        public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element,
+                                                               @NotNull ProcessingContext
                                                              context) {
 
             List<PsiReference> results = new ArrayList<>();
@@ -91,10 +90,9 @@ public class PatchBayXmlContributor extends PsiReferenceContributor {
     }
 
     private static class XmlTextComponentNamesProvider extends PsiReferenceProvider {
-        @NotNull
         @Override
-        public PsiReference[] getReferencesByElement(@NotNull PsiElement element,
-                                                     @NotNull ProcessingContext
+        public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element,
+                                                               @NotNull ProcessingContext
                                                              context) {
             List<PsiReference> results = new ArrayList<>();
             XmlText textElement = (XmlText) element.getParent();

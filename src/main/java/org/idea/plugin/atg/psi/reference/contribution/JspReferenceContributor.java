@@ -26,10 +26,9 @@ public class JspReferenceContributor extends PsiReferenceContributor {
     }
 
     static class JspReferenceProvider extends PsiReferenceProvider {
-        @NotNull
         @Override
-        public PsiReference[] getReferencesByElement(@NotNull PsiElement element,
-                                                     @NotNull ProcessingContext context) {
+        public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element,
+                                                               @NotNull ProcessingContext context) {
             PsiFile jspPsiFile = PsiFileFactory.getInstance(element.getProject()).createFileFromText(XMLLanguage.INSTANCE, element.getText());
             JspReferenceProviderVisitor jspVisitor = new JspReferenceProviderVisitor((PsiPlainTextFile) element.getContainingFile());
             jspPsiFile.accept(jspVisitor);

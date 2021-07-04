@@ -46,9 +46,8 @@ public class AtgComponentReference extends PsiPolyVariantReferenceBase<PsiElemen
         this.componentName = componentName;
     }
 
-    @NotNull
     @Override
-    public ResolveResult[] multiResolve(boolean incompleteCode) {
+    public ResolveResult @NotNull [] multiResolve(boolean incompleteCode) {
         Project project = myElement.getProject();
         AtgIndexService componentsService = ServiceManager.getService(project, AtgIndexService.class);
         Collection<PsiFile> applicableComponents;
@@ -63,9 +62,8 @@ public class AtgComponentReference extends PsiPolyVariantReferenceBase<PsiElemen
     }
 
 
-    @NotNull
     @Override
-    public Object[] getVariants() {
+    public Object @NotNull [] getVariants() {
         return new String[0];
     }
 

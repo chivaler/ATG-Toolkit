@@ -28,9 +28,8 @@ public class WebContextResourceReference extends PsiPolyVariantReferenceBase<Psi
         this.filePath = jspRefAttribute.getValue();
     }
 
-    @NotNull
     @Override
-    public ResolveResult[] multiResolve(boolean incompleteCode) {
+    public ResolveResult @NotNull [] multiResolve(boolean incompleteCode) {
         PsiFile sourceFile = myElement.getContainingFile();
         Project project = sourceFile.getProject();
         if (filePath.startsWith("/")) {
@@ -57,9 +56,8 @@ public class WebContextResourceReference extends PsiPolyVariantReferenceBase<Psi
         return new ResolveResult[0];
     }
 
-    @NotNull
     @Override
-    public Object[] getVariants() {
+    public Object @NotNull [] getVariants() {
         return new Object[0];
     }
 }

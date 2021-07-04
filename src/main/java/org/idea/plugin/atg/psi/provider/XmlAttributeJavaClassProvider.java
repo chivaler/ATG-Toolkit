@@ -10,10 +10,9 @@ import com.jgoodies.common.base.Strings;
 import org.jetbrains.annotations.NotNull;
 
 public class XmlAttributeJavaClassProvider extends PsiReferenceProvider {
-    @NotNull
     @Override
-    public PsiReference[] getReferencesByElement(@NotNull PsiElement element,
-                                                 @NotNull ProcessingContext
+    public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element,
+                                                           @NotNull ProcessingContext
                                                          context) {
         XmlAttributeValue valueElement = (XmlAttributeValue) element;
         if (Strings.isNotBlank(valueElement.getValue())) {
